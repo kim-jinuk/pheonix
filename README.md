@@ -1,3 +1,6 @@
+## 컴파일 명령어
+g++ -o main main.cpp pkg-config --cflags --libs opencv4
+
 ## 프로젝트 구조
 
 ### 📁 client_opencv
