@@ -1,0 +1,135 @@
+﻿<Window x:Class="EOIR_Simulator.View.MainView"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:vm="clr-namespace:EOIR_Simulator.ViewModel"
+        xmlns:net="clr-namespace:EOIR_Simulator.Service" 
+        xmlns:sys="clr-namespace:System;assembly=mscorlib"
+        mc:Ignorable="d"
+        Title="EO/IR GUI" Height="650" Width="1000">
+
+    <!-- 디자인‑타임 VM -->
+    <Window.DataContext>
+        <vm:MainViewModel/>
+    </Window.DataContext>
+
+    <!-- ModeNum 열거형 리스트 제공 -->
+    <Window.Resources>
+        <ObjectDataProvider x:Key="ModeValues"
+                            MethodName="GetValues"
+                            ObjectType="{x:Type sys:Enum}">
+            <ObjectDataProvider.MethodParameters>
+                <x:Type TypeName="net:ModeNum"/>
+            </ObjectDataProvider.MethodParameters>
+        </ObjectDataProvider>
+    </Window.Resources>
+
+    <!-- ▒▒ 레이아웃 ▒▒ -->
+    <Grid>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="*"   />
+            <ColumnDefinition Width="320" />
+        </Grid.ColumnDefinitions>
+
+        <!-- 좌측: 영상 -->
+        <Grid Grid.Column="0">
+            <Image x:Name="VideoImage"
+                   Source="{Binding CurrentFrame}"
+                   Stretch="Uniform"/>
+            <Canvas x:Name="Overlay"
+                    IsHitTestVisible="False"/>
+        </Grid>
+
+        <!-- 우측 패널 -->
+        <Grid Grid.Column="1" Margin="4,0,0,0">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <!-- (0) 상태 -->
+                <RowDefinition Height="130"/>
+                <!-- (1) DataGrid -->
+                <RowDefinition Height="Auto"/>
+                <!-- (2) 모드 -->
+                <RowDefinition Height="140"/>
+                <!-- (3) 방향키 -->
+            </Grid.RowDefinitions>
+
+            <!-- 상태 텍스트 아래에 각도 두 줄 -->
+            <StackPanel Grid.Row="0" HorizontalAlignment="Center">
+                <TextBlock Text="{Binding ConnectionStatus}" FontWeight="Bold"
+               Foreground="DodgerBlue" HorizontalAlignment="Center"/>
+                <!--
+                <TextBlock Text="{Binding YawAngle,   StringFormat='Yaw  : {0}°'}"
+           HorizontalAlignment="Center"/>
+                <TextBlock Text="{Binding PitchAngle, StringFormat='Pitch: {0}°'}"
+           HorizontalAlignment="Center"/>
+                -->
+            </StackPanel>
+
+            <!-- (1) DataGrid -->
+            <DataGrid x:Name="MetaGrid" Grid.Row="1"
+                      ItemsSource="{Binding Objects}"
+                      AutoGenerateColumns="False"
+                      IsReadOnly="True"
+                      HeadersVisibility="Column"
+                      MaxHeight="120"
+                      Margin="0,0,0,6">
+                <DataGrid.Columns>
+                    <DataGridTextColumn Header="Cls"  Binding="{Binding Class}" Width="50"/>
+                    <DataGridTextColumn Header="X"    Binding="{Binding X}"     Width="50"/>
+                    <DataGridTextColumn Header="Y"    Binding="{Binding Y}"     Width="50"/>
+                    <DataGridTextColumn Header="W"    Binding="{Binding W}"     Width="50"/>
+                    <DataGridTextColumn Header="H"    Binding="{Binding H}"     Width="50"/>
+                    <DataGridTextColumn Header="Conf" Binding="{Binding Confidence, StringFormat=F2}" Width="*"/>
+                </DataGrid.Columns>
+            </DataGrid>
+
+            <!-- (2) 모드 선택 -->
+            <StackPanel Grid.Row="2" Orientation="Horizontal" Margin="0,0,0,6"
+                        HorizontalAlignment="Center">
+                <TextBlock Text="모드 선택 :" VerticalAlignment="Center" Margin="0,0,6,0"/>
+                <ComboBox ItemsSource="{Binding Source={StaticResource ModeValues}}"
+                          SelectedItem="{Binding Mode, Mode=TwoWay}"
+                          Width="120"/>
+            </StackPanel>
+
+            <!-- (3) 방향키 -->
+            <Grid Grid.Row="3" HorizontalAlignment="Center" VerticalAlignment="Center">
+                <Grid.RowDefinitions>
+                    <RowDefinition/>
+                    <RowDefinition/>
+                </Grid.RowDefinitions>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition/>
+                    <ColumnDefinition/>
+                    <ColumnDefinition/>
+                </Grid.ColumnDefinitions>
+
+                <!-- ↑ -->
+                <Button Content="↑" FontSize="18"
+                        Command="{Binding MoveCommand}" CommandParameter="Up"
+                        IsEnabled="{Binding IsManualMode}"
+                        Grid.Row="0" Grid.Column="1"
+                        Width="60" Height="60" Margin="2"/>
+                <!-- ← -->
+                <Button Content="←" FontSize="18"
+                        Command="{Binding MoveCommand}" CommandParameter="Left"
+                        IsEnabled="{Binding IsManualMode}"
+                        Grid.Row="1" Grid.Column="0"
+                        Width="60" Height="60" Margin="2"/>
+                <!-- ↓ -->
+                <Button Content="↓" FontSize="18"
+                        Command="{Binding MoveCommand}" CommandParameter="Down"
+                        IsEnabled="{Binding IsManualMode}"
+                        Grid.Row="1" Grid.Column="1"
+                        Width="60" Height="60" Margin="2"/>
+                <!-- → -->
+                <Button Content="→" FontSize="18"
+                        Command="{Binding MoveCommand}" CommandParameter="Right"
+                        IsEnabled="{Binding IsManualMode}"
+                        Grid.Row="1" Grid.Column="2"
+                        Width="60" Height="60" Margin="2"/>
+            </Grid>
+        </Grid>
+    </Grid>
+</Window>
