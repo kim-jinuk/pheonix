@@ -1,5 +1,6 @@
 ## 컴파일 명령어
-g++ -o main main.cpp pkg-config --cflags --libs opencv4
+g++ -std=c++17 -o main main.cpp tcp_server.cpp udp_streaming.cpp $(pkg-config --cflags --libs opencv4) -lpthread
+
 
 ## 프로젝트 구조
 
