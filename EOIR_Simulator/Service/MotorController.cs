@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Threading;
 using System.Threading.Tasks;
+using EOIR_Simulator.Model;
 
 namespace EOIR_Simulator.Service
 {

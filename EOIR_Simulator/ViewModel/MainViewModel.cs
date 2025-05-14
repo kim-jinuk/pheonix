@@ -3,8 +3,10 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Data;
+using System.IO;
 using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
+using System.Windows;
 using System.Windows.Input;
 using System.Windows.Media.Imaging;
 using EOIR_Simulator.Model;
@@ -17,6 +19,7 @@ namespace EOIR_Simulator.ViewModel
     {
         /*──────── 네트워크 서비스 ────────*/
         private readonly TcpSender _tcp = new TcpSender("192.168.3.141", 9999);  // 필요 시 IP/PORT 수정
+        private readonly UDPReceiver _rx;
 
         /* ★ MotorController 주입 */
         private readonly MotorController _motor;
@@ -53,6 +56,19 @@ namespace EOIR_Simulator.ViewModel
             = new ObservableCollection<ObjectInfo>();
 
         private BitmapSource _currentFrame;
+
+
+        /* 최근 프레임 시간 기록 */
+        private DateTime _lastUdp = DateTime.MinValue;
+
+        /* GUI 바인딩용 텍스트 */
+        private string _udpStatus = "UDP: Disconnected";
+        public string UdpStatus
+        {
+            get => _udpStatus;
+            private set { _udpStatus = value; OnPropertyChanged(nameof(UdpStatus)); }
+        }
+
         public BitmapSource CurrentFrame
         {
             get => _currentFrame;
@@ -70,6 +86,31 @@ namespace EOIR_Simulator.ViewModel
         {
             get => _connText;
             private set { _connText = value; OnPropertyChanged(nameof(ConnectionStatus)); }
+        }
+
+        /* ───────── FrameArrived 핸들러 ───────── */
+        private void OnFrameArrived(FramePacket fp)
+        {
+            // JPEG → BitmapImage (간단 버전)
+            BitmapImage bmp;
+            using (var ms = new MemoryStream(fp.JpegBytes))
+            {
+                bmp = new BitmapImage();
+                bmp.BeginInit();
+                bmp.CacheOption = BitmapCacheOption.OnLoad;
+                bmp.StreamSource = ms;
+                bmp.EndInit();
+                bmp.Freeze();                     // 크로스스레드 안전
+            }
+
+            _lastUdp = DateTime.UtcNow;
+
+            // UI 스레드로 배포
+            Application.Current.Dispatcher.BeginInvoke(new Action(() =>
+            {
+                CurrentFrame = bmp;
+                ReplaceObjects(fp.Objects);
+            }));
         }
 
         /*──────── ④ 생성자 ─────────────────*/
@@ -92,6 +133,23 @@ namespace EOIR_Simulator.ViewModel
                 }
                 await _tcp.SendAsync(ModeNum.Manual, dx, dy);
             });
+            /* ── UdpFrameReceiver 구독 ── */
+            _rx = new UDPReceiver(IcdConstants.UDP_PORT);
+            _rx.FrameArrived += OnFrameArrived;
+            _rx.Start();
+
+            /* ── 500 ms 주기 타이머로 상태 검사 ── */
+            var timer = new System.Timers.Timer(500);
+            timer.Elapsed += (s, e) =>
+            {
+                var delta = DateTime.UtcNow - _lastUdp;
+                var newState = (delta.TotalSeconds < 1.5) ? UdpState.Connected : UdpState.Disconnected;
+                string txt = "UDP: " + newState;
+
+                if (txt != _udpStatus)
+                    App.Current.Dispatcher.BeginInvoke(new Action(() => UdpStatus = txt));
+            };
+            timer.Start();
             _tcp.StateChanged += st => ConnectionStatus = "TCP: " + st;
         }
 

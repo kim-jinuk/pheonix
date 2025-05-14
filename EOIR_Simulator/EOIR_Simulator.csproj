@@ -57,6 +57,7 @@
     </ApplicationDefinition>
     <Compile Include="Model\FramePacket.cs" />
     <Compile Include="Model\IcdConstants.cs" />
+    <Compile Include="Model\Enums.cs" />
     <Compile Include="Model\ObjectInfo.cs" />
     <Compile Include="Service\MotorController.cs" />
     <Compile Include="Service\TCPSender.cs" />

@@ -2,11 +2,10 @@
 using System.Net.Sockets;
 using System.Threading;
 using System.Threading.Tasks;
+using EOIR_Simulator.Model;
 
 namespace EOIR_Simulator.Service
 {
-    public enum ModeNum : ushort { Manual = 0, Scan = 1, Track = 2 }
-    public enum TcpState { Disconnected, Connecting, Connected }
 
     /// <summary>ICD(6 B) 패킷을 TCP 로 전송 + 연결 상태 알림</summary>
     public class TcpSender : IDisposable

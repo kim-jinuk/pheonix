@@ -6,6 +6,7 @@
         xmlns:vm="clr-namespace:EOIR_Simulator.ViewModel"
         xmlns:net="clr-namespace:EOIR_Simulator.Service" 
         xmlns:sys="clr-namespace:System;assembly=mscorlib"
+        xmlns:model="clr-namespace:EOIR_Simulator.Model"
         mc:Ignorable="d"
         Title="EO/IR GUI" Height="650" Width="1000">
 
@@ -17,10 +18,10 @@
     <!-- ModeNum 열거형 리스트 제공 -->
     <Window.Resources>
         <ObjectDataProvider x:Key="ModeValues"
-                            MethodName="GetValues"
-                            ObjectType="{x:Type sys:Enum}">
+                    MethodName="GetValues"
+                    ObjectType="{x:Type sys:Enum}">
             <ObjectDataProvider.MethodParameters>
-                <x:Type TypeName="net:ModeNum"/>
+                <x:Type TypeName="model:ModeNum"/>
             </ObjectDataProvider.MethodParameters>
         </ObjectDataProvider>
     </Window.Resources>
@@ -54,17 +55,15 @@
                 <!-- (3) 방향키 -->
             </Grid.RowDefinitions>
 
-            <!-- 상태 텍스트 아래에 각도 두 줄 -->
-            <StackPanel Grid.Row="0" HorizontalAlignment="Center">
-                <TextBlock Text="{Binding ConnectionStatus}" FontWeight="Bold"
-               Foreground="DodgerBlue" HorizontalAlignment="Center"/>
-                <!--
-                <TextBlock Text="{Binding YawAngle,   StringFormat='Yaw  : {0}°'}"
-           HorizontalAlignment="Center"/>
-                <TextBlock Text="{Binding PitchAngle, StringFormat='Pitch: {0}°'}"
-           HorizontalAlignment="Center"/>
-                -->
-            </StackPanel>
+            <!-- (0) 상태 텍스트 -->
+            <Border Grid.Row="0" BorderBrush="Gray" BorderThickness="1" Margin="2,4,2,2">
+                <StackPanel Grid.Row="0" HorizontalAlignment="Center">
+                    <TextBlock Text="{Binding ConnectionStatus}" FontWeight="Bold"
+                               Foreground="DodgerBlue" HorizontalAlignment="Center"/>
+                    <TextBlock Text="{Binding UdpStatus}" FontWeight="Bold"
+                               Foreground="DarkOrange" HorizontalAlignment="Center"/>
+                </StackPanel>
+            </Border>
 
             <!-- (1) DataGrid -->
             <DataGrid x:Name="MetaGrid" Grid.Row="1"
@@ -73,7 +72,7 @@
                       IsReadOnly="True"
                       HeadersVisibility="Column"
                       MaxHeight="120"
-                      Margin="0,0,0,6">
+                      Margin="2,2,2,2">
                 <DataGrid.Columns>
                     <DataGridTextColumn Header="Cls"  Binding="{Binding Class}" Width="50"/>
                     <DataGridTextColumn Header="X"    Binding="{Binding X}"     Width="50"/>
@@ -85,13 +84,15 @@
             </DataGrid>
 
             <!-- (2) 모드 선택 -->
-            <StackPanel Grid.Row="2" Orientation="Horizontal" Margin="0,0,0,6"
-                        HorizontalAlignment="Center">
-                <TextBlock Text="모드 선택 :" VerticalAlignment="Center" Margin="0,0,6,0"/>
-                <ComboBox ItemsSource="{Binding Source={StaticResource ModeValues}}"
-                          SelectedItem="{Binding Mode, Mode=TwoWay}"
-                          Width="120"/>
-            </StackPanel>
+            <Border Grid.Row="2" BorderBrush="Gray" BorderThickness="1" Margin="2">
+                <StackPanel Orientation="Horizontal" Margin="0,3,0,3"
+                            HorizontalAlignment="Center">
+                    <TextBlock Text="모드 선택 :" VerticalAlignment="Center" Margin="0,0,6,0"/>
+                    <ComboBox ItemsSource="{Binding Source={StaticResource ModeValues}}"
+                              SelectedItem="{Binding Mode, Mode=TwoWay}"
+                              Width="120"/>     
+                </StackPanel>
+            </Border>
 
             <!-- (3) 방향키 -->
             <Grid Grid.Row="3" HorizontalAlignment="Center" VerticalAlignment="Center">
