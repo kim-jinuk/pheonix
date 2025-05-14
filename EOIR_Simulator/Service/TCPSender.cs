@@ -18,6 +18,8 @@ namespace EOIR_Simulator.Service
         private int _connecting;                 // 0/1 플래그 (중복 Connect 방지)
         public TcpState State { get; private set; } = TcpState.Disconnected;
 
+        public bool IsConnected => State == TcpState.Connected;
+
         /// <summary>연결 상태가 바뀌면 호출됩니다.</summary>
         public event Action<TcpState> StateChanged;
 
@@ -58,6 +60,8 @@ namespace EOIR_Simulator.Service
             }
         }
 
+        public Task<bool> ConnectAsync() => EnsureConnectedAsync();
+
         /// <summary>ICD‑패킷 전송 (magic + mode + dx + dy = 6 byte)</summary>
         public async Task SendAsync(ModeNum mode, sbyte dx, sbyte dy)
         {
@@ -83,6 +87,21 @@ namespace EOIR_Simulator.Service
             {
                 State = TcpState.Disconnected; StateChanged?.Invoke(State);
             }
+        }
+
+        public void Disconnect() 
+        { 
+            if (State == TcpState.Connected) 
+            { 
+                try 
+                { 
+                    _stream?.Close(); _client?.Close(); 
+                } 
+                finally 
+                { 
+                    State = TcpState.Disconnected; StateChanged?.Invoke(State); 
+                } 
+            } 
         }
 
         public void Dispose()

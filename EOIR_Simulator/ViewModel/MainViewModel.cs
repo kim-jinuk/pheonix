@@ -18,8 +18,14 @@ namespace EOIR_Simulator.ViewModel
     public class MainViewModel : INotifyPropertyChanged
     {
         /*──────── 네트워크 서비스 ────────*/
-        private readonly TcpSender _tcp = new TcpSender("192.168.3.141", 9999);  // 필요 시 IP/PORT 수정
+        private readonly TcpSender _tcp = new TcpSender("192.168.223.130", 9999);  // 필요 시 IP/PORT 수정
         private readonly UDPReceiver _rx;
+
+        /*──────── 소켓 연결 속성 및 Command 선언 ────────*/
+        public bool IsTcpConnected => _tcp.IsConnected;
+        public bool IsTcpDisconnected => !IsTcpConnected;
+        public string ConnectButtonText => IsTcpConnected ? "Disconnect" : "Connect";
+        public ICommand ConnectCommand { get; }
 
         /* ★ MotorController 주입 */
         private readonly MotorController _motor;
@@ -150,7 +156,21 @@ namespace EOIR_Simulator.ViewModel
                     App.Current.Dispatcher.BeginInvoke(new Action(() => UdpStatus = txt));
             };
             timer.Start();
-            _tcp.StateChanged += st => ConnectionStatus = "TCP : " + st;
+
+            _tcp.StateChanged += st =>
+            {
+                ConnectionStatus = "TCP : " + st;
+                OnPropertyChanged(nameof(IsTcpConnected));
+                OnPropertyChanged(nameof(IsTcpDisconnected));
+                OnPropertyChanged(nameof(ConnectButtonText));
+            };
+            ConnectCommand = new RelayCommand(async _ =>
+            {
+                if (_tcp.IsConnected)
+                    _tcp.Disconnect();
+                else
+                    await _tcp.ConnectAsync();
+            }, _ => true);          // 버튼 항상 활성 (토글이므로)
         }
 
         /*──────── ⑤ INotifyPropertyChanged ──*/

@@ -60,19 +60,30 @@
             <!-- (0) 상태 텍스트 -->
             <Border Grid.Row="0" BorderBrush="Gray" BorderThickness="1" Margin="2,4,2,2">
                 <Grid>
+                    <!-- 버튼 칸 -->
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
                     <Grid.RowDefinitions>
                         <RowDefinition Height="Auto"/>
                         <RowDefinition Height="*"/>
                     </Grid.RowDefinitions>
 
                     <!-- 타이틀 -->
-                    <TextBlock Grid.Row="0"
+                    <TextBlock Grid.Row="0" Grid.ColumnSpan="2"
                    Text="통신 상태"
                    HorizontalAlignment="Center"
                    Margin="0,4"/>
 
+                    <!-- ▣ Connect 버튼 (우측 상단) -->
+                    <Button Grid.Row="0" Grid.Column="1"
+                Content="{Binding ConnectButtonText}"
+                Command="{Binding ConnectCommand}"
+                Margin="0, 2, 8, 2"/>
+
                     <!-- 상태 텍스트들 (내부 Border로 감싸기) -->
-                    <StackPanel Grid.Row="1" Margin="8,2" HorizontalAlignment="Stretch">
+                    <StackPanel Grid.Row="1" Margin="8,2" HorizontalAlignment="Stretch" Grid.ColumnSpan="2">
                         <Border BorderBrush="Gray" BorderThickness="1" Margin="0,0,0,4">
                             <TextBlock Text="{Binding ConnectionStatus}"
                            FontWeight="Bold"
@@ -120,7 +131,7 @@
                               Width="120">  
                         <ComboBoxItem Content="수동 모드 (기본)" Tag="{x:Static model:ModeNum.Manual}" />
                         <ComboBoxItem Content="스캔 모드"   Tag="{x:Static model:ModeNum.Scan}"   />
-                        <ComboBoxItem Content="추적 모드 (auto)" Tag="{x:Static model:ModeNum.Track}" IsEnabled="False"/>
+                        <ComboBoxItem Content="추적 모드 (자동)" Tag="{x:Static model:ModeNum.Track}" IsEnabled="False"/>
                     </ComboBox>
                 </StackPanel>
             </Border>
