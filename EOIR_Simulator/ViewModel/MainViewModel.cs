@@ -111,6 +111,10 @@ namespace EOIR_Simulator.ViewModel
 
             _lastUdp = DateTime.UtcNow;
 
+            if (Application.Current == null ||
+                Application.Current.Dispatcher.HasShutdownStarted)
+                return;                         // 앱이 닫히는 중이면 무시
+
             // UI 스레드로 배포
             Application.Current.Dispatcher.BeginInvoke(new Action(() =>
             {

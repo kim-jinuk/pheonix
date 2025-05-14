@@ -33,17 +33,40 @@
             <ColumnDefinition Width="320" />
         </Grid.ColumnDefinitions>
 
-        <!-- 좌측: 영상 -->
-        <Grid Grid.Column="0">
-            <Image x:Name="VideoImage"
-                   Source="{Binding CurrentFrame}"
-                   Stretch="Uniform"/>
-            <Canvas x:Name="Overlay"
-                    IsHitTestVisible="False"/>
-        </Grid>
+        <!-- 좌측: 영상 (Border로 감싸기) -->
+        <Border Grid.Column="0"
+                BorderBrush="Gray"
+                BorderThickness="1"
+                Margin="8, 68, 8, 68">
+            <!-- 3×3 Grid : 가운데 행·열이 선 1px -->
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition/>
+                    <RowDefinition Height="1"/>
+                    <!-- 수평선 -->
+                    <RowDefinition/>
+                </Grid.RowDefinitions>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition/>
+                    <ColumnDefinition Width="1"/>
+                    <!-- 수직선 -->
+                    <ColumnDefinition/>
+                </Grid.ColumnDefinitions>
+
+                <!-- 영상 -->
+                <Image x:Name="VideoImage"
+                       Source="{Binding CurrentFrame}"
+                       Stretch="Uniform"
+                       Grid.RowSpan="3" Grid.ColumnSpan="3"/>
+
+                <!-- 십자선 색 지정 (Brushes.Red 등) -->
+                <Rectangle Grid.Row="1" Grid.ColumnSpan="3" Fill="LawnGreen"/>
+                <Rectangle Grid.Column="1" Grid.RowSpan="3" Fill="LawnGreen"/>
+            </Grid>
+        </Border>
 
         <!-- 우측 패널 -->
-        <Grid Grid.Column="1" Margin="4,0,0,0">
+        <Grid Grid.Column="1" Margin="0,0,0,0">
             <Grid.RowDefinitions>
                 <!-- (0) 상태 -->
                 <RowDefinition Height="Auto"/>
@@ -58,7 +81,7 @@
             </Grid.RowDefinitions>
 
             <!-- (0) 상태 텍스트 -->
-            <Border Grid.Row="0" BorderBrush="Gray" BorderThickness="1" Margin="2,4,2,2">
+            <Border Grid.Row="0" BorderBrush="Gray" BorderThickness="1" Margin="2,4,4,2">
                 <Grid>
                     <!-- 버튼 칸 -->
                     <Grid.ColumnDefinitions>
@@ -72,32 +95,33 @@
 
                     <!-- 타이틀 -->
                     <TextBlock Grid.Row="0" Grid.ColumnSpan="2"
-                   Text="통신 상태"
-                   HorizontalAlignment="Center"
-                   Margin="0,4"/>
+                               Text="통신 상태"
+                               HorizontalAlignment="Center"
+                               Margin="0,4"/>   
 
                     <!-- ▣ Connect 버튼 (우측 상단) -->
                     <Button Grid.Row="0" Grid.Column="1"
-                Content="{Binding ConnectButtonText}"
-                Command="{Binding ConnectCommand}"
-                Margin="0, 2, 8, 2"/>
+                            Content="{Binding ConnectButtonText}"
+                            Command="{Binding ConnectCommand}"
+                            Width="70"
+                            Margin="0, 2, 8, 2"/>
 
                     <!-- 상태 텍스트들 (내부 Border로 감싸기) -->
                     <StackPanel Grid.Row="1" Margin="8,2" HorizontalAlignment="Stretch" Grid.ColumnSpan="2">
                         <Border BorderBrush="Gray" BorderThickness="1" Margin="0,0,0,4">
                             <TextBlock Text="{Binding ConnectionStatus}"
-                           FontWeight="Bold"
-                           Foreground="DodgerBlue"
-                           HorizontalAlignment="Center"
-                           Margin="4,2"/>
+                                       FontWeight="Bold"
+                                       Foreground="DodgerBlue"
+                                       HorizontalAlignment="Center"
+                                       Margin="4,2"/>   
                         </Border>
 
                         <Border BorderBrush="Gray" BorderThickness="1" Margin="0,0,0,8">
                             <TextBlock Text="{Binding UdpStatus}"
-                           FontWeight="Bold"
-                           Foreground="DarkOrange"
-                           HorizontalAlignment="Center"
-                           Margin="4,2"/>
+                                       FontWeight="Bold"
+                                       Foreground="DarkOrange"
+                                       HorizontalAlignment="Center"
+                                       Margin="4,2"/>       
                         </Border>
                     </StackPanel>
                 </Grid>
@@ -110,7 +134,7 @@
                       IsReadOnly="True"
                       HeadersVisibility="Column"
                       MaxHeight="120"
-                      Margin="2,2,2,2">
+                      Margin="2,2,4,2">
                 <DataGrid.Columns>
                     <DataGridTextColumn Header="Cls"  Binding="{Binding Class}" Width="50"/>
                     <DataGridTextColumn Header="X"    Binding="{Binding X}"     Width="50"/>
@@ -122,7 +146,7 @@
             </DataGrid>
 
             <!-- (2) 모드 선택 -->
-            <Border Grid.Row="2" BorderBrush="Gray" BorderThickness="1" Margin="2,0,2,2">
+            <Border Grid.Row="2" BorderBrush="Gray" BorderThickness="1" Margin="2,0,4,2">
                 <StackPanel Orientation="Horizontal" Margin="0,4"
                 HorizontalAlignment="Center">
                     <TextBlock Text="모드 선택 :" VerticalAlignment="Center" Margin="0,0,6,0"/>
@@ -137,7 +161,7 @@
             </Border>
 
             <!-- (3)  현재 모드 표시 -->
-            <Border Grid.Row="3" BorderBrush="Gray" BorderThickness="1" Margin="2">
+            <Border Grid.Row="3" BorderBrush="Gray" BorderThickness="1" Margin="2,2,4,2">
                 <Grid>
                     <Grid.RowDefinitions>
                         <RowDefinition Height="Auto"/>
@@ -164,7 +188,7 @@
             </Border>
 
             <!-- (4) 방향키 -->
-            <Border Grid.Row="4" BorderBrush="Gray" BorderThickness="1" Margin="2">
+            <Border Grid.Row="4" BorderBrush="Gray" BorderThickness="1" Margin="2,2,4,2">
                 <Grid>
                     <Grid.RowDefinitions>
                         <RowDefinition Height="Auto"/>
@@ -193,28 +217,28 @@
 
                             <!-- ↑ -->
                             <Button Content="↑" FontSize="18"
-                        Command="{Binding MoveCommand}" CommandParameter="Up"
-                        IsEnabled="{Binding IsManualMode}"
-                        Grid.Row="0" Grid.Column="1"
-                        Width="60" Height="60" Margin="2"/>
+                                    Command="{Binding MoveCommand}" CommandParameter="Up"
+                                    IsEnabled="{Binding IsManualMode}"
+                                    Grid.Row="0" Grid.Column="1"
+                                    Width="60" Height="60" Margin="2"/> 
                             <!-- ← -->
                             <Button Content="←" FontSize="18"
-                        Command="{Binding MoveCommand}" CommandParameter="Left"
-                        IsEnabled="{Binding IsManualMode}"
-                        Grid.Row="1" Grid.Column="0"
-                        Width="60" Height="60" Margin="2"/>
+                                    Command="{Binding MoveCommand}" CommandParameter="Left"
+                                    IsEnabled="{Binding IsManualMode}"
+                                    Grid.Row="1" Grid.Column="0"
+                                    Width="60" Height="60" Margin="2"/>
                             <!-- ↓ -->
                             <Button Content="↓" FontSize="18"
-                        Command="{Binding MoveCommand}" CommandParameter="Down"
-                        IsEnabled="{Binding IsManualMode}"
-                        Grid.Row="1" Grid.Column="1"
-                        Width="60" Height="60" Margin="2"/>
+                                    Command="{Binding MoveCommand}" CommandParameter="Down"
+                                    IsEnabled="{Binding IsManualMode}"
+                                    Grid.Row="1" Grid.Column="1"
+                                    Width="60" Height="60" Margin="2"/> 
                             <!-- → -->
                             <Button Content="→" FontSize="18"
-                        Command="{Binding MoveCommand}" CommandParameter="Right"
-                        IsEnabled="{Binding IsManualMode}"
-                        Grid.Row="1" Grid.Column="2"
-                        Width="60" Height="60" Margin="2"/>
+                                    Command="{Binding MoveCommand}" CommandParameter="Right"
+                                    IsEnabled="{Binding IsManualMode}"
+                                    Grid.Row="1" Grid.Column="2"
+                                    Width="60" Height="60" Margin="2"/> 
                         </Grid>
                     </Border>
                 </Grid>

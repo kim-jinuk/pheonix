@@ -20,7 +20,7 @@ namespace EOIR_Simulator.View
     {
         private readonly MainViewModel _vm;
 
-        private WriteableBitmap _wb;
+        //private WriteableBitmap _wb;
 
         public MainView()
         {

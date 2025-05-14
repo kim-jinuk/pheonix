@@ -8,7 +8,7 @@ namespace EOIR_Simulator.Service
     public class MotorController //: IDisposable
     {
         private readonly TcpSender _tcp;
-        private CancellationTokenSource _scanCts;
+        //private CancellationTokenSource _scanCts;
 
         /* ── 두 축 각도 ───────────────────── */
         public int Yaw { get; private set; } = 90;   // 좌/우
