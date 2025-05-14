@@ -62,7 +62,7 @@ namespace EOIR_Simulator.ViewModel
         private DateTime _lastUdp = DateTime.MinValue;
 
         /* GUI 바인딩용 텍스트 */
-        private string _udpStatus = "UDP: Disconnected";
+        private string _udpStatus = "UDP : Disconnected";
         public string UdpStatus
         {
             get => _udpStatus;
@@ -81,7 +81,7 @@ namespace EOIR_Simulator.ViewModel
             foreach (var o in list) Objects.Add(o);
         }
 
-        private string _connText = "TCP: Disconnected";
+        private string _connText = "TCP : Disconnected";
         public string ConnectionStatus
         {
             get => _connText;
@@ -144,13 +144,13 @@ namespace EOIR_Simulator.ViewModel
             {
                 var delta = DateTime.UtcNow - _lastUdp;
                 var newState = (delta.TotalSeconds < 1.5) ? UdpState.Connected : UdpState.Disconnected;
-                string txt = "UDP: " + newState;
+                string txt = "UDP : " + newState;
 
                 if (txt != _udpStatus)
                     App.Current.Dispatcher.BeginInvoke(new Action(() => UdpStatus = txt));
             };
             timer.Start();
-            _tcp.StateChanged += st => ConnectionStatus = "TCP: " + st;
+            _tcp.StateChanged += st => ConnectionStatus = "TCP : " + st;
         }
 
         /*──────── ⑤ INotifyPropertyChanged ──*/
