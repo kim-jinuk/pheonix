@@ -30,15 +30,15 @@ namespace EOIR_Simulator.ViewModel
             {
                 if (_mode == value) return;
                 /* 1) 이전 스캔 멈춤 */
-                _motor.StopScan();
+                //_motor.StopScan();
 
                 _mode = value;
                 OnPropertyChanged(nameof(Mode));
                 OnPropertyChanged(nameof(IsManualMode));
 
                 /* 2) 새 모드가 Scan 이면 즉시 StartScan */
-                if (_mode == ModeNum.Scan)
-                    _motor.StartScan();
+                //if (_mode == ModeNum.Scan)
+                //    _motor.StartScan();
 
                 /* 3) 마지막에 모드 변경 패킷 전송 */
                 _tcp.SendAsync(_mode, 0, 0).ConfigureAwait(false);
