@@ -15,8 +15,8 @@
         <vm:MainViewModel/>
     </Window.DataContext>
 
-    <!-- ModeNum 열거형 리스트 제공 -->
     <Window.Resources>
+        <!-- ModeNum 열거형 리스트 제공 -->
         <ObjectDataProvider x:Key="ModeValues"
                     MethodName="GetValues"
                     ObjectType="{x:Type sys:Enum}">
@@ -104,7 +104,8 @@
                             Content="{Binding ConnectButtonText}"
                             Command="{Binding ConnectCommand}"
                             Width="70"
-                            Margin="0, 2, 8, 2"/>
+                            Margin="0, 2, 8, 2"
+                            ToolTip="EO/IR 연결 또는 해제"/>
 
                     <!-- 상태 텍스트들 (내부 Border로 감싸기) -->
                     <StackPanel Grid.Row="1" Margin="8,2" HorizontalAlignment="Stretch" Grid.ColumnSpan="2">
@@ -216,29 +217,36 @@
                             </Grid.ColumnDefinitions>
 
                             <!-- ↑ -->
-                            <Button Content="↑" FontSize="18"
-                                    Command="{Binding MoveCommand}" CommandParameter="Up"
-                                    IsEnabled="{Binding IsManualMode}"
-                                    Grid.Row="0" Grid.Column="1"
-                                    Width="60" Height="60" Margin="2"/> 
+                            <RepeatButton Content="↑" FontSize="18"
+                                          Command="{Binding MoveCommand}" CommandParameter="Up"
+                                          IsEnabled="{Binding IsManualMode}"
+                                          Delay="400" Interval="120"
+                                          Grid.Row="0" Grid.Column="1"
+                                          Width="60" Height="60" Margin="2"/>
+
                             <!-- ← -->
-                            <Button Content="←" FontSize="18"
-                                    Command="{Binding MoveCommand}" CommandParameter="Left"
-                                    IsEnabled="{Binding IsManualMode}"
-                                    Grid.Row="1" Grid.Column="0"
-                                    Width="60" Height="60" Margin="2"/>
+                            <RepeatButton Content="←" FontSize="18"
+                                          Command="{Binding MoveCommand}" CommandParameter="Left"
+                                          IsEnabled="{Binding IsManualMode}"
+                                          Delay="400" Interval="120"
+                                          Grid.Row="1" Grid.Column="0"
+                                          Width="60" Height="60" Margin="2"/>
+
                             <!-- ↓ -->
-                            <Button Content="↓" FontSize="18"
-                                    Command="{Binding MoveCommand}" CommandParameter="Down"
-                                    IsEnabled="{Binding IsManualMode}"
-                                    Grid.Row="1" Grid.Column="1"
-                                    Width="60" Height="60" Margin="2"/> 
+                            <RepeatButton Content="↓" FontSize="18"
+                                          Command="{Binding MoveCommand}" CommandParameter="Down"
+                                          IsEnabled="{Binding IsManualMode}"
+                                          Delay="400" Interval="120"
+                                          Grid.Row="1" Grid.Column="1"
+                                          Width="60" Height="60" Margin="2"/>           
+
                             <!-- → -->
-                            <Button Content="→" FontSize="18"
-                                    Command="{Binding MoveCommand}" CommandParameter="Right"
-                                    IsEnabled="{Binding IsManualMode}"
-                                    Grid.Row="1" Grid.Column="2"
-                                    Width="60" Height="60" Margin="2"/> 
+                            <RepeatButton Content="→" FontSize="18"
+                                          Command="{Binding MoveCommand}" CommandParameter="Right"
+                                          IsEnabled="{Binding IsManualMode}"
+                                          Delay="400" Interval="120"
+                                          Grid.Row="1" Grid.Column="2"
+                                          Width="60" Height="60" Margin="2"/>   
                         </Grid>
                     </Border>
                 </Grid>

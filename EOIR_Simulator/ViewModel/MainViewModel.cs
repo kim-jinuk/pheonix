@@ -134,7 +134,7 @@ namespace EOIR_Simulator.ViewModel
                 var dir = dirObj as string;
                 sbyte dx = 0, dy = 0;
 
-                switch (dir)                 // C# 7.3 switch 문
+                switch (dir)
                 {
                     case "Up": dy = 5; break;
                     case "Down": dy = -5; break;
