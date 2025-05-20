@@ -8,7 +8,7 @@ namespace EOIR_Simulator.Service
 {
 
     /// <summary>ICD(6 B) 패킷을 TCP 로 전송 + 연결 상태 알림</summary>
-    public class TcpSender : IDisposable
+    public class CommandSender : IDisposable
     {
         private readonly string _ip;
         private readonly int _port;
@@ -23,7 +23,7 @@ namespace EOIR_Simulator.Service
         /// <summary>연결 상태가 바뀌면 호출됩니다.</summary>
         public event Action<TcpState> StateChanged;
 
-        public TcpSender(string ip, int port)
+        public CommandSender(string ip, int port)
         {
             _ip = ip;
             _port = port;

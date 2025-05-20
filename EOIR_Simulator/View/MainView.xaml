@@ -4,91 +4,77 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:vm="clr-namespace:EOIR_Simulator.ViewModel"
-        xmlns:net="clr-namespace:EOIR_Simulator.Service" 
-        xmlns:sys="clr-namespace:System;assembly=mscorlib"
         xmlns:model="clr-namespace:EOIR_Simulator.Model"
         xmlns:h="clr-namespace:HelixToolkit.Wpf;assembly=HelixToolkit.Wpf"
+        xmlns:sys="clr-namespace:System;assembly=mscorlib"
         mc:Ignorable="d"
         Title="EO/IR GUI" Height="650" Width="1000">
 
-    <!-- 디자인‑타임 VM -->
+    <!-- MainViewModel 한-번만 생성 -->
     <Window.DataContext>
         <vm:MainViewModel/>
     </Window.DataContext>
 
+    <!-- ─ enum 리스트 (Manual / Scan 두 개) ─ -->
     <Window.Resources>
-        <!-- ModeNum 열거형 리스트 제공 -->
-        <ObjectDataProvider x:Key="ModeValues"
-                    MethodName="GetValues"
-                    ObjectType="{x:Type sys:Enum}">
-            <ObjectDataProvider.MethodParameters>
-                <x:Type TypeName="model:ModeNum"/>
-            </ObjectDataProvider.MethodParameters>
-        </ObjectDataProvider>
+        <x:Array x:Key="ModeItems" Type="{x:Type model:ModeNum}">
+            <model:ModeNum>Manual</model:ModeNum>
+            <model:ModeNum>Scan</model:ModeNum>
+        </x:Array>
     </Window.Resources>
 
-    <!-- ▒▒ 레이아웃 ▒▒ -->
+    <!-- ▒▒ 전체 레이아웃 ▒▒ -->
     <Grid>
         <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="*"   />
-            <ColumnDefinition Width="320" />
+            <ColumnDefinition Width="*"  />
+            <ColumnDefinition Width="320"/>
         </Grid.ColumnDefinitions>
 
-        <!-- 좌측: 영상 (Border로 감싸기) -->
-        <Border Grid.Column="0"
-                BorderBrush="Gray"
-                BorderThickness="1"
-                Margin="8, 68, 8, 68">
-            <!-- 3×3 Grid : 가운데 행·열이 선 1px -->
+        <!-- ▼ 좌측 : 영상 + 십자선 -->
+        <Border Grid.Column="0" BorderBrush="Gray" BorderThickness="1"
+                Margin="8,68,8,68">
             <Grid>
                 <Grid.RowDefinitions>
                     <RowDefinition/>
                     <RowDefinition Height="1"/>
-                    <!-- 수평선 -->
                     <RowDefinition/>
                 </Grid.RowDefinitions>
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition/>
                     <ColumnDefinition Width="1"/>
-                    <!-- 수직선 -->
                     <ColumnDefinition/>
                 </Grid.ColumnDefinitions>
 
                 <!-- 영상 -->
-                <Image x:Name="VideoImage"
-                       Source="{Binding CurrentFrame}"
+                <Image Source="{Binding Video.CurrentFrame}"
                        Stretch="Uniform"
                        Grid.RowSpan="3" Grid.ColumnSpan="3"/>
 
-                <!-- 십자선 색 지정 (Brushes.Red 등) -->
+                <!-- 십자선 -->
                 <Rectangle Grid.Row="1" Grid.ColumnSpan="3" Fill="LawnGreen"/>
                 <Rectangle Grid.Column="1" Grid.RowSpan="3" Fill="LawnGreen"/>
             </Grid>
         </Border>
 
-        <ScrollViewer Grid.Column="1"
-                  VerticalScrollBarVisibility="Auto"
-                  HorizontalScrollBarVisibility="Disabled"
-                  Margin="0">
-            <!-- 우측 패널 -->
-            <Grid Grid.Column="1" Margin="0">
+        <!-- ▼ 우측 패널 : ScrollViewer -->
+        <ScrollViewer Grid.Column="1" VerticalScrollBarVisibility="Auto">
+            <Grid Margin="0">
                 <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
                     <!-- (0) 상태 -->
-                    <RowDefinition Height="Auto"/>
-                    <!-- (1) DataGrid -->
                     <RowDefinition Height="130"/>
-                    <!-- (2) 모드 -->
+                    <!-- (1) 객체표 -->
                     <RowDefinition Height="Auto"/>
-                    <!-- (3) 현재 모드 표시 -->
+                    <!-- (2) 모드선택 -->
                     <RowDefinition Height="80"/>
-                    <!-- (4) 방향키 -->
+                    <!-- (3) 현재모드 -->
                     <RowDefinition Height="Auto"/>
+                    <!-- (4) 방향키 -->
                 </Grid.RowDefinitions>
 
-                <!-- (0) 상태 텍스트 -->
+                <!-- (0) 통신 상태 + Connect 버튼 -->
                 <Border Grid.Row="0" BorderBrush="Gray" BorderThickness="1" Margin="2,4,4,2">
                     <Grid>
-                        <!-- 버튼 칸 -->
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition/>
                             <ColumnDefinition Width="Auto"/>
@@ -98,95 +84,63 @@
                             <RowDefinition Height="*"/>
                         </Grid.RowDefinitions>
 
-                        <!-- 타이틀 -->
-                        <TextBlock Grid.Row="0" Grid.ColumnSpan="2"
-                               Text="통신 상태"
-                               HorizontalAlignment="Center"
-                               Margin="0,4"/>
+                        <TextBlock Grid.Row="0" Grid.ColumnSpan="2" Text="통신 상태"
+                                           HorizontalAlignment="Center" Margin="0,4"/>
 
-                        <!-- ▣ Connect 버튼 (우측 상단) -->
                         <Button Grid.Row="0" Grid.Column="1"
-                            Content="{Binding ConnectButtonText}"
-                            Command="{Binding ConnectCommand}"
-                            Width="70"
-                            Margin="0, 2, 8, 2"
-                            ToolTip="EO/IR 연결 또는 해제"/>
+                                Content="{Binding Connection.ConnectButtonText,
+                                                    FallbackValue=Connect}"
+                                Command="{Binding Connection.ConnectCommand}"
+                                Width="70" Margin="0,2,8,2"
+                                ToolTip="EO/IR 연결 또는 해제"/>
 
-                        <!-- 상태 텍스트들 (내부 Border로 감싸기) -->
-                        <StackPanel Grid.Row="1" Margin="8,2" HorizontalAlignment="Stretch" Grid.ColumnSpan="2">
+                        <StackPanel Grid.Row="1" Margin="8,2" Grid.ColumnSpan="2">
                             <Border BorderBrush="Gray" BorderThickness="1" Margin="0,0,0,4">
-                                <TextBlock Text="{Binding ConnectionStatus}"
-                                       FontWeight="Bold"
-                                       Foreground="DodgerBlue"
-                                       HorizontalAlignment="Center"
-                                       Margin="4,2"/>
+                                <TextBlock Text="{Binding Connection.TcpStatus}"
+                                            FontWeight="Bold" Foreground="DodgerBlue"
+                                            HorizontalAlignment="Center" Margin="4,2"/>
+                            </Border>
+                            <Border BorderBrush="Gray" BorderThickness="1" Margin="0,0,0,4">
+                                <TextBlock Text="{Binding Connection.UdpStatus}"
+                                            FontWeight="Bold" Foreground="DarkOrange"
+                                            HorizontalAlignment="Center" Margin="4,2"/>  
                             </Border>
 
-                            <Border BorderBrush="Gray" BorderThickness="1" Margin="0,0,0,8">
-                                <TextBlock Text="{Binding UdpStatus}"
-                                       FontWeight="Bold"
-                                       Foreground="DarkOrange"
-                                       HorizontalAlignment="Center"
-                                       Margin="4,2"/>
-                            </Border>
-                            <!-- 3D 뷰 + 각도 표시 -->
-                            <Border Grid.Row="5" Grid.ColumnSpan="2"
-                                Height="180" Margin="2"
-                                BorderBrush="Gray" BorderThickness="1">
-
-                                <!-- ▣ 레이어용 Grid ─ Helix(밑) + 텍스트(위) -->
+                            <!-- 3-D 뷰와 각도 표시 -->
+                            <Border Height="180" BorderBrush="Gray" BorderThickness="1" Margin="0,0,0,4">
                                 <Grid>
-
-                                    <!-- ── 3D View ─────────────────────────── -->
                                     <h:HelixViewport3D ShowCoordinateSystem="False"
-                                                   ZoomExtentsWhenLoaded="True"
-                                                   Background="Black">
-
+                                                        ZoomExtentsWhenLoaded="True"
+                                                        Background="Black">
                                         <h:SunLight/>
-
-                                        <!-- 얇은 축 -->
                                         <h:LinesVisual3D Color="Red"  Thickness="0.6" Points="0 0 0 1 0 0"/>
                                         <h:LinesVisual3D Color="Lime" Thickness="0.6" Points="0 0 0 0 1 0"/>
                                         <h:LinesVisual3D Color="Blue" Thickness="0.6" Points="0 0 0 0 0 1"/>
-
-                                        <!-- 방향 화살표 -->
                                         <h:ArrowVisual3D Point1="0 0 0"
-                                                     Point2="{Binding DirPoint}"
-                                                     Diameter="0.02"
-                                                     Fill="White"/>
-
-                                        <!-- 수직 면 -->
-                                        <h:BoxVisual3D Width="0.3" Height="0.3" Length="0.3"
-                                                   Fill="#60AAFF00"
-                                                   Transform="{Binding CubeTransform}"/>
+                                                                 Point2="{Binding Angle.DirPoint}"
+                                                                 Diameter="0.02" Fill="White"/>
+                                        <h:BoxVisual3D Width="0.3" Height="0.1" Length="0.3"
+                                                               Fill="#60AAFF00"
+                                                               Transform="{Binding Angle.CubeTransform}"/>
                                     </h:HelixViewport3D>
 
-                                    <!-- ── 각도 텍스트 (왼쪽 상단 Overlay) ── -->
-                                    <StackPanel HorizontalAlignment="Left"
-                                            VerticalAlignment="Top"
-                                            Margin="6">
-                                        <TextBlock Text="{Binding AngleX, StringFormat='Yaw  = {0}°'}"
-                                               FontSize="10" Foreground="White"/>
-                                        <TextBlock Text="{Binding AngleY, StringFormat='Pitch = {0}°'}"
-                                               FontSize="10" Foreground="White"/>
+                                    <!-- 각도 텍스트 -->
+                                    <StackPanel HorizontalAlignment="Left" VerticalAlignment="Top" Margin="6">
+                                        <TextBlock Text="{Binding Angle.AngleX, StringFormat='Yaw  {0}°'}"
+                                                           FontSize="10" Foreground="White"/>
+                                        <TextBlock Text="{Binding Angle.AngleY, StringFormat='Pitch {0}°'}"
+                                                           FontSize="10" Foreground="White"/>
                                     </StackPanel>
-
                                 </Grid>
                             </Border>
-
-
                         </StackPanel>
                     </Grid>
                 </Border>
 
-                <!-- (1) DataGrid -->
-                <DataGrid x:Name="MetaGrid" Grid.Row="1"
-                      ItemsSource="{Binding Objects}"
-                      AutoGenerateColumns="False"
-                      IsReadOnly="True"
-                      HeadersVisibility="Column"
-                      MaxHeight="120"
-                      Margin="2,2,4,2">
+                <!-- (1) 메타데이터 -->
+                <DataGrid Grid.Row="1" Margin="2,2,4,2"
+                              ItemsSource="{Binding Video.Objects}"
+                              AutoGenerateColumns="False" IsReadOnly="True" HeadersVisibility="Column">
                     <DataGrid.Columns>
                         <DataGridTextColumn Header="Cls"  Binding="{Binding Class}" Width="50"/>
                         <DataGridTextColumn Header="X"    Binding="{Binding X}"     Width="50"/>
@@ -200,41 +154,31 @@
                 <!-- (2) 모드 선택 -->
                 <Border Grid.Row="2" BorderBrush="Gray" BorderThickness="1" Margin="2,0,4,2">
                     <StackPanel Orientation="Horizontal" Margin="0,4"
-                HorizontalAlignment="Center">
+                                HorizontalAlignment="Center">
                         <TextBlock Text="모드 선택 :" VerticalAlignment="Center" Margin="0,0,6,0"/>
                         <ComboBox SelectedValue="{Binding Mode, Mode=TwoWay}"
-                              SelectedValuePath="Tag"
-                              Width="120">
+                                  SelectedValuePath="Tag"
+                                  Width="120">  
                             <ComboBoxItem Content="수동 모드 (기본)" Tag="{x:Static model:ModeNum.Manual}" />
                             <ComboBoxItem Content="스캔 모드"   Tag="{x:Static model:ModeNum.Scan}"   />
-                            <ComboBoxItem Content="추적 모드 (자동)" Tag="{x:Static model:ModeNum.Track}" IsEnabled="False"/>
+                            <ComboBoxItem Content="추적 모드 (자동)" Tag="{x:Static model:ModeNum.Track}" 
+                                          IsEnabled="False"/>
                         </ComboBox>
                     </StackPanel>
                 </Border>
 
-                <!-- (3)  현재 모드 표시 -->
+                <!-- (3) 현재 모드 표시 -->
                 <Border Grid.Row="3" BorderBrush="Gray" BorderThickness="1" Margin="2,2,4,2">
                     <Grid>
                         <Grid.RowDefinitions>
                             <RowDefinition Height="Auto"/>
-                            <RowDefinition Height="*" />
+                            <RowDefinition/>
                         </Grid.RowDefinitions>
-                        <!-- 상단 텍스트 -->
-                        <TextBlock Grid.Row="0"
-                               Text="현재 모드"
-                               HorizontalAlignment="Center"
-                               Margin="0,4"/>
-                        <!-- 내부 Border -->
-                        <Border Grid.Row="1"
-                            BorderBrush="Gray"
-                            BorderThickness="1"
-                            Margin="8, 0, 8, 8"
-                            HorizontalAlignment="Stretch"
-                            VerticalAlignment="Stretch">
-                            <TextBlock Text="{Binding Mode}"
-                                   FontWeight="Bold"
-                                   HorizontalAlignment="Center"
-                                   VerticalAlignment="Center"/>
+                        <TextBlock Grid.Row="0" Text="현재 모드" HorizontalAlignment="Center" Margin="0,4"/>
+                        <Border Grid.Row="1" BorderBrush="Gray" BorderThickness="1"
+                                    Margin="8,0,8,8" HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
+                            <TextBlock Text="{Binding Mode}" FontWeight="Bold"
+                                           HorizontalAlignment="Center" VerticalAlignment="Center"/>
                         </Border>
                     </Grid>
                 </Border>
@@ -244,18 +188,12 @@
                     <Grid>
                         <Grid.RowDefinitions>
                             <RowDefinition Height="Auto"/>
-                            <!-- 타이틀 영역 -->
-                            <RowDefinition Height="*"/>
-                            <!-- 버튼 영역 -->
+                            <RowDefinition/>
                         </Grid.RowDefinitions>
+                        <TextBlock Grid.Row="0" Text="서보 제어" HorizontalAlignment="Center" Margin="0,4"/>
 
-                        <!-- 타이틀 -->
-                        <TextBlock Grid.Row="0" Text="서보 제어"
-                   HorizontalAlignment="Center"
-                   Margin="0,4"/>
-
-                        <!-- 버튼 영역 Border -->
-                        <Border Grid.Row="1" BorderBrush="Gray" BorderThickness="1" Margin="8, 0, 8, 8" Padding="4">
+                        <Border Grid.Row="1" BorderBrush="Gray" BorderThickness="1"
+                                    Margin="8,0,8,8" Padding="4">
                             <Grid HorizontalAlignment="Center" VerticalAlignment="Center">
                                 <Grid.RowDefinitions>
                                     <RowDefinition/>
@@ -264,40 +202,32 @@
                                 <Grid.ColumnDefinitions>
                                     <ColumnDefinition/>
                                     <ColumnDefinition/>
-                                    <ColumnDefinition Width="Auto"/>
+                                    <ColumnDefinition/>
                                 </Grid.ColumnDefinitions>
 
-                                <!-- ↑ -->
-                                <RepeatButton Content="↑" FontSize="18"
-                                          Command="{Binding MoveCommand}" CommandParameter="Up"
-                                          IsEnabled="{Binding IsManualMode}"
-                                          Delay="400" Interval="120"
-                                          Grid.Row="0" Grid.Column="1"
-                                          Width="60" Height="60" Margin="2"/>
+                                <RepeatButton Content="↑" FontSize="18" 
+                                              Command="{Binding MoveCommand}" CommandParameter="Up"
+                                              IsEnabled="{Binding IsManualMode}"
+                                              Delay="400" Interval="120"
+                                              Grid.Row="0" Grid.Column="1" Width="60" Height="60" Margin="2"/>
 
-                                <!-- ← -->
-                                <RepeatButton Content="←" FontSize="18"
-                                          Command="{Binding MoveCommand}" CommandParameter="Left"
-                                          IsEnabled="{Binding IsManualMode}"
-                                          Delay="400" Interval="120"
-                                          Grid.Row="1" Grid.Column="0"
-                                          Width="60" Height="60" Margin="2"/>
+                                <RepeatButton Content="←" FontSize="18" 
+                                              Command="{Binding MoveCommand}" CommandParameter="Left"
+                                              IsEnabled="{Binding IsManualMode}" 
+                                              Delay="400" Interval="120"
+                                              Grid.Row="1" Grid.Column="0" Width="60" Height="60" Margin="2"/>
 
-                                <!-- ↓ -->
-                                <RepeatButton Content="↓" FontSize="18"
-                                          Command="{Binding MoveCommand}" CommandParameter="Down"
-                                          IsEnabled="{Binding IsManualMode}"
-                                          Delay="400" Interval="120"
-                                          Grid.Row="1" Grid.Column="1"
-                                          Width="60" Height="60" Margin="2"/>
+                                <RepeatButton Content="↓" FontSize="18" 
+                                              Command="{Binding MoveCommand}" CommandParameter="Down"
+                                              IsEnabled="{Binding IsManualMode}" 
+                                              Delay="400" Interval="120"
+                                              Grid.Row="1" Grid.Column="1" Width="60" Height="60" Margin="2"/>
 
-                                <!-- → -->
-                                <RepeatButton Content="→" FontSize="18"
-                                          Command="{Binding MoveCommand}" CommandParameter="Right"
-                                          IsEnabled="{Binding IsManualMode}"
-                                          Delay="400" Interval="120"
-                                          Grid.Row="1" Grid.Column="2"
-                                          Width="60" Height="60" Margin="2"/>
+                                <RepeatButton Content="→" FontSize="18" 
+                                              Command="{Binding MoveCommand}" CommandParameter="Right"
+                                              IsEnabled="{Binding IsManualMode}"
+                                              Delay="400" Interval="120"
+                                              Grid.Row="1" Grid.Column="2" Width="60" Height="60" Margin="2"/>
                             </Grid>
                         </Border>
                     </Grid>

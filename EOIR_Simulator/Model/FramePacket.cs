@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace EOIR_Simulator.Model
 {
-    internal class FramePacket
+    public class FramePacket
     {
         public uint FrameId;
         public List<ObjectInfo> Objects;

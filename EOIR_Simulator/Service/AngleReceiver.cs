@@ -1,12 +1,13 @@
 ﻿using System;
+using System.Diagnostics;
 using System.Net.Sockets;
 using System.Threading;
 using System.Threading.Tasks;
-using System.Diagnostics;
+using EOIR_Simulator.Model;
 
 namespace EOIR_Simulator.Service
 {
-    public class TcpAngleReceiver : IDisposable
+    public class AngleReceiver : IDisposable
     {
         private readonly int _port;
         private TcpListener _listener;
@@ -14,7 +15,7 @@ namespace EOIR_Simulator.Service
 
         public event Action<byte, byte> AngleReceived;  // angle_x, angle_y
 
-        public TcpAngleReceiver(int port)
+        public AngleReceiver(int port)
         {
             _port = port;
         }
@@ -24,7 +25,7 @@ namespace EOIR_Simulator.Service
             _cts = new CancellationTokenSource();
             _listener = new TcpListener(System.Net.IPAddress.Any, _port);
             _listener.Start();
-
+            //Debug.WriteLine($"[TCP] listening {_port}"); // Debug
             Task.Run(() => AcceptLoopAsync(_cts.Token));
         }
 
@@ -42,7 +43,7 @@ namespace EOIR_Simulator.Service
             catch (ObjectDisposedException) { /* Listener stopped */ }
             catch (Exception ex)
             {
-                Debug.WriteLine($"[TCP Angle Receiver] 수신 실패: {ex.Message}");
+                Console.WriteLine($"[TCP Angle Receiver] 수신 실패: {ex.Message}");
             }
         }
 
@@ -66,7 +67,7 @@ namespace EOIR_Simulator.Service
                     {
                         byte angleX = buf[2];
                         byte angleY = buf[3];
-                        Console.WriteLine($"[RECV] angleX = {angleX}, angleY = {angleY}");
+                        //Console.WriteLine($"[RECV] angleX = {angleX}, angleY = {angleY}");
                         AngleReceived?.Invoke(angleX, angleY);
                     }
                     else

@@ -11,7 +11,7 @@ namespace EOIR_Simulator.Model
     public enum TcpState { Disconnected, Connecting, Connected }
 
     public enum UdpState { Disconnected, Connected }
-    internal class Enums
+    public class Enums
     {
     }
 }

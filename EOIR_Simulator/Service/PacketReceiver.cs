@@ -10,7 +10,7 @@ using EOIR_Simulator.Model;
 
 namespace EOIR_Simulator.Service
 {
-    internal class UDPReceiver : IDisposable
+    public class PacketReceiver : IDisposable
     {
         private readonly UdpClient _client;
         private readonly object _lock = new object();
@@ -21,9 +21,10 @@ namespace EOIR_Simulator.Service
 
         public event Action<FramePacket> FrameArrived;
 
-        public UDPReceiver(int port)
+        public PacketReceiver(int port)
         {
             _client = new UdpClient(port);
+            System.Diagnostics.Debug.WriteLine($"[UDP] bind {port}"); //Debug
         }
 
         public void Start()

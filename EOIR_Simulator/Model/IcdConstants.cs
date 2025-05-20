@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace EOIR_Simulator.Model
 {
-    internal static class IcdConstants
+    public static class IcdConstants
     {
         public const uint MAGIC_WORD = 0xDEADBEEF;
         public const int HEADER_SIZE = 53;

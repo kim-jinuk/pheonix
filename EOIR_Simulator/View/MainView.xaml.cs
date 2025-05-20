@@ -18,16 +18,9 @@ namespace EOIR_Simulator.View
 {
     public partial class MainView : Window
     {
-        private readonly MainViewModel _vm;
-
         public MainView()
         {
             InitializeComponent();
-
-            if (!DesignerProperties.GetIsInDesignMode(this))
-            {
-                _vm = (MainViewModel)DataContext;   // XAML에서 생성된 VM 참조
-            }
         }  
     }
 }
