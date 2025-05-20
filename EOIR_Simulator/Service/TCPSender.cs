@@ -89,19 +89,19 @@ namespace EOIR_Simulator.Service
             }
         }
 
-        public void Disconnect() 
-        { 
-            if (State == TcpState.Connected) 
-            { 
-                try 
-                { 
-                    _stream?.Close(); _client?.Close(); 
-                } 
-                finally 
-                { 
-                    State = TcpState.Disconnected; StateChanged?.Invoke(State); 
-                } 
-            } 
+        public void Disconnect()
+        {
+            if (State == TcpState.Connected)
+            {
+                try
+                {
+                    _stream?.Close(); _client?.Close();
+                }
+                finally
+                {
+                    State = TcpState.Disconnected; StateChanged?.Invoke(State);
+                }
+            }
         }
 
         public void Dispose()

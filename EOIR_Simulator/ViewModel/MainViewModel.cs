@@ -5,6 +5,7 @@ using System.ComponentModel;
 using System.Data;
 using System.IO;
 using System.Runtime.CompilerServices;
+using System.Security.Cryptography;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Input;
@@ -12,14 +13,19 @@ using System.Windows.Media.Imaging;
 using EOIR_Simulator.Model;
 using EOIR_Simulator.Service;
 using EOIR_Simulator.Utils;
+using System.Windows.Media.Media3D;
 
 namespace EOIR_Simulator.ViewModel
 {
     public class MainViewModel : INotifyPropertyChanged
     {
+        /*──────── 예외처리(Application.Current.Dispatcher) ────────*/
+        private readonly System.Windows.Threading.Dispatcher _ui;
+
         /*──────── 네트워크 서비스 ────────*/
-        private readonly TcpSender _tcp = new TcpSender("192.168.223.130", 9999);  // 필요 시 IP/PORT 수정
+        private readonly TcpSender _tcp = new TcpSender("192.168.1.3", 9999);  // 필요 시 IP/PORT 수정
         private readonly UDPReceiver _rx;
+        private readonly TcpAngleReceiver _angleReceiver;
 
         /*──────── 소켓 연결 속성 및 Command 선언 ────────*/
         public bool IsTcpConnected => _tcp.IsConnected;
@@ -29,6 +35,12 @@ namespace EOIR_Simulator.ViewModel
 
         /* ★ MotorController 주입 */
         private readonly MotorController _motor;
+
+        /* ───── Direction 벡터 (X, Y, Z) ───── */
+        private double _dx, _dy, _dz;
+        public double DirX { get => _dx; private set { _dx = value; OnPropertyChanged(); } }
+        public double DirY { get => _dy; private set { _dy = value; OnPropertyChanged(); } }
+        public double DirZ { get => _dz; private set { _dz = value; OnPropertyChanged(); } }
 
         /*──────── 모드 · 방향키 ───────────*/
         private ModeNum _mode = ModeNum.Manual;
@@ -94,6 +106,81 @@ namespace EOIR_Simulator.ViewModel
             private set { _connText = value; OnPropertyChanged(nameof(ConnectionStatus)); }
         }
 
+        /*──────── 각도 수신용 속성 (바인딩 가능) ────────*/
+        private byte _angleX;
+        private byte _angleY;
+        //방향 벡터
+        private Point3D _dirPoint = new Point3D(0, 0, 1);
+        public Point3D DirPoint
+        {
+            get => _dirPoint;
+            private set { _dirPoint = value; OnPropertyChanged(); }
+        }
+        //방향 벡터와 수직인 면
+        private Vector3D _dirVector = new Vector3D(0, 0, 1);
+        public Vector3D DirVector            // ★ Plane 의 Normal 바인딩용
+        {
+            get => _dirVector;
+            private set { _dirVector = value; OnPropertyChanged(); }
+        }
+
+        //방향 벡터와 수직인 정육면체
+        private Transform3D _cubeTransform = Transform3D.Identity;
+        public Transform3D CubeTransform
+        {
+            get => _cubeTransform;
+            private set { _cubeTransform = value; OnPropertyChanged(); }
+        }
+
+        /* 방향 업데이트 메서드 */
+        private void UpdateDirection()
+        {
+            const double RAD = Math.PI / 180.0;
+
+            /* ①  보드 값 → 라디안 */
+            double yawRad = (AngleX - 90) * RAD;   // Yaw = AngleX
+            double pitchRad = (AngleY - 90) * RAD;   // Pitch = AngleY
+
+            /* ②  단위 방향벡터  (수평=+X, 위=+Z) */
+            double cosP = Math.Cos(pitchRad);
+            double dx = cosP * Math.Cos(yawRad);    // X
+            double dy = cosP * Math.Sin(yawRad);    // Y
+            double dz = Math.Sin(pitchRad);         // Z
+
+            DirPoint = new Point3D(dx, dy, dz);
+            DirVector = new Vector3D(dx, dy, dz);
+
+            /* ③  회전(Z축 → DirVector) */
+            Vector3D zAxis = new Vector3D(0, 0, 1);
+            Vector3D axis = Vector3D.CrossProduct(zAxis, DirVector);
+            double angle = Vector3D.AngleBetween(zAxis, DirVector);   // deg
+
+            var rot = axis.Length < 1e-6
+                      ? Transform3D.Identity
+                      : new RotateTransform3D(new AxisAngleRotation3D(axis, angle));
+
+            /* ④  화살표 방향으로 0.35 전진 */
+            var trans = new TranslateTransform3D(dx * 0.35, dy * 0.35, dz * 0.35);
+
+            /* ⑤  복합 변환 */
+            var grp = new Transform3DGroup();
+            grp.Children.Add(rot);
+            grp.Children.Add(trans);
+            CubeTransform = grp;
+        }
+
+        public byte AngleX
+        {
+            get => _angleX;
+            set { _angleX = value; OnPropertyChanged(); UpdateDirection(); }
+        }
+        public byte AngleY
+        {
+            get => _angleY;
+            set { _angleY = value; OnPropertyChanged(); UpdateDirection(); }
+        }
+
+
         /* ───────── FrameArrived 핸들러 ───────── */
         private void OnFrameArrived(FramePacket fp)
         {
@@ -111,12 +198,11 @@ namespace EOIR_Simulator.ViewModel
 
             _lastUdp = DateTime.UtcNow;
 
-            if (Application.Current == null ||
-                Application.Current.Dispatcher.HasShutdownStarted)
+            if (Application.Current == null || _ui.HasShutdownStarted)
                 return;                         // 앱이 닫히는 중이면 무시
 
             // UI 스레드로 배포
-            Application.Current.Dispatcher.BeginInvoke(new Action(() =>
+            _ui.BeginInvoke(new Action(() =>
             {
                 CurrentFrame = bmp;
                 ReplaceObjects(fp.Objects);
@@ -126,6 +212,10 @@ namespace EOIR_Simulator.ViewModel
         /*──────── ④ 생성자 ─────────────────*/
         public MainViewModel()
         {
+            /*──────── 예외처리(BeginInvoke[AngleX,AngleY]) ────────*/
+            _ui = Application.Current?.Dispatcher ??            // 정상 실행
+                  System.Windows.Threading.Dispatcher.CurrentDispatcher; // 디자인/테스트
+
             _motor = new MotorController(_tcp);
 
             MoveCommand = new RelayCommand(async dirObj =>
@@ -133,13 +223,14 @@ namespace EOIR_Simulator.ViewModel
                 if (!IsManualMode) return;
                 var dir = dirObj as string;
                 sbyte dx = 0, dy = 0;
+                int speed = 10;
 
                 switch (dir)
                 {
-                    case "Up": dy = 5; break;
-                    case "Down": dy = -5; break;
-                    case "Left": dx = -5; break;
-                    case "Right": dx = 5; break;
+                    case "Up": dy = (sbyte)speed; break;
+                    case "Down": dy = (sbyte)-speed; break;
+                    case "Left": dx = (sbyte)speed; break;
+                    case "Right": dx = (sbyte)-speed; break;
                 }
                 await _tcp.SendAsync(ModeNum.Manual, dx, dy);
             });
@@ -147,6 +238,20 @@ namespace EOIR_Simulator.ViewModel
             _rx = new UDPReceiver(IcdConstants.UDP_PORT);
             _rx.FrameArrived += OnFrameArrived;
             _rx.Start();
+
+            // TCPAngleReceiver
+            _angleReceiver = new TcpAngleReceiver(9998);
+            _angleReceiver.AngleReceived += (x, y) =>
+            {
+                if (_ui.HasShutdownStarted) return;     // 종료 중엔 무시
+
+                _ui.BeginInvoke(new Action(() =>
+                {
+                    AngleX = x;   // setter → UpdateDirection()
+                    AngleY = y;
+                }));
+            };
+            _angleReceiver.Start();
 
             /* ── 500 ms 주기 타이머로 상태 검사 ── */
             var timer = new System.Timers.Timer(500);
@@ -181,5 +286,13 @@ namespace EOIR_Simulator.ViewModel
         public event PropertyChangedEventHandler PropertyChanged;
         private void OnPropertyChanged([CallerMemberName] string p = null)
             => PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(p));
+
+        /*──────── 종료 처리 ─────────*/
+        public void Dispose()
+        {
+            _rx?.Dispose();
+            _tcp?.Dispose();
+            _angleReceiver?.Dispose();
+        }
     }
 }
