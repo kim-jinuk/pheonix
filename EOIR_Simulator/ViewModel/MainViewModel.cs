@@ -62,6 +62,15 @@ namespace EOIR_Simulator.ViewModel
             }
         }
 
+        /* 상태 표시 */
+        public SimState State          // ← UI 에 바인딩할 속성
+        {
+            get => _state;
+            private set { _state = value; Raise(nameof(State)); }
+        }
+        private SimState _state = SimState.Idle;
+
+        /* 생성자 */
         public MainViewModel()
         {
             _tcp = new CommandSender("192.168.1.3", 9999);
@@ -81,6 +90,22 @@ namespace EOIR_Simulator.ViewModel
                 var step = DirToStep(dirObj as string);
                 _tcp.SendAsync(ModeNum.Manual, step.dx, step.dy).ConfigureAwait(false);
             });
+
+            // TCP 연결 상태 → Simulator State 로 변환
+            _tcp.StateChanged += s =>
+            {
+                if (s == TcpState.Connected)
+                {
+                    State = SimState.Operating;
+                    Video.AcceptFrames = true;
+                }
+                else
+                {
+                    State = SimState.Idle;
+                    Video.AcceptFrames = false;
+                    Video.Clear();                 // ← 프레임·메타 지우기
+                }
+            };
         }
 
         private static (sbyte dx, sbyte dy) DirToStep(string dir)

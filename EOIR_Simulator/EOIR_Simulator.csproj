@@ -72,6 +72,7 @@
     <Compile Include="Service\PacketReceiver.cs" />
     <Compile Include="Utils\ObservableObject.cs" />
     <Compile Include="Utils\RelayCommand.cs" />
+    <Compile Include="Utils\StateToTextConverter.cs" />
     <Compile Include="ViewModel\AngleVM.cs" />
     <Compile Include="ViewModel\ConnectionVM.cs" />
     <Compile Include="ViewModel\MainViewModel.cs" />

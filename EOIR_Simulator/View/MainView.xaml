@@ -5,10 +5,11 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:vm="clr-namespace:EOIR_Simulator.ViewModel"
         xmlns:model="clr-namespace:EOIR_Simulator.Model"
+        xmlns:utils="clr-namespace:EOIR_Simulator.Utils"
         xmlns:h="clr-namespace:HelixToolkit.Wpf;assembly=HelixToolkit.Wpf"
         xmlns:sys="clr-namespace:System;assembly=mscorlib"
         mc:Ignorable="d"
-        Title="EO/IR GUI" Height="650" Width="1000">
+        Title="EO/IR GUI" Height="720" Width="1050">
 
     <!-- MainViewModel 한-번만 생성 -->
     <Window.DataContext>
@@ -17,6 +18,7 @@
 
     <!-- ─ enum 리스트 (Manual / Scan 두 개) ─ -->
     <Window.Resources>
+        <utils:StateToTextConverter x:Key="StateText"/>
         <x:Array x:Key="ModeItems" Type="{x:Type model:ModeNum}">
             <model:ModeNum>Manual</model:ModeNum>
             <model:ModeNum>Scan</model:ModeNum>
@@ -29,6 +31,14 @@
             <ColumnDefinition Width="*"  />
             <ColumnDefinition Width="320"/>
         </Grid.ColumnDefinitions>
+
+        <!-- 운용 상태 텍스트 -->
+        <TextBlock Text="{Binding State, Converter={StaticResource StateText}}"
+           FontSize="14" FontWeight="Bold"
+           Margin="8"
+           HorizontalAlignment="Left"
+           VerticalAlignment="Top"
+           Panel.ZIndex="99"/>
 
         <!-- ▼ 좌측 : 영상 + 십자선 -->
         <Border Grid.Column="0" BorderBrush="Gray" BorderThickness="1"

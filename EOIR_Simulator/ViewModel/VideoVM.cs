@@ -15,6 +15,8 @@ namespace EOIR_Simulator.ViewModel
         private readonly System.Windows.Threading.Dispatcher _ui =
             Application.Current.Dispatcher;
 
+        public bool AcceptFrames { get; set; } = true;
+
         private BitmapSource _currentFrame;
         public BitmapSource CurrentFrame
         {
@@ -33,6 +35,8 @@ namespace EOIR_Simulator.ViewModel
 
         private void OnFrame(FramePacket fp)
         {
+            if (!AcceptFrames) return;  //IDLE일 때 무시
+
             BitmapImage bmp;
             using (var ms = new MemoryStream(fp.JpegBytes))
             {
@@ -52,6 +56,12 @@ namespace EOIR_Simulator.ViewModel
                 foreach (var o in fp.Objects)
                     Objects.Add(o);
             }));
+        }
+
+        public void Clear()
+        {
+            CurrentFrame = null;
+            Objects.Clear();
         }
     }
 }

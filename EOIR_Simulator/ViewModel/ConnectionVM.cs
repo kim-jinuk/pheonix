@@ -58,7 +58,7 @@ namespace EOIR_Simulator.ViewModel
                 {
                     _tcp.Disconnect();
                     _lastUdp = DateTime.MinValue;          // 즉시 타임아웃 유도
-                    //UdpStatus = "UDP : Disconnected";
+                    UdpStatus = "UDP : Disconnected";
                 }
                 else
                     await _tcp.ConnectAsync();
