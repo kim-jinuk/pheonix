@@ -10,7 +10,7 @@
 struct TcpCommand {
     uint8_t mode_num;
     int8_t dx, dy;
-    int8_t tracking_id;
+    // int8_t tracking_id;
 };
 
 class TcpReceiver {
