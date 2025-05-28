@@ -8,8 +8,10 @@ namespace EOIR_Simulator.Model
 {
     public class FramePacket
     {
-        public uint FrameId;
-        public List<ObjectInfo> Objects;
-        public byte[] JpegBytes;
+        public uint FrameId { get; set; }
+        public byte[] JpegBytes { get; set; }
+        public byte Nx { get; set; }
+        public byte Ny { get; set; }
+        public List<ObjectInfo> Objects { get; set; }
     }
 }

@@ -8,8 +8,7 @@ namespace EOIR_Simulator.Utils
         public event PropertyChangedEventHandler PropertyChanged;
         protected void RaisePropertyChanged([CallerMemberName] string prop = null)
         {
-            var h = PropertyChanged;
-            if (h != null) h(this, new PropertyChangedEventArgs(prop));
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(prop));
         }
     }
 }

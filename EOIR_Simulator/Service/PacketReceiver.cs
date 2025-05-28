@@ -24,7 +24,7 @@ namespace EOIR_Simulator.Service
         public PacketReceiver(int port)
         {
             _client = new UdpClient(port);
-            System.Diagnostics.Debug.WriteLine($"[UDP] bind {port}"); //Debug
+            Debug.WriteLine($"[UDP] bind {port}"); //Debug
         }
 
         public void Start()
@@ -53,14 +53,35 @@ namespace EOIR_Simulator.Service
                     UdpReceiveResult res = await _client.ReceiveAsync();
                     byte[] pkt = res.Buffer;
 
-                    if (pkt.Length < 8) continue;
+                    if (pkt.Length < IcdConstants.PAYLOAD_OFFSET) continue;
 
-                    uint frameId = (uint)(pkt[0] << 24 | pkt[1] << 16 | pkt[2] << 8 | pkt[3]);
-                    ushort packetId = (ushort)((pkt[4] << 8) | pkt[5]);
-                    ushort totalPackets = (ushort)((pkt[6] << 8) | pkt[7]);
+                    // [0-3] Magic Word
+                    uint magic = (uint)(pkt[0] << 24 | pkt[1] << 16 | pkt[2] << 8 | pkt[3]);
+                    if (magic != IcdConstants.MAGIC_WORD) continue; // 식별자 불일치
 
-                    byte[] payload = new byte[pkt.Length - 8];
-                    Buffer.BlockCopy(pkt, 8, payload, 0, payload.Length);
+                    // [4-7] Frame ID
+                    uint frameId = (uint)(pkt[4] << 24 | pkt[5] << 16 | pkt[6] << 8 | pkt[7]);
+                    // [8-9] Packet ID
+                    ushort packetId = (ushort)((pkt[8] << 8) | pkt[9]);
+                    // [10-11] Total Packets
+                    ushort totalPackets = (ushort)((pkt[10] << 8) | pkt[11]);
+
+                    // [12-13] Motor angle
+                    byte nx = pkt[12];
+                    byte ny = pkt[13];
+
+                    Console.WriteLine($"[DEBUG] nx = {nx}, ny = {ny}");
+
+                    // [14 - ...] Object Info
+                    List<ObjectInfo> objects = new List<ObjectInfo>();
+                    for (int i = 0; i < 5; i++)
+                    {
+                        objects.Add(ObjectInfo.FromBytes(pkt, 14 + i * IcdConstants.OBJECTINFO_SIZE));
+                    }
+
+                    // [offset 이후] Payload
+                    byte[] payload = new byte[pkt.Length - IcdConstants.PAYLOAD_OFFSET];
+                    Buffer.BlockCopy(pkt, IcdConstants.PAYLOAD_OFFSET, payload, 0, payload.Length);
 
                     lock (_lock)
                     {
@@ -68,25 +89,18 @@ namespace EOIR_Simulator.Service
                         {
                             _framePackets[frameId] = new Dictionary<ushort, byte[]>();
                             _expectedCounts[frameId] = totalPackets;
-                            //Debug.WriteLine($"[INIT] frame {frameId} 시작 (총 {totalPackets}개)");
                         }
 
-                        var dict = _framePackets[frameId];
-                        dict[packetId] = payload;
+                        _framePackets[frameId][packetId] = payload;
 
-                        //Debug.WriteLine($"[RECV] frame {frameId} - packet {packetId}/{totalPackets}");
-
-                        // 수신률 70% 이상이면 바로 보여주기
-                        if (dict.Count >= totalPackets * 1)
+                        if (_framePackets[frameId].Count >= totalPackets)
                         {
-                            //Debug.WriteLine($"[PARTIAL] frame {frameId} 조립 시도 ({dict.Count}/{totalPackets})");
-
                             using (var ms = new MemoryStream())
                             {
                                 for (ushort i = 0; i < totalPackets; i++)
                                 {
-                                    if (dict.ContainsKey(i))
-                                        ms.Write(dict[i], 0, dict[i].Length);
+                                    if (_framePackets[frameId].TryGetValue(i, out var part))
+                                        ms.Write(part, 0, part.Length);
                                 }
 
                                 byte[] jpeg = ms.ToArray();
@@ -94,7 +108,9 @@ namespace EOIR_Simulator.Service
                                 {
                                     FrameId = frameId,
                                     JpegBytes = jpeg,
-                                    Objects = new List<ObjectInfo>()
+                                    Nx = nx,
+                                    Ny = ny,
+                                    Objects = objects
                                 });
                             }
 

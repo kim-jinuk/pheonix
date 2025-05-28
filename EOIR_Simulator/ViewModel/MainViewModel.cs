@@ -22,7 +22,6 @@ namespace EOIR_Simulator.ViewModel
         /* 서비스 한 번만 생성 */
         private readonly CommandSender _tcp;
         private readonly PacketReceiver _vRx;
-        private readonly AngleReceiver _aRx;
 
         /* 하위 VM */
         public VideoVM Video { get; }
@@ -73,15 +72,13 @@ namespace EOIR_Simulator.ViewModel
         /* 생성자 */
         public MainViewModel()
         {
-            _tcp = new CommandSender("192.168.1.3", 9999);
+            _tcp = new CommandSender(IcdConstants.TCP_IP, IcdConstants.TCP_PORT);
             _vRx = new PacketReceiver(IcdConstants.UDP_PORT);
-            _aRx = new AngleReceiver(9998);
 
             _vRx.Start();
-            _aRx.Start();
 
             Video = new VideoVM(_vRx);
-            Angle = new AngleVM(_aRx);
+            Angle = new AngleVM(_vRx);
             Connection = new ConnectionVM(_tcp, _vRx);
 
             MoveCommand = new RelayCommand(dirObj =>
@@ -108,12 +105,13 @@ namespace EOIR_Simulator.ViewModel
             };
         }
 
+        //수동 모터 제어
         private static (sbyte dx, sbyte dy) DirToStep(string dir)
         {
             switch (dir)
             {
-                case "Up": return (0, +10);
-                case "Down": return (0, -10);
+                case "Up": return (0, -10);
+                case "Down": return (0, +10);
                 case "Left": return (+10, 0);
                 case "Right": return (-10, 0);
                 default: return (0, 0);

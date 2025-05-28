@@ -67,7 +67,6 @@
     <Compile Include="Model\ObjectInfo.cs" />
     <Compile Include="Service\DirectionHelper.cs" />
     <Compile Include="Service\MotorController.cs" />
-    <Compile Include="Service\AngleReceiver.cs" />
     <Compile Include="Service\CommandSender.cs" />
     <Compile Include="Service\PacketReceiver.cs" />
     <Compile Include="Utils\ObservableObject.cs" />
@@ -109,6 +108,7 @@
       <LastGenOutput>Resources.Designer.cs</LastGenOutput>
       <SubType>Designer</SubType>
     </EmbeddedResource>
+    <None Include="ClassDiagram1.cd" />
     <None Include="packages.config" />
     <None Include="Properties\Settings.settings">
       <Generator>SettingsSingleFileGenerator</Generator>

@@ -8,8 +8,7 @@ namespace EOIR_Simulator.ViewModel
 {
     public sealed class AngleVM : ObservableObject
     {
-        private readonly System.Windows.Threading.Dispatcher _ui =
-            Application.Current.Dispatcher;
+        private readonly System.Windows.Threading.Dispatcher _ui = Application.Current.Dispatcher;
 
         private byte _angleX, _angleY;
         public byte AngleX { get => _angleX; private set { _angleX = value; RaisePropertyChanged(); } }
@@ -24,16 +23,15 @@ namespace EOIR_Simulator.ViewModel
         private Transform3D _cubeTransform = Transform3D.Identity;
         public Transform3D CubeTransform { get => _cubeTransform; private set { _cubeTransform = value; RaisePropertyChanged(); } }
 
-        public AngleVM(AngleReceiver rx)
+        public AngleVM(PacketReceiver rx)
         {
-            rx.AngleReceived += (x, y) =>
+            rx.FrameArrived += fp =>
             {
                 if (_ui.HasShutdownStarted) return;
+                byte x = fp.Nx;      // yaw
+                byte y = fp.Ny;      // pitch
 
-                _ui.BeginInvoke(new Action(() =>
-                {
-                    Update(x, y);
-                }));
+                _ui.BeginInvoke(new Action(() => Update(x, y)));
             };
         }
 
