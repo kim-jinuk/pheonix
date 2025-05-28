@@ -217,25 +217,25 @@
 
                                 <RepeatButton Content="↑" FontSize="18" 
                                               Command="{Binding MoveCommand}" CommandParameter="Up"
-                                              IsEnabled="{Binding IsManualMode}"
+                                              IsEnabled="{Binding CanUp}"
                                               Delay="400" Interval="120"
                                               Grid.Row="0" Grid.Column="1" Width="60" Height="60" Margin="2"/>
 
                                 <RepeatButton Content="←" FontSize="18" 
                                               Command="{Binding MoveCommand}" CommandParameter="Left"
-                                              IsEnabled="{Binding IsManualMode}" 
+                                              IsEnabled="{Binding CanLeft}" 
                                               Delay="400" Interval="120"
                                               Grid.Row="1" Grid.Column="0" Width="60" Height="60" Margin="2"/>
 
                                 <RepeatButton Content="↓" FontSize="18" 
                                               Command="{Binding MoveCommand}" CommandParameter="Down"
-                                              IsEnabled="{Binding IsManualMode}" 
+                                              IsEnabled="{Binding CanDown}" 
                                               Delay="400" Interval="120"
                                               Grid.Row="1" Grid.Column="1" Width="60" Height="60" Margin="2"/>
 
                                 <RepeatButton Content="→" FontSize="18" 
                                               Command="{Binding MoveCommand}" CommandParameter="Right"
-                                              IsEnabled="{Binding IsManualMode}"
+                                              IsEnabled="{Binding CanRight}"
                                               Delay="400" Interval="120"
                                               Grid.Row="1" Grid.Column="2" Width="60" Height="60" Margin="2"/>
                             </Grid>

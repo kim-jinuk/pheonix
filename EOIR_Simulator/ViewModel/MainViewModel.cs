@@ -28,6 +28,12 @@ namespace EOIR_Simulator.ViewModel
         public AngleVM Angle { get; }
         public ConnectionVM Connection { get; }
 
+        /* 서보 한계각에 의한 버튼 활성화/비활성화 */
+        public bool CanLeft => IsManualMode && Angle.AngleX < 180;
+        public bool CanRight => IsManualMode && Angle.AngleX > 0;
+        public bool CanUp => IsManualMode && Angle.AngleY > 0;
+        public bool CanDown => IsManualMode && Angle.AngleY < 180;
+
         /* 이동 */
         public ICommand MoveCommand { get; }
 
@@ -103,6 +109,27 @@ namespace EOIR_Simulator.ViewModel
                     Video.Clear();                 // ← 프레임·메타 지우기
                 }
             };
+
+            /* Angle 값 변할 때 → 버튼 갱신 */
+            Angle.PropertyChanged += (s, e) =>
+            {
+                if (e.PropertyName == nameof(AngleVM.AngleX) ||
+                    e.PropertyName == nameof(AngleVM.AngleY))
+                {
+                    Raise(nameof(CanLeft)); Raise(nameof(CanRight));
+                    Raise(nameof(CanUp)); Raise(nameof(CanDown));
+                }
+            };
+
+            /* Mode 바뀔 때도 함께 갱신 */
+            PropertyChanged += (s, e) =>
+            {
+                if (e.PropertyName == nameof(IsManualMode))
+                {
+                    Raise(nameof(CanLeft)); Raise(nameof(CanRight));
+                    Raise(nameof(CanUp)); Raise(nameof(CanDown));
+                }
+            };
         }
 
         //수동 모터 제어
@@ -110,10 +137,10 @@ namespace EOIR_Simulator.ViewModel
         {
             switch (dir)
             {
-                case "Up": return (0, -10);
-                case "Down": return (0, +10);
-                case "Left": return (+10, 0);
-                case "Right": return (-10, 0);
+                case "Up": return (0, -5);
+                case "Down": return (0, +5);
+                case "Left": return (+5, 0);
+                case "Right": return (-5, 0);
                 default: return (0, 0);
             }
         }
