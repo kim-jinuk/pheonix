@@ -6,7 +6,7 @@
 #include <vector>
 #include <mutex>
 #include <condition_variable>
-
+#include <string>
 
 SystemInfo sysInfo;
 StateSync statesync;
@@ -16,6 +16,8 @@ std::mutex pos_mtx;
 
 TargetInfo targetInfo;
 
+std::vector<std::string> State_str={"CHECKING", "IDLE", "RUNNING"};
+std::vector<std::string> Mode_str={"SCAN", "MANUAL", "TRACKING"};
 
 
 

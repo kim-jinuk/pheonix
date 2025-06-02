@@ -4,11 +4,12 @@
 #include "running_control_csc/globals.hpp"
 #include "running_control_csc/BIT.hpp"
 #include "running_control_csc/globals.hpp"
+#include "running_control_csc/Logger.hpp"
 #include <chrono>
 #include <thread>
 #include <atomic>
 #include <iostream>
-void Task_sendState(TcpReceiver& tcpchannel , BIT& bit ) {
+void Task_sendState(TcpReceiver& tcpchannel , BIT& bit ,Logger& logger ) {
     
 
     while (true) {
@@ -26,11 +27,21 @@ void Task_sendState(TcpReceiver& tcpchannel , BIT& bit ) {
             int state, mode;
             bool device_ok = sysInfo.CAM_state && sysInfo.TPU_state;
             state=static_cast<int>(sysInfo.current_state.load()); // 0 CHECKING , 1 IDLE , 2 RUNNGING
+            
             if (!device_ok) 
+            {
                 sysInfo.current_state.store(State::CHECKING);
-            else {
+                if (state!=static_cast<int>(State::CHECKING)) {
+                    logger.logStateChange(State_str[state],State_str[static_cast<int>(State::CHECKING)]);
+                }
+            }
+            
+            else 
+            {   
                 if (state==static_cast<int>(State::CHECKING)) {
                     sysInfo.current_state.store(State::IDLE);
+                    logger.logStateChange(State_str[static_cast<int>(State::CHECKING)],State_str[static_cast<int>(State::IDLE)]);
+                    state=static_cast<int>(State::IDLE);
                 }
             }
 
@@ -38,41 +49,44 @@ void Task_sendState(TcpReceiver& tcpchannel , BIT& bit ) {
             
             
 
-            if (/*!send*/ !tcpchannel.sendState(sysInfo.TPU_state, sysInfo.CAM_state, state,mode)) {
+            if (!tcpchannel.sendState(sysInfo.TPU_state, sysInfo.CAM_state, state,mode)) {
                 sysInfo.TCP_connect.store(false); 
-
                 sysInfo.current_state.store(State::CHECKING);
+                logger.logStateChange(State_str[state], State_str[static_cast<int>(State::CHECKING)]);
             }
+            
+            logger.flush();
             /*
             delay
             */
             std::this_thread::sleep_for(std::chrono::milliseconds(300));
         }
-
+        // tcp 연결 끊겼을 시 flush
+        logger.flush();
     }
 
 }
 
-void Task_receiveCmd(TcpReceiver& tcpchannel , MotorControl& motorcontrol) {
+void Task_receiveCmd(TcpReceiver& tcpchannel , MotorControl& motorcontrol,Logger& logger) {
 
     while (true) {
         
         while (sysInfo.TCP_connect.load()==true) {
             TcpCommand cmd;
             
-            if (/*recv 메서드*/tcpchannel.TcpParsing(cmd)) {
+            if (tcpchannel.TcpParsing(cmd)) {
                 std::cout << "parsing" <<std::endl;
                 int state=static_cast<int>(sysInfo.current_state.load());
-
-
                 if (state==static_cast<int>(State::CHECKING)) {
                     continue;
                 }
+
                 else if (state==static_cast<int>(State::IDLE)) {
                     {
                      std::lock_guard<std::mutex> lock(statesync.mtx);
                      sysInfo.current_state.store(State::RUNNING);
                      sysInfo.current_mode.store(Mode::MANUAL);
+                     logger.logStateChange(State_str[state],State_str[static_cast<int>(State::RUNNING)]);
                     }
                     statesync.cv.notify_all();
                     continue;
@@ -94,10 +108,12 @@ void Task_receiveCmd(TcpReceiver& tcpchannel , MotorControl& motorcontrol) {
                 
             }
 
+            // 수신 실패 시
             else 
             {
                 sysInfo.TCP_connect.store(false);
                 sysInfo.current_state.store(State::CHECKING);
+                logger.logStateChange(State_str[static_cast<int>(State::RUNNING)],State_str[static_cast<int>(State::CHECKING)]);
             }
         }
 
@@ -105,7 +121,7 @@ void Task_receiveCmd(TcpReceiver& tcpchannel , MotorControl& motorcontrol) {
 
 }
 
-void Task_sendData() {
+void Task_sendData(Logger& logger) {
 
 
     while (true) {
@@ -120,6 +136,24 @@ void Task_sendData() {
              /*
              TODO
              */
+             /*
+             1. 이미지 , 추론 데이터 받기
+             2. 모터 각도 읽기
+             3. 로깅
+             4. 송신
+             */
+
+             // 2
+            Position _pos;
+            {
+              std::lock_guard<std::mutex> lock(pos_mtx);
+              _pos=pos;
+            }
+            
+            // 3
+            logger.logOperation( Mode_str[static_cast<int>(sysInfo.current_mode.load())] ,"meta" ,_pos.yaw, _pos.pitch);
+
+            std::this_thread::sleep_for(std::chrono::milliseconds(30));
         }
     }
 

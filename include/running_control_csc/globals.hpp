@@ -5,6 +5,7 @@
 #include <vector>
 #include <mutex>
 #include <condition_variable>
+#include <string>
 
 enum class State {
     CHECKING,
@@ -40,6 +41,7 @@ struct SystemInfo {
     std::atomic<State> current_state=State::CHECKING;
     std::atomic<Mode> current_mode=Mode::MANUAL;
     std::atomic<bool> TCP_connect=false;
+    bool logging_enabled=false;
     bool TPU_state=false;
     bool CAM_state=false;
     
@@ -50,6 +52,9 @@ struct StateSync {
     std::condition_variable cv;
 };
 
+
+extern std::vector<std::string> State_str;
+extern std::vector<std::string> Mode_str;
 
 extern StateSync statesync;
 extern SystemInfo sysInfo;

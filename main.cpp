@@ -6,6 +6,7 @@
 #include "running_control_csc/MotorControl.hpp"
 #include "running_control_csc/CfgLoader.hpp"
 #include "running_control_csc/Task.hpp"
+#include "running_control_csc/Logger.hpp"
 
 #include <signal.h>
 #include <thread>
@@ -42,6 +43,7 @@ int main() {
     BIT bit;
     TcpReceiver tcpchannel(tcp_port); //listen socket 생성
     MotorControl motorcontrol;
+    Logger logger("./logs");
     /**
         초기 장치 점검 수행행
     */
@@ -49,9 +51,10 @@ int main() {
     /**
         thread 생성
     */
-    std::thread sendStateThread(Task_sendState, std::ref(tcpchannel), std::ref(bit)); 
-    std::thread receiveCmdThread(Task_receiveCmd, std::ref(tcpchannel),std::ref(motorcontrol)); 
+    std::thread sendStateThread(Task_sendState, std::ref(tcpchannel), std::ref(bit), std::ref(logger)); 
+    std::thread receiveCmdThread(Task_receiveCmd, std::ref(tcpchannel),std::ref(motorcontrol),std::ref(logger)); 
     std::thread moveMotorThread(Task_moveMotor,std::ref(motorcontrol)); 
+    std::thread sendDataThread(Task_sendData,std::ref(logger));
     
     
     while (true) {

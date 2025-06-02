@@ -14,6 +14,7 @@ add_executable(thread_structure main.cpp
     src/running_control_csc/Task.cpp
     src/running_control_csc/MotorControl.cpp 
     #src/device_control_csc/pwm.cpp
+    src/running_control_csc/Logger.cpp 
     )
 
 
