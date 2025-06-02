@@ -4,6 +4,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Net;
 using System.Net.Sockets;
+using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks;
 using EOIR_Simulator.Model;
@@ -12,6 +13,17 @@ namespace EOIR_Simulator.Service
 {
     public class PacketReceiver : IDisposable
     {
+        //C++ 연동
+        [DllImport("FrameSender.dll", CallingConvention = CallingConvention.Cdecl)]
+        public static extern void InitSender(string pipeline);
+
+        [DllImport("FrameSender.dll", CallingConvention = CallingConvention.Cdecl)]
+        public static extern void SendFrame(byte[] jpegData, int length);
+
+        [DllImport("FrameSender.dll", CallingConvention = CallingConvention.Cdecl)]
+        public static extern void CloseSender();
+
+
         private readonly UdpClient _client;
         private readonly object _lock = new object();
         private CancellationTokenSource _cts;
@@ -30,6 +42,11 @@ namespace EOIR_Simulator.Service
         public void Start()
         {
             _cts = new CancellationTokenSource();
+            // GStreamer 송신 파이프라인 초기화
+            //InitSender("appsrc name=mysrc ! videoconvert ! x264enc tune=zerolatency bitrate=500 speed-preset=ultrafast ! rtph264pay ! udpsink host=127.0.0.1 port=5005");
+            InitSender("appsrc name=mysrc is-live=true block=false format=GST_FORMAT_TIME ! " +
+                       "videoconvert ! video/x-raw,format=I420 ! openh264enc bitrate=500000 gop-size=30 ! rtph264pay config-interval=1 pt=96 ! " +
+                       "udpsink host=192.168.1.9 port=5005 sync=false async=false"); //bind-address=192.168.1.10
             Task.Run(() => ReceiveLoop(_cts.Token));
         }
 
@@ -41,6 +58,7 @@ namespace EOIR_Simulator.Service
         public void Dispose()
         {
             Stop();
+            CloseSender(); // GStreamer 파이프라인 종료
             _client?.Dispose();
         }
 
@@ -69,8 +87,6 @@ namespace EOIR_Simulator.Service
                     // [12-13] Motor angle
                     byte nx = pkt[12];
                     byte ny = pkt[13];
-
-                    Console.WriteLine($"[DEBUG] nx = {nx}, ny = {ny}");
 
                     // [14 - ...] Object Info
                     List<ObjectInfo> objects = new List<ObjectInfo>();
@@ -104,6 +120,22 @@ namespace EOIR_Simulator.Service
                                 }
 
                                 byte[] jpeg = ms.ToArray();
+
+                                // SendFrame 비동기 호출 (별도 스레드)
+                                Task.Run(() =>
+                                {
+                                    try
+                                    {
+                                        Debug.WriteLine($"[SendFrame] 호출 - {jpeg.Length} bytes");
+                                        SendFrame(jpeg, jpeg.Length);
+                                    }
+                                    catch (Exception ex)
+                                    {
+                                        Debug.WriteLine($"[SendFrame ERROR] {ex.Message}");
+                                    }
+                                    Task.Delay(33);
+                                });
+
                                 FrameArrived?.Invoke(new FramePacket
                                 {
                                     FrameId = frameId,

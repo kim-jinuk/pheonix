@@ -3,6 +3,7 @@ using System.Windows.Input;
 using System.Timers;
 using EOIR_Simulator.Service;
 using EOIR_Simulator.Utils;
+using EOIR_Simulator.Model;
 
 namespace EOIR_Simulator.ViewModel
 {
@@ -56,6 +57,7 @@ namespace EOIR_Simulator.ViewModel
             {
                 if (_tcp.IsConnected)
                 {
+                    await _tcp.SendAsync(ModeNum.Manual, 0, 0);
                     _tcp.Disconnect();
                     _lastUdp = DateTime.MinValue;          // 즉시 타임아웃 유도
                     //UdpStatus = "UDP : Disconnected";

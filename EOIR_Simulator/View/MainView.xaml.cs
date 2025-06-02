@@ -21,6 +21,13 @@ namespace EOIR_Simulator.View
         public MainView()
         {
             InitializeComponent();
-        }  
+        }
+        protected override async void OnClosing(CancelEventArgs e)
+        {
+            base.OnClosing(e);
+
+            if (DataContext is MainViewModel vm)
+                await vm.ShutdownAsync();   // 아래 새 메서드
+        }
     }
 }

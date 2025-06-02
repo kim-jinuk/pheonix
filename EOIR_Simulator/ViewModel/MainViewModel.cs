@@ -99,6 +99,7 @@ namespace EOIR_Simulator.ViewModel
             {
                 if (s == TcpState.Connected)
                 {
+                    Mode = ModeNum.Manual;        //TCP 연결시 모드 초기화
                     State = SimState.Operating;
                     Video.AcceptFrames = true;
                 }
@@ -143,6 +144,19 @@ namespace EOIR_Simulator.ViewModel
                 case "Right": return (-5, 0);
                 default: return (0, 0);
             }
+        }
+
+        public async Task ShutdownAsync()
+        {
+            try
+            {
+                /* ② 정상 종료 직전에 Manual 한번 더 */
+                await _tcp.SendAsync(ModeNum.Manual, 0, 0);
+                await Task.Delay(50);              // 1 RTT 여유
+            }
+            catch { /* 로그만 */ }
+
+            _tcp.Disconnect();                     // 소켓 정리
         }
     }
 }

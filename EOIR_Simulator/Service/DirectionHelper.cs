@@ -16,7 +16,7 @@ namespace EOIR_Simulator.Service
             const double RAD = System.Math.PI / 180.0;
 
             double yaw = (angleX - 90) * RAD;  // X축(빨강) 기준
-            double pitch = (angleY - 90) * RAD;
+            double pitch = (90 - angleY) * RAD;
 
             double cosP = System.Math.Cos(pitch);
             double dx = cosP * System.Math.Cos(yaw);

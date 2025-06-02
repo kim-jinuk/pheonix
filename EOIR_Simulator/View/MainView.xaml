@@ -9,7 +9,7 @@
         xmlns:h="clr-namespace:HelixToolkit.Wpf;assembly=HelixToolkit.Wpf"
         xmlns:sys="clr-namespace:System;assembly=mscorlib"
         mc:Ignorable="d"
-        Title="EO/IR GUI" Height="720" Width="1050">
+        Title="EO/IR GUI" Height="750" Width="1100">
 
     <!-- MainViewModel 한-번만 생성 -->
     <Window.DataContext>
@@ -72,7 +72,7 @@
                 <Grid.RowDefinitions>
                     <RowDefinition Height="Auto"/>
                     <!-- (0) 상태 -->
-                    <RowDefinition Height="130"/>
+                    <RowDefinition Height="140"/>
                     <!-- (1) 객체표 -->
                     <RowDefinition Height="Auto"/>
                     <!-- (2) 모드선택 -->
