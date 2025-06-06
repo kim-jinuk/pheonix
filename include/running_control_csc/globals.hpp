@@ -17,7 +17,8 @@ enum class State: uint8_t {
 enum class Mode : uint8_t{
     SCAN,
     MANUAL,
-    TRACKING
+    TRACKING,
+    DEFAULT
 };
 
 struct FrameData {
@@ -82,8 +83,8 @@ struct  __attribute__((packed)) TcpState {
 
 
 struct Position {
-    int yaw = 0;
-    int pitch = 0;
+    int yaw =90;
+    int pitch = 90;
 };
 
 struct TargetInfo {

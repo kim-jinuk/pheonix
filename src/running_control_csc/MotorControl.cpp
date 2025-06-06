@@ -10,12 +10,6 @@
     SCAN
 */
 
-enum MotorBit {
-    YAW_CW     = 1 << 0,
-    YAW_CCW    = 1 << 1,
-    PITCH_UP   = 1 << 2,
-    PITCH_DOWN = 1 << 3
-};
 
 SCANMotor::SCANMotor() {
     int _yaw;
@@ -44,7 +38,7 @@ SCANMotor::~SCANMotor() {
 void SCANMotor::updateAngle() {
 
     std::cout << "SCANMotor logic"<<std::endl;
-    static const int STEP = 5;
+    static const int STEP = 1;
 
     if (pos.yaw >= sweep_high || pos.yaw <= sweep_low) {
         direction *= -1;  // 반대로 스캔
@@ -107,7 +101,7 @@ void TrackingMotor::updateAngle() {
     int dx= WIDTH/2 - targetPos.first;
     int dy= HEIGHT/2 - targetPos.second;
     
-    std::cout << "[TRACKING] dx: " << dx << ", dy: " << dy << std::endl;
+   // std::cout << "[TRACKING] dx: " << dx << ", dy: " << dy << std::endl;
 
     
 
@@ -118,13 +112,13 @@ void TrackingMotor::updateAngle() {
 */
 void MotorControl::init_pos() {
     std::cout << "init motor"<<std::endl;
-   // pwm_init();
+    pwm_init();
 }
 
 void MotorControl::move() {
-    std::cout << "move motor"<<std::endl;
-    std::cout << "Yaw:" <<pos.yaw << " Pitch:" << pos.pitch <<std::endl;
-   // pwm(pos.yaw,pos.pitch);
+   // std::cout << "move motor"<<std::endl;
+  //  std::cout << "Yaw:" <<pos.yaw << " Pitch:" << pos.pitch <<std::endl;
+    pwm(pos.yaw,pos.pitch);
 }
 
 void MotorControl::setStrategy(uint8_t new_mode) {

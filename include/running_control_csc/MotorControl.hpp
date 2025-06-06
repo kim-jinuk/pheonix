@@ -49,7 +49,7 @@ class MotorControl {
 private:
     std::shared_ptr<IMotorStrategy> strategy;
     std::mutex strategy_mtx;
-    int current_type=static_cast<int>(Mode::MANUAL);
+    uint8_t current_type=static_cast<uint8_t>(Mode::DEFAULT);
 public :
     void init_pos();
     void move();

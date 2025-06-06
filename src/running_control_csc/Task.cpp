@@ -54,7 +54,7 @@ void Task_sendState(TcpStateChannel& tcpStateChannel , BIT& bit ,Logger& logger 
                 tcpstate.Ny=pos.pitch;
             }
 
-            std::cout << "state :"<< tcpstate.state_num<< " mode :" <<tcpstate.mode_num <<std::endl;
+           // std::cout << "state :"<< tcpstate.state_num<< " mode :" <<tcpstate.mode_num <<std::endl;
             if (!tcpStateChannel.sendState(tcpstate)) {
                 sysInfo.TCP_state_connected.store(false); 
                 std::cout <<"send state failed" <<std::endl;
@@ -63,7 +63,7 @@ void Task_sendState(TcpStateChannel& tcpStateChannel , BIT& bit ,Logger& logger 
             }
             
 
-            std::this_thread::sleep_for(std::chrono::milliseconds(300));
+            std::this_thread::sleep_for(std::chrono::milliseconds(100));
           //  std::cout <<"send loop doing..." <<std::endl;
         }
 
@@ -101,7 +101,7 @@ void Task_receiveCmd(TcpCmdChannel& tcpCmdChannel , MotorControl& motorcontrol,L
         }
         statesync.cv.notify_all();
         
-
+        motorcontrol.setStrategy(static_cast<uint8_t>(Mode::MANUAL));
         while (sysInfo.current_state.load()==State::RUNNING) {
             TcpCommand cmd;
             std::cout << "CMD thread Wait CMD... " << std::endl;
@@ -111,8 +111,8 @@ void Task_receiveCmd(TcpCmdChannel& tcpCmdChannel , MotorControl& motorcontrol,L
                 sysInfo.current_state.store(State::IDLE);
                 break;
             }
-            std::cout << "flag : " << static_cast<int>(cmd.cmd_flag) \
-            << " cmd : " << static_cast<int>(cmd.cmd) << std::endl;
+            // std::cout << "flag : " << static_cast<int>(cmd.cmd_flag) \
+            // << " cmd : " << static_cast<int>(cmd.cmd) << std::endl;
             switch(cmd.cmd_flag) {
                 case Mode_num :
                     std::cout<< "change mode"<<std::endl;
@@ -221,7 +221,7 @@ void Task_moveMotor(MotorControl& motorcontrol) {
             전략이 실행되는 곳
             */
             motorcontrol.runStrategy();
-            std::this_thread::sleep_for(std::chrono::milliseconds(1000));
+            std::this_thread::sleep_for(std::chrono::milliseconds(100));
         }
     }
 
