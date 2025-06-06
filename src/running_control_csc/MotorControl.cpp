@@ -1,12 +1,21 @@
 
 #include "running_control_csc/MotorControl.hpp"
 #include "running_control_csc/pwm.hpp"
+#include "running_control_csc/globals.hpp"
 #include <iostream>
-
-#define MOTOR
+#include <cmath>
+#define WIDTH 640
+#define HEIGHT 480
 /* 
     SCAN
 */
+
+enum MotorBit {
+    YAW_CW     = 1 << 0,
+    YAW_CCW    = 1 << 1,
+    PITCH_UP   = 1 << 2,
+    PITCH_DOWN = 1 << 3
+};
 
 SCANMotor::SCANMotor() {
     int _yaw;
@@ -53,9 +62,9 @@ ManualMotor::ManualMotor() {
 ManualMotor::~ManualMotor() {
     std::cout <<"ManualMotor destroyed " << std::endl;
 }
-void ManualMotor::enqueueDelta(int dx, int dy) {
+void ManualMotor::enqueueDelta(uint8_t delta) {
         std::lock_guard<std::mutex> lock(queue_mtx);
-        delta_queue.push({dx, dy});
+        delta_queue.push(delta);
 }
 
 void ManualMotor::updateAngle() {
@@ -66,30 +75,47 @@ void ManualMotor::updateAngle() {
 
         if (!delta_queue.empty()) 
         {
-            auto [dx, dy] = delta_queue.front();
-            pos.yaw+=dx;
-            pos.pitch+=dy;
+            uint8_t cmd = delta_queue.front();
+            uint8_t motor_id = (cmd >> 1 ) & 0x01;
+            int8_t direction= (cmd & 0x01) ? -5: 5;
+
+            if (motor_id == 0) {
+                pos.yaw += direction;
+                if (pos.yaw>=180)
+                    pos.yaw=180;
+            }
+                
+        
+            else {
+                pos.pitch += direction;
+                if (pos.yaw<=0)
+                    pos.yaw=0;
+            }
             delta_queue.pop();
         }
 
     }
-
-    if (pos.yaw>=180)
-        pos.yaw=180;
-    if (pos.yaw<=0)
-        pos.yaw=0;
 }
 
 /* 
     Tracking
 */
 void TrackingMotor::updateAngle() {
-     std::cout << "TRACKING logic"<<std::endl;
+    std::cout << "TRACKING logic"<<std::endl;
+    std::pair<int,int> targetPos=targetInfo.getXY();;
+
+    int dx= WIDTH/2 - targetPos.first;
+    int dy= HEIGHT/2 - targetPos.second;
+    
+    std::cout << "[TRACKING] dx: " << dx << ", dy: " << dy << std::endl;
+
     
 
 }
 
-
+/*
+    MotorControl
+*/
 void MotorControl::init_pos() {
     std::cout << "init motor"<<std::endl;
    // pwm_init();
@@ -101,7 +127,7 @@ void MotorControl::move() {
    // pwm(pos.yaw,pos.pitch);
 }
 
-void MotorControl::setStrategy(int new_mode) {
+void MotorControl::setStrategy(uint8_t new_mode) {
     
 
     if (current_type == new_mode) {
@@ -111,13 +137,13 @@ void MotorControl::setStrategy(int new_mode) {
     {
         std::lock_guard<std::mutex> lock(strategy_mtx);
         switch (new_mode) {
-            case static_cast<int>(Mode::SCAN):
+            case static_cast<uint8_t>(Mode::SCAN):
                 strategy = std::make_shared<SCANMotor>();
                 break;
-            case static_cast<int>(Mode::MANUAL):
+            case static_cast<uint8_t>(Mode::MANUAL):
                 strategy = std::make_shared<ManualMotor>();
                 break;
-            case static_cast<int>(Mode::TRACKING):
+            case static_cast<uint8_t>(Mode::TRACKING):
                 strategy = std::make_shared<TrackingMotor>();
                 break;
             default:
@@ -144,12 +170,12 @@ void MotorControl::runStrategy() {
         
     }
 }
-void MotorControl::enqueueDeltaIfManual(int dx, int dy) {
+void MotorControl::enqueueDeltaIfManual(uint8_t delta) {
 
     std::lock_guard<std::mutex> lock(strategy_mtx);
         if (current_type == static_cast<int>(Mode::MANUAL)) {
             if (auto manual = std::dynamic_pointer_cast<ManualMotor>(strategy)) {
-                manual->enqueueDelta(dx, dy);
+                manual->enqueueDelta(delta);
             }
         }
     

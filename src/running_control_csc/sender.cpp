@@ -12,9 +12,6 @@ constexpr int NUM_OBJECTS = 5;
 constexpr int META_SIZE = 2 + sizeof(ObjectInfo) * NUM_OBJECTS;
 constexpr int PAYLOAD_OFFSET = HEADER_SIZE + META_SIZE;
 
-DataSender::DataSender(const std::string& ip, int udp_port)
-    : UdpSender(ip, udp_port) {}
-
 
 UdpSender::UdpSender(const std::string& ip, int port) : frame_id(0) {
     sock_ = socket(AF_INET, SOCK_DGRAM, 0);

@@ -15,6 +15,8 @@ Position pos;
 std::mutex pos_mtx;
 
 TargetInfo targetInfo;
+Cam_opt cam_opt;
+
 
 std::vector<std::string> State_str={"CHECKING", "IDLE", "RUNNING"};
 std::vector<std::string> Mode_str={"SCAN", "MANUAL", "TRACKING"};

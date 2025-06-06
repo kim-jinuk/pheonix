@@ -35,13 +35,13 @@ int main() {
 
     std::string udp_ip = cfg.get("UDP_IP");
     int udp_port = std::stoi(cfg.get("UDP_PORT"));
-    int tcp_port = std::stoi(cfg.get("TCP_PORT"));
-
-    std::cout << "[MAIN] Config loaded: UDP(" << udp_ip << ":" << udp_port << "), TCP(" << tcp_port << ")\n";
+    int tcp_cmd_port = std::stoi(cfg.get("TCP_CMD_PORT"));
+    int tcp_state_port = std::stoi(cfg.get("TCP_STATE_PORT"));
     
     // 객체 생성 - CFGLoader 때문에 main쪽에서 객체 생성함
     BIT bit;
-    TcpReceiver tcpchannel(tcp_port); //listen socket 생성
+    TcpCmdChannel tcpCmdChannel(tcp_cmd_port); //listen socket 생성
+    TcpStateChannel tcpStateChannel(tcp_state_port);
     MotorControl motorcontrol;
     Logger logger("./logs");
     /**
@@ -51,10 +51,10 @@ int main() {
     /**
         thread 생성
     */
-    std::thread sendStateThread(Task_sendState, std::ref(tcpchannel), std::ref(bit), std::ref(logger)); 
-    std::thread receiveCmdThread(Task_receiveCmd, std::ref(tcpchannel),std::ref(motorcontrol),std::ref(logger)); 
+    std::thread sendStateThread(Task_sendState, std::ref(tcpStateChannel), std::ref(bit), std::ref(logger)); 
+    std::thread receiveCmdThread(Task_receiveCmd, std::ref(tcpCmdChannel),std::ref(motorcontrol),std::ref(logger)); 
     std::thread moveMotorThread(Task_moveMotor,std::ref(motorcontrol)); 
-    std::thread sendDataThread(Task_sendData,std::ref(logger));
+    //std::thread sendDataThread(Task_sendData,std::ref(logger));
     
     
     while (true) {

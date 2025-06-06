@@ -11,7 +11,8 @@
 class Logger {
 
 private :
-    std::ofstream file;
+    std::ofstream file_cmd;
+    std::ofstream file_meta;
     std::mutex log_mtx;
 
 public :

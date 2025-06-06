@@ -2,7 +2,7 @@
 #include <fcntl.h>
 #include <unistd.h>
 #include <sys/stat.h>
-#include "device_control_csc/pwm.hpp"
+#include "running_control_csc/pwm.hpp"
 
 #define PWMCHIP "/sys/class/pwm/pwmchip0"
 #define PERIOD_NS "40000000"  // 20ms

@@ -28,13 +28,13 @@ public:
 class ManualMotor : public IMotorStrategy {
 
 private:
-    std::queue<std::pair<int, int>> delta_queue;
+    std::queue<uint8_t> delta_queue;
     std::mutex queue_mtx;
 public:
     ManualMotor();
     ~ManualMotor();
     void updateAngle() override;
-    void enqueueDelta(int dx, int dy);
+    void enqueueDelta(uint8_t delta);
 };
 
 /* === TRACKING 전략 === */
@@ -53,7 +53,7 @@ private:
 public :
     void init_pos();
     void move();
-    void setStrategy(int new_mode);
+    void setStrategy(uint8_t new_mode);
     void runStrategy();
-    void enqueueDeltaIfManual(int dx, int dy);
+    void enqueueDeltaIfManual(uint8_t delta);
 };

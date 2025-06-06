@@ -30,11 +30,4 @@ private:
     std::vector<uint8_t> payload_;
 };
 
-
-
-class DataSender : UdpSender{
-
-    public :
-    DataSender(const std::string& ip, int udp_port);
-};
 #endif

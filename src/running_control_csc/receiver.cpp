@@ -6,7 +6,7 @@
 
 using namespace std;
 
-TcpReceiver::TcpReceiver(int port) : server_sock(-1), client_sock(-1), client_len(sizeof(client_addr)) {
+TcpBase::TcpBase(int port) : server_sock(-1), client_sock(-1), client_len(sizeof(client_addr)) {
     server_sock = socket(AF_INET, SOCK_STREAM, 0);
     if (server_sock < 0) {
         perror("[ERR] socket");
@@ -33,13 +33,14 @@ TcpReceiver::TcpReceiver(int port) : server_sock(-1), client_sock(-1), client_le
     cout << "[TCP] Server listening on port " << port << "\n";
 }
 
-TcpReceiver::~TcpReceiver() {
+TcpBase::~TcpBase() {
     if (client_sock != -1) close(client_sock);
     if (server_sock != -1) close(server_sock);
 }
 
-bool TcpReceiver::AcceptConnection() {
-    client_sock = accept(server_sock, (sockaddr*)&client_addr, &client_len);
+bool TcpBase::AcceptConnection() {
+
+   client_sock = accept(server_sock, (sockaddr*)&client_addr, &client_len);
     if (client_sock < 0) {
         perror("[ERR] accept");
         return false;
@@ -48,56 +49,70 @@ bool TcpReceiver::AcceptConnection() {
     return true;
 }
 
-bool TcpReceiver::TcpParsing(TcpCommand& cmd) {
-    uint8_t buf[6];
-    ssize_t n = recv(client_sock, buf, sizeof(buf), 0);
-    if (n != sizeof(buf)) {
+TcpCmdChannel::TcpCmdChannel(int port) : TcpBase(port) {}
+
+bool TcpCmdChannel::TcpParsing(TcpCommand& cmd) {
+    TcpCommand tmp;
+    ssize_t n = recv(client_sock, &tmp, sizeof(tmp), 0);
+    if (n != sizeof(tmp)) {
         cout << "[TCP] Client disconnected or invalid packet\n";
         close(client_sock);
-        client_sock = -1;
+        client_sock=-1;
         return false;
     }
 
-    uint16_t magic = (buf[0] << 8) | buf[1];
-    if (magic != TCP_MAGIC_WORD) {
+    if (tmp.magic_word!=TCP_MAGIC_WORD) {
         cerr << "[TCP] Invalid magic word\n";
         return true; // 연결은 유지하되 skip
     }
-
-    cmd.mode_num = buf[2];
-    cmd.dx = static_cast<int8_t>(buf[4]);
-    cmd.dy = static_cast<int8_t>(buf[5]);
-
+    cmd=tmp;
     return true;
 }
 
-void TcpReceiver::TcpAngle(int8_t dx, int8_t dy) {
-    cout << "[RCV] dx=" << (int)dx << ", dy=" << (int)dy << "\n";
-    // 실제 angle 제어는 외부에서 처리
+bool TcpCmdChannel::sendAck(TcpCommand&  cmd) {
+    if (client_sock<0){
+        return false;
+    }
+    
+    if (send(client_sock,&cmd,sizeof(cmd),0)<0) {
+        close(client_sock);
+        client_sock=-1;
+        return false;
+    }
+    
+    return true;
 }
 
+TcpStateChannel::TcpStateChannel(int port) : TcpBase(port) {}
 
-bool TcpReceiver::sendState(bool tpu, bool cam, int state, int mode) {
+
+bool TcpStateChannel::sendState(TcpState& stateinfo) {
     if (client_sock < 0)
         return false;
 
-    
-    uint8_t payload = 0;
-    payload |= (static_cast<uint8_t>(mode)  & 0x03) << 4; // Bit 5~4
-    payload |= (static_cast<uint8_t>(state) & 0x03) << 2; // Bit 3~2
-    payload |= (tpu ? 0x02 : 0x00); // Bit 1
-    payload |= (cam ? 0x01 : 0x00); // Bit 0
-
-    uint8_t buf[3];
-    buf[0] = (TCP_MAGIC_WORD >> 8) & 0xFF; // 0xA5
-    buf[1] = TCP_MAGIC_WORD & 0xFF;        // 0xA5
-    buf[2] = payload;
-
-    if (send(client_sock, buf, sizeof(buf), 0) < 0 ) {
+    if (send(client_sock, &stateinfo, sizeof(TcpState), 0) < 0 ) {
         close(client_sock);
         client_sock = -1;
         return false;
     }
     
     return true;
+}
+
+bool TcpStateChannel::getAck(TcpState&  stateinfo) {
+    TcpState tmp;
+    ssize_t n = recv(client_sock, &tmp, sizeof(tmp), 0);
+    if (n != sizeof(tmp)) {
+        cout << "[TCP] Client disconnected or invalid packet\n";
+        close(client_sock);
+        client_sock=-1;
+        return false;
+    }
+
+    if (stateinfo!=tmp) {
+        cerr << "[TCP_State] getAck invalid\n";
+        return true;
+    }
+    return true;
+
 }
