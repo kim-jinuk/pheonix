@@ -44,6 +44,7 @@ int main() {
     TcpStateChannel tcpStateChannel(tcp_state_port);
     MotorControl motorcontrol;
     Logger logger("./logs");
+    std::cout << sizeof(TcpCommand) <<std::endl;
     /**
         초기 장치 점검 수행행
     */

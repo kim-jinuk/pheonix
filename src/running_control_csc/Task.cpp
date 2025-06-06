@@ -22,13 +22,14 @@ void Task_sendState(TcpStateChannel& tcpStateChannel , BIT& bit ,Logger& logger 
             std::this_thread::sleep_for(std::chrono::seconds(1));
             continue;
         }
-
+        std::cout <<" msbmsbmsbmsb" << std::endl;
+        //std::cout <<"..." <<std::endl;
         sysInfo.TCP_state_connected.store(true);
         while (sysInfo.TCP_state_connected.load()==true) {
             bit.cbit();
             TcpState tcpstate;
             // 0 CHECKING , 1 IDLE , 2 RUNNGING
-            tcpstate.state_num=static_cast<int>(sysInfo.current_state.load());
+            tcpstate.state_num=static_cast<uint8_t>(sysInfo.current_state.load());
             tcpstate.tpu=sysInfo.TPU_state;
             tcpstate.cam=sysInfo.CAM_state;
             tcpstate.sdcard=sysInfo.logging_enabled;
@@ -45,7 +46,8 @@ void Task_sendState(TcpStateChannel& tcpStateChannel , BIT& bit ,Logger& logger 
                     tcpstate.state_num=static_cast<int>(State::IDLE);
                 }
             }
-            
+            tcpstate.mode_num=static_cast<uint8_t>(sysInfo.current_mode.load());
+
             if (tcpstate.state_num!=static_cast<int>(State::CHECKING))
             {
                 std::lock_guard<std::mutex> lock(pos_mtx);
@@ -53,18 +55,17 @@ void Task_sendState(TcpStateChannel& tcpStateChannel , BIT& bit ,Logger& logger 
                 tcpstate.Ny=pos.pitch;
             }
 
+            std::cout << "statd :"<< tcpstate.state_num<< " mode :" <<tcpstate.mode_num <<std::endl;
             if (!tcpStateChannel.sendState(tcpstate)) {
                 sysInfo.TCP_state_connected.store(false); 
+                std::cout <<"send state failed" <<std::endl;
                 sysInfo.current_state.store(State::CHECKING);
                 break;
             }
-            if (!tcpStateChannel.getAck(tcpstate)) {
-                sysInfo.TCP_state_connected.store(false); 
-                sysInfo.current_state.store(State::CHECKING);
-                break;
-            }
+            
 
             std::this_thread::sleep_for(std::chrono::milliseconds(300));
+          //  std::cout <<"send loop doing..." <<std::endl;
         }
 
     }
@@ -81,11 +82,11 @@ void Task_receiveCmd(TcpCmdChannel& tcpCmdChannel , MotorControl& motorcontrol,L
         // 주기적으로 확인하도록 하자...
         {
             std::unique_lock<std::mutex> lock(statesync.mtx);
-            statesync.cv.wait(lock, [] \
+            statesync.cv.wait_for(lock,std::chrono::seconds(1), [] \
             { return sysInfo.current_state.load() \
                 ==State::IDLE; }); 
         }
-
+        std::cout <<" wake up receive thread" << std::endl;
         if (!tcpCmdChannel.AcceptConnection()) {
             std::this_thread::sleep_for(std::chrono::seconds(1));
             continue;
@@ -94,13 +95,15 @@ void Task_receiveCmd(TcpCmdChannel& tcpCmdChannel , MotorControl& motorcontrol,L
 
         while (sysInfo.TCP_cmd_connected.load()==true) {
             TcpCommand cmd;
+            std::cout << "... : " << std::endl;
             // receive
             if (!tcpCmdChannel.TcpParsing(cmd)) {
                 sysInfo.TCP_cmd_connected.store(false); 
                 sysInfo.current_state.store(State::IDLE);
                 break;
             }
-
+            std::cout << "flag : " << static_cast<int>(cmd.cmd_flag) \
+            << " cmd : " << static_cast<int>(cmd.cmd) << std::endl;
             switch(cmd.cmd_flag) {
                 case Mode_num :
                     sysInfo.current_mode.store(static_cast<Mode>(cmd.cmd));

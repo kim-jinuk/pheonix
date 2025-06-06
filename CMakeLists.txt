@@ -23,4 +23,4 @@ target_include_directories(thread_structure
 )
 
 
-target_link_libraries(thread_structure ${OpenCV_LIBS}  turbojpeg)
+target_link_libraries(thread_structure ${OpenCV_LIBS} )

@@ -59,6 +59,7 @@ enum {
 struct  __attribute__((packed)) TcpState {
     uint16_t magic_word=TCP_MAGIC_WORD;
     uint8_t state_num;
+    uint8_t mode_num;
     uint8_t Nx=90; 
     uint8_t Ny=90;
     uint8_t tpu;
@@ -67,6 +68,7 @@ struct  __attribute__((packed)) TcpState {
     bool operator==(const TcpState& other) const {
         return magic_word == other.magic_word &&
                state_num   == other.state_num &&
+               mode_num    == other.mode_num &&
                Nx          == other.Nx &&
                Ny          == other.Ny &&
                tpu         == other.tpu &&

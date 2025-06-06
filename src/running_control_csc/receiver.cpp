@@ -54,6 +54,8 @@ TcpCmdChannel::TcpCmdChannel(int port) : TcpBase(port) {}
 bool TcpCmdChannel::TcpParsing(TcpCommand& cmd) {
     TcpCommand tmp;
     ssize_t n = recv(client_sock, &tmp, sizeof(tmp), 0);
+    std::cout << std::hex << tmp.magic_word << std::endl;
+    
     if (n != sizeof(tmp)) {
         cout << "[TCP] Client disconnected or invalid packet\n";
         close(client_sock);
