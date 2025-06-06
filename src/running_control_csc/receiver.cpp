@@ -85,6 +85,14 @@ bool TcpCmdChannel::sendAck(TcpCommand&  cmd) {
     return true;
 }
 
+void TcpCmdChannel::disconnect_sock() {
+    if (client_sock >= 0) {  
+        close(client_sock);  
+        client_sock = -1;    
+        std::cout << "[TCP] CMD Socket disconnected.\n";
+    }
+}
+
 TcpStateChannel::TcpStateChannel(int port) : TcpBase(port) {}
 
 
@@ -99,22 +107,4 @@ bool TcpStateChannel::sendState(TcpState& stateinfo) {
     }
     
     return true;
-}
-
-bool TcpStateChannel::getAck(TcpState&  stateinfo) {
-    TcpState tmp;
-    ssize_t n = recv(client_sock, &tmp, sizeof(tmp), 0);
-    if (n != sizeof(tmp)) {
-        cout << "[TCP] Client disconnected or invalid packet\n";
-        close(client_sock);
-        client_sock=-1;
-        return false;
-    }
-
-    if (stateinfo!=tmp) {
-        cerr << "[TCP_State] getAck invalid\n";
-        return true;
-    }
-    return true;
-
 }

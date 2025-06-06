@@ -32,6 +32,8 @@ public :
 
     bool TcpParsing(TcpCommand& cmd);
     bool sendAck(TcpCommand& cmd);
+    void disconnect_sock();
+
 };
 
 class TcpStateChannel : public TcpBase {
@@ -39,7 +41,6 @@ public :
     TcpStateChannel(int port);
 
     bool sendState(TcpState& stateinfo);
-    bool getAck(TcpState&  stateinfo);
 };
 
 #endif

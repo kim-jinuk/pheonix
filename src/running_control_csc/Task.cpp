@@ -11,7 +11,7 @@
 #include <iostream>
 /**
     주기 통신, Tcpsate 전송
-    Checking -> IDLE , Checking ->IDLE
+    Checking -> IDLE , Checking ->IDLE , RUNNING -> CHECKING
 */
 void Task_sendState(TcpStateChannel& tcpStateChannel , BIT& bit ,Logger& logger ) {
     
@@ -22,8 +22,7 @@ void Task_sendState(TcpStateChannel& tcpStateChannel , BIT& bit ,Logger& logger 
             std::this_thread::sleep_for(std::chrono::seconds(1));
             continue;
         }
-        std::cout <<" msbmsbmsbmsb" << std::endl;
-        //std::cout <<"..." <<std::endl;
+        
         sysInfo.TCP_state_connected.store(true);
         while (sysInfo.TCP_state_connected.load()==true) {
             bit.cbit();
@@ -41,9 +40,9 @@ void Task_sendState(TcpStateChannel& tcpStateChannel , BIT& bit ,Logger& logger 
             }
             // device ok
             else {
-                if (tcpstate.state_num==static_cast<int>(State::CHECKING)) {
+                if (tcpstate.state_num==static_cast<uint8_t>(State::CHECKING)) {
                     sysInfo.current_state.store(State::IDLE);
-                    tcpstate.state_num=static_cast<int>(State::IDLE);
+                    tcpstate.state_num=static_cast<uint8_t>(State::IDLE);
                 }
             }
             tcpstate.mode_num=static_cast<uint8_t>(sysInfo.current_mode.load());
@@ -55,7 +54,7 @@ void Task_sendState(TcpStateChannel& tcpStateChannel , BIT& bit ,Logger& logger 
                 tcpstate.Ny=pos.pitch;
             }
 
-            std::cout << "statd :"<< tcpstate.state_num<< " mode :" <<tcpstate.mode_num <<std::endl;
+            std::cout << "state :"<< tcpstate.state_num<< " mode :" <<tcpstate.mode_num <<std::endl;
             if (!tcpStateChannel.sendState(tcpstate)) {
                 sysInfo.TCP_state_connected.store(false); 
                 std::cout <<"send state failed" <<std::endl;
@@ -86,17 +85,27 @@ void Task_receiveCmd(TcpCmdChannel& tcpCmdChannel , MotorControl& motorcontrol,L
             { return sysInfo.current_state.load() \
                 ==State::IDLE; }); 
         }
-        std::cout <<" wake up receive thread" << std::endl;
+        std::cout <<" wake up CMD thread" << std::endl;
         if (!tcpCmdChannel.AcceptConnection()) {
             std::this_thread::sleep_for(std::chrono::seconds(1));
             continue;
         }
-        sysInfo.TCP_cmd_connected.store(true);
 
-        while (sysInfo.TCP_cmd_connected.load()==true) {
+        sysInfo.TCP_cmd_connected.store(true);
+        // IDLE 상태에서 tcp 요청받으면 IDLE -> RUNNING
+        {
+            std::lock_guard<std::mutex> lock(statesync.mtx);
+            sysInfo.current_state.store(State::RUNNING);
+            sysInfo.current_mode.store(Mode::MANUAL);
+           // logger.logStateChange(State_str[state],State_str[static_cast<int>(State::RUNNING)]);
+        }
+        statesync.cv.notify_all();
+        
+
+        while (sysInfo.current_state.load()==State::RUNNING) {
             TcpCommand cmd;
-            std::cout << "... : " << std::endl;
-            // receive
+            std::cout << "CMD thread Wait CMD... " << std::endl;
+            
             if (!tcpCmdChannel.TcpParsing(cmd)) {
                 sysInfo.TCP_cmd_connected.store(false); 
                 sysInfo.current_state.store(State::IDLE);
@@ -106,6 +115,7 @@ void Task_receiveCmd(TcpCmdChannel& tcpCmdChannel , MotorControl& motorcontrol,L
             << " cmd : " << static_cast<int>(cmd.cmd) << std::endl;
             switch(cmd.cmd_flag) {
                 case Mode_num :
+                    std::cout<< "change mode"<<std::endl;
                     sysInfo.current_mode.store(static_cast<Mode>(cmd.cmd));
                     motorcontrol.setStrategy(cmd.cmd);
                     break;
@@ -118,11 +128,13 @@ void Task_receiveCmd(TcpCmdChannel& tcpCmdChannel , MotorControl& motorcontrol,L
                     cam_opt.fromCmd(cmd.cmd);
                     break;
                 case move_motor :
+                    std::cout<< "move motor"<<std::endl;
                     if (sysInfo.current_mode.load() == Mode::MANUAL) {
                         motorcontrol.enqueueDeltaIfManual(cmd.cmd);
                     }
                     break;
                 case track :
+                    std::cout<< "do tracking"<<std::endl;
                     targetInfo.id.store(cmd.cmd);
                     sysInfo.current_mode.store(static_cast<Mode>(cmd.cmd));
                     motorcontrol.setStrategy(cmd.cmd);
@@ -138,7 +150,11 @@ void Task_receiveCmd(TcpCmdChannel& tcpCmdChannel , MotorControl& motorcontrol,L
             }
 
         }
-
+        // 장치 이상으로 (다른 스레드가 RUNNING에서 다른 상태로 보내면) 기존 소켓 닫기
+        tcpCmdChannel.disconnect_sock();
+        std::cout << "TCP cmd channel disconnected, thread sleep 0.3s..." << std::endl;
+        
+        std::this_thread::sleep_for(std::chrono::milliseconds(300));
     }
 
 }
