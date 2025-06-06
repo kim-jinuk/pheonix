@@ -1,4 +1,6 @@
 ## EOIR_Simulator 프로젝트
+#### C# 7.3
+#### .NET Framework 4.7.2
 #### 플랫폼 대상 : x64
 #### 패키지 : 도구 - NuGet 패키지 관리자 - 솔루션용 NuGet 패키지 관리 - HelixToolKit.Wpf 2.12.0 설치
 #### C:\workspace_WPF\EOIR_Simulator\EOIR_Simulator\bin\Debug 에 FrameSender.dll(C:\workspace_nex1_C++\FrameSender\x64\Debug\FrameSender.dll) 넣어줘야함
