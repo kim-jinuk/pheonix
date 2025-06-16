@@ -4,6 +4,8 @@
 #include "running_control_csc/BIT.hpp"
 #include "running_control_csc/receiver.hpp"
 #include "running_control_csc/Logger.hpp"
+#include "image_processing_csc/ImageProcessor.hpp"
+
 /**
     TCP 소켓 연결 , cbit 및 주기 송신 담당
 */
@@ -26,7 +28,3 @@ void Task_sendData(Logger& logger);
 */
 void Task_moveMotor(MotorControl& motorcontrol);
 
-/**
-    이미지 처리
-*/
-void Task_ImageProcessing();

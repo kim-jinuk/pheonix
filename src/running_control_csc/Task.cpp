@@ -78,7 +78,7 @@ void Task_sendState(TcpStateChannel& tcpStateChannel , BIT& bit ,Logger& logger 
 void Task_receiveCmd(TcpCmdChannel& tcpCmdChannel , MotorControl& motorcontrol,Logger& logger) {
 
     while (true) {
-        // 주기적으로 확인하도록 하자...
+        
         {
             std::unique_lock<std::mutex> lock(statesync.mtx);
             statesync.cv.wait_for(lock,std::chrono::seconds(1), [] \
@@ -170,31 +170,13 @@ void Task_sendData(UdpSender& sender ,Logger& logger) {
                 ==State::RUNNING; }); 
         }
         std::cout << "Task_sendData thread wake up" <<std::endl;
+        std::shared_ptr<FramePacket> last_sent;
         while (sysInfo.current_state.load() == State::RUNNING) {
              /*
              TODO
              */
-             /*
-             1. 이미지 , 추론 데이터 , 모터 각 읽기
-             2. 패킷 생성 및 송신
-             3. 로깅
-             */
-
-             // 1
-
-
-           
             
-            // 2
-
-            // auto packets = sender.BuildUdpPackets({}, _pos.yaw, _pos.pitch); // object 정보 들어갈 것임
-            // sender.send(packets);
-
-            // 3
-          //  logger.logOperation( Mode_str[static_cast<int>(sysInfo.current_mode.load())] ,"meta" ,_pos.yaw, _pos.pitch);
-
             
-
             std::this_thread::sleep_for(std::chrono::milliseconds(30));
         }
     }
@@ -217,9 +199,6 @@ void Task_moveMotor(MotorControl& motorcontrol) {
         motorcontrol.init_pos();
         while (sysInfo.current_state.load() == State::RUNNING) {
             
-            /*
-            전략이 실행되는 곳
-            */
             motorcontrol.runStrategy();
             std::this_thread::sleep_for(std::chrono::milliseconds(100));
         }
@@ -228,29 +207,3 @@ void Task_moveMotor(MotorControl& motorcontrol) {
 
 }
 
-void Task_ImageProcessing() {
-    
-    std::cout << "ImageProcessing thread is created" <<std::endl;
-    while (true) {
-        {
-            std::unique_lock<std::mutex> lock(statesync.mtx);
-            statesync.cv.wait(lock, [] \
-            { return sysInfo.current_state.load() \
-                ==State::RUNNING; }); 
-        }
-
-        std::cout << "ImageProcessingor thread wake up" <<std::endl;
-        
-        while (sysInfo.current_state.load() == State::RUNNING) {
-            
-            /*
-                1. capture
-                2. preprocessing
-                3. infer
-                4. overlay
-                5. push 
-            */
-        }
-    }
-
-}

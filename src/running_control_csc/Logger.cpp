@@ -30,6 +30,9 @@ Logger::~Logger() {
     file_meta.close();
 }
 
+void Logger::logCmd(CmdFlag flag, uint8_t cmd_val) {
+    
+}
 
 void Logger::logOperation(const std::string& mode, const std::string& meta, int angle1, int angle2) {
     std::lock_guard<std::mutex> lock(log_mtx);

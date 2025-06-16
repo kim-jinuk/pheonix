@@ -1,12 +1,11 @@
-
-#pragma once
-#include <string>
 #include <iostream>
 #include <fstream>
 #include <sstream>
 #include <string>
 #include <iomanip>
 #include <filesystem>
+#include <vector>
+
 class BIT {
     public :
 
@@ -50,4 +49,48 @@ class BIT {
         return std::stod(trim(s));
     }
 };
+int main() {
+    BIT bit;
+    double asdf;
+    asdf=bit.getTemp();
+    std::cout<< asdf<<std::endl;
+}
+void BIT::pbit() {
+    std::cout << "start power BIT" << std::endl;
 
+
+}
+
+void BIT::cbit() {
+
+   std::cout << "start continous BIT" << std::endl;
+
+
+
+}
+
+
+bool BIT::isCamConnected() {
+    return true;
+} 
+
+bool BIT::isTpuConnected() {
+    /**
+        TODO
+    */
+    return true;
+}
+
+
+
+double BIT::getTemp() {
+    const std::string dev = "/sys/bus/iio/devices/iio:device0";
+
+    int raw = parseInt(readFile(dev + "/in_temp0_raw"));
+    int offset = parseInt(readFile(dev + "/in_temp0_offset"));
+    double scale = parseDouble(readFile(dev + "/in_temp0_scale"));
+
+    double mdeg = (raw + offset) * scale;   // milli-degree Celsius
+    return mdeg / 1000.0;                   // degree Celsius
+
+}

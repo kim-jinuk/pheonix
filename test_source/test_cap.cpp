@@ -4,7 +4,7 @@
 #include <iostream>
 
 #define MAX_FRAMES 100
-// 17초
+
 int main() {
     // GStreamer MJPEG 수신 파이프라인
     std::string pipeline = 
@@ -18,7 +18,23 @@ int main() {
         return -1;
     }
 
-    
+    // --- 카메라 설정 확인 ---
+    double width = cap.get(cv::CAP_PROP_FRAME_WIDTH);
+    double height = cap.get(cv::CAP_PROP_FRAME_HEIGHT);
+    double fps = cap.get(cv::CAP_PROP_FPS);
+    double fourcc = cap.get(cv::CAP_PROP_FOURCC);
+
+    std::cout << "=== 카메라 설정 확인 ===\n";
+    std::cout << "해상도 : " << width << " x " << height << "\n";
+    std::cout << "FPS    : " << fps << "\n";
+    std::cout << "FOURCC : "
+              << static_cast<char>(static_cast<int>(fourcc) & 0xFF)
+              << static_cast<char>((static_cast<int>(fourcc) >> 8) & 0xFF)
+              << static_cast<char>((static_cast<int>(fourcc) >> 16) & 0xFF)
+              << static_cast<char>((static_cast<int>(fourcc) >> 24) & 0xFF)
+              << "\n\n";
+
+    // --- 프레임 성능 측정 ---
     for (int frame_id = 0; frame_id < MAX_FRAMES; ++frame_id) {
         auto t0 = std::chrono::high_resolution_clock::now();
 

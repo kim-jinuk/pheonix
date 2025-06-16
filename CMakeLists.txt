@@ -4,16 +4,19 @@ set(CMAKE_CXX_STANDARD 17)
 
 find_package(OpenCV REQUIRED)
 
-add_executable(thread_structure main.cpp
-    src/running_control_csc/BIT.cpp
-    src/running_control_csc/receiver.cpp
-    src/running_control_csc/sender.cpp
-    src/running_control_csc/CfgLoader.cpp
-    src/running_control_csc/globals.cpp
-    src/running_control_csc/Task.cpp
-    src/running_control_csc/MotorControl.cpp 
-    src/running_control_csc/pwm.cpp
-    src/running_control_csc/Logger.cpp 
+add_executable(thread_structure  denoising2.cpp
+    #src/running_control_csc/BIT.cpp
+   # src/running_control_csc/receiver.cpp
+   # src/running_control_csc/sender.cpp
+   # src/running_control_csc/CfgLoader.cpp
+  #  src/running_control_csc/globals.cpp
+  #  src/running_control_csc/Task.cpp
+  #  src/running_control_csc/MotorControl.cpp 
+  #  src/running_control_csc/pwm.cpp
+  #  src/running_control_csc/Logger.cpp 
+  #  src/running_control_csc/Task.cpp
+  #  src/running_control_csc/ImgTaskv1.cpp
+  #  src/image_processing_csc/ImageProcessor.cpp
     )
 
 

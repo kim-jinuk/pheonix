@@ -3,6 +3,7 @@
 #include <cstring>
 #include <iostream>
 #include <unistd.h>
+#include <opencv2/opencv.hpp>
 
 #define MAX_PACKET_SIZE 1400
 
@@ -13,7 +14,7 @@ constexpr int META_SIZE = 2 + sizeof(ObjectInfo) * NUM_OBJECTS;
 constexpr int PAYLOAD_OFFSET = HEADER_SIZE + META_SIZE;
 
 
-UdpSender::UdpSender(const std::string& ip, int port) : frame_id(0) {
+UdpSender::UdpSender(const std::string& ip, int port) {
     sock_ = socket(AF_INET, SOCK_DGRAM, 0);
     if (sock_ < 0) {
         perror("UDP socket");
@@ -30,16 +31,8 @@ UdpSender::~UdpSender() {
     close(sock_);
 }
 
-void UdpSender::UdpInit() {
-    frame_id = 0;
-}
-// 이미지 받아오는 거
-void UdpSender::CaptureAndStorePayload() {
 
- //   payload_ = CaptureFrame();
-}   
-
-std::vector<std::vector<uint8_t>> UdpSender::BuildUdpPackets(const std::vector<ObjectInfo>& objs, uint8_t nx, uint8_t ny) {
+std::vector<std::vector<uint8_t>> UdpSender::BuildUdpPackets(const FramePtr& frame, const std::vector<ObjectInfo>& objs) {
     std::vector<std::vector<uint8_t>> packets;
     if (payload_.empty()) return packets;
 
@@ -61,10 +54,7 @@ std::vector<std::vector<uint8_t>> UdpSender::BuildUdpPackets(const std::vector<O
         memcpy(&packet[4], &pid_net, 2);
         memcpy(&packet[6], &tpkts_net, 2);
 
-        // nx, ny
-        packet[8] = nx;
-        packet[9] = ny;
-
+        
         // ObjectInfo 5개 고정
         for (int j = 0; j < NUM_OBJECTS; ++j) {
             ObjectInfo obj = (j < objs.size()) ? objs[j] : ObjectInfo{};
@@ -86,5 +76,4 @@ void UdpSender::UdpSend(const std::vector<std::vector<uint8_t>>& packets) {
         sendto(sock_, pkt.data(), pkt.size(), 0, (sockaddr*)&addr_, sizeof(addr_));
         usleep(1000);  // Optional pacing
     }
-    frame_id++;
 }

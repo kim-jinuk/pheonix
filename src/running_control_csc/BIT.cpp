@@ -27,7 +27,7 @@ void BIT::cbit() {
     
     sysInfo.CAM_state=isCamConnected();
     sysInfo.TPU_state=isTpuConnected();
-
+    sysInfo.cpu_temp=getTemp();
 
 }
 
@@ -45,3 +45,14 @@ bool BIT::isTpuConnected() {
 
 
 
+double BIT::getTemp() {
+    const std::string dev = "/sys/bus/iio/devices/iio:device0";
+
+    int raw = parseInt(readFile(dev + "/in_temp0_raw"));
+    int offset = parseInt(readFile(dev + "/in_temp0_offset"));
+    double scale = parseDouble(readFile(dev + "/in_temp0_scale"));
+
+    double mdeg = (raw + offset) * scale;   // milli-degree Celsius
+    return mdeg / 1000.0;                   // degree Celsius
+
+}

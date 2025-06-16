@@ -1,3 +1,0 @@
-/mnt/hgfs/share/icd_final_pheonix-HD/build/CMakeFiles/rebuild_cache.dir
-/mnt/hgfs/share/icd_final_pheonix-HD/build/CMakeFiles/edit_cache.dir
-/mnt/hgfs/share/icd_final_pheonix-HD/build/CMakeFiles/thread_structure.dir

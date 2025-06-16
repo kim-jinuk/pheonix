@@ -38,6 +38,27 @@ int main() {
     int tcp_cmd_port = std::stoi(cfg.get("TCP_CMD_PORT"));
     int tcp_state_port = std::stoi(cfg.get("TCP_STATE_PORT"));
     
+    std::string model_path = cfg.get("MODEL");
+    std::string label_path = cfg.get("LABEL");
+    float threshold = std::stof(cfg.get("THRESHOLD"));
+
+    bool use_edgetpu = (cfg.get("USE_EDGETPU") == "1");
+
+    std::shared_ptr<edgetpu::EdgeTpuContext> context;
+    if (use_edgetpu) {
+        context = edgetpu::EdgeTpuManager::GetSingleton()->OpenDevice();
+    }
+
+    edge::TfLiteWrapper detector(
+        model_path,
+        label_path,
+        threshold,
+        context,
+        use_edgetpu
+    );
+
+
+
     // 객체 생성 - CFGLoader 때문에 main쪽에서 객체 생성함
     BIT bit;
     TcpCmdChannel tcpCmdChannel(tcp_cmd_port); //listen socket 생성
