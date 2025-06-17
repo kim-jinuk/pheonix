@@ -38,6 +38,28 @@ struct FrameData {
 };
 
 /**
+    inference result
+*/
+struct InferenceResult {
+  std::string candidate;
+  float score;
+  float x1;
+  float y1;
+  float x2;
+  float y2;
+};
+/**
+    Tracking result
+*/
+struct Track {
+    int id;
+    cv::KalmanFilter kf;
+    cv::Rect2f bbox;
+    int age = 0;
+    int time_since_update = 0;
+};
+
+/**
     cam option
 */
 struct Cam_opt {

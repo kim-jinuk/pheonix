@@ -1,5 +1,4 @@
 
-
 #ifndef EDGETPU_TFLITE_CV_TFLITE_WRAPPER_H_
 #define EDGETPU_TFLITE_CV_TFLITE_WRAPPER_H_
 
@@ -22,15 +21,7 @@
 
 namespace edge {
 
-// Represent inference results.
-struct InferenceResult {
-  std::string candidate;
-  float score;
-  float x1;
-  float y1;
-  float x2;
-  float y2;
-};
+
 
 class TfLiteWrapper {
 public:
@@ -51,8 +42,6 @@ public:
   const std::vector<int> GetInputShape();
   // Exposes previous inference time.
   std::chrono::microseconds get_prev_duration() const;
-  GetResultsAsObjectInfo(const std::vector<std::vector<float>>& output);
-  RunInferenceObjectInfo(const std::vector<uint8_t>& input_data);
   // Destructor.
   ~TfLiteWrapper() = default;
 

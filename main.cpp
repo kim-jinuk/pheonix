@@ -6,8 +6,10 @@
 #include "running_control_csc/MotorControl.hpp"
 #include "running_control_csc/CfgLoader.hpp"
 #include "running_control_csc/Task.hpp"
+#include "running_control_csc/ImgTaskv1.hpp"
 #include "running_control_csc/Logger.hpp"
-
+#include "image_processing_csc/ImageProcessor.hpp"
+#include "detecting_csc/edgetpu_detector.hpp"
 #include <signal.h>
 #include <thread>
 #include <iostream>
@@ -49,6 +51,7 @@ int main() {
         context = edgetpu::EdgeTpuManager::GetSingleton()->OpenDevice();
     }
 
+    /* detector*/
     edge::TfLiteWrapper detector(
         model_path,
         label_path,
@@ -56,33 +59,33 @@ int main() {
         context,
         use_edgetpu
     );
-
-
-
-    // 객체 생성 - CFGLoader 때문에 main쪽에서 객체 생성함
+    /* tracker*/
+    tracking::SortTracker tracker();
+    /* Image processor*/
+    ImageProcessor imgprocessor();
+    /* BIT */
     BIT bit;
-    TcpCmdChannel tcpCmdChannel(tcp_cmd_port); //listen socket 생성
+    /* TCPcmd */
+    TcpCmdChannel tcpCmdChannel(tcp_cmd_port);
+    /* TCPstate*/
     TcpStateChannel tcpStateChannel(tcp_state_port);
+    /* UDP */
+    UdpSender sender(udp_ip, udp_port);
+    /* Motor*/
     MotorControl motorcontrol;
+    /* capunit*/
+    CaptureUnit capunit;
     Logger logger("./logs");
-    std::cout << sizeof(TcpCommand) <<std::endl;
-    /**
-        초기 장치 점검 수행행
-    */
+    
     bit.pbit();
-    /**
-        thread 생성
-    */
+   
     std::thread sendStateThread(Task_sendState, std::ref(tcpStateChannel), std::ref(bit), std::ref(logger)); 
     std::thread receiveCmdThread(Task_receiveCmd, std::ref(tcpCmdChannel),std::ref(motorcontrol),std::ref(logger)); 
     std::thread moveMotorThread(Task_moveMotor,std::ref(motorcontrol)); 
-    //std::thread sendDataThread(Task_sendData,std::ref(logger));
-    
+    std::thread ImageProcessingThread(Task_ImageProcessing,std::ref(capunit),std::ref(imgprocessor),std::ref(detector),std::ref(tracker),std::ref(sender));
     
     while (true) {
-        
-       // std::cout << (sysInfo.current_state.load()) << std::endl;
-
-        sleep(1);
+    std::this_thread::sleep_for(std::chrono::hours(24));
     }
+
 }

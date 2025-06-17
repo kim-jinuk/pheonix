@@ -7,10 +7,12 @@
 
 #define MAX_PACKET_SIZE 1400
 
-// 상수 정의 (UdpSender.cpp 상단 또는 함수 내부에)
-constexpr int HEADER_SIZE = 8;
-constexpr int NUM_OBJECTS = 5;
-constexpr int META_SIZE = 2 + sizeof(ObjectInfo) * NUM_OBJECTS;
+
+constexpr uint32_t MAGIC = 0xDEADBEEF;
+constexpr int HEADER_SIZE = 12; // Magic(4) + FrameID(4) + PacketID(2) + TotalPackets(2)
+constexpr int OBJECTINFO_SIZE = 14;
+constexpr int OBJECT_COUNT = 5;
+constexpr int META_SIZE = OBJECTINFO_SIZE * OBJECT_COUNT; // 14 * 5 = 70
 constexpr int PAYLOAD_OFFSET = HEADER_SIZE + META_SIZE;
 
 
@@ -32,37 +34,53 @@ UdpSender::~UdpSender() {
 }
 
 
-std::vector<std::vector<uint8_t>> UdpSender::BuildUdpPackets(const FramePtr& frame, const std::vector<ObjectInfo>& objs) {
+std::vector<std::vector<uint8_t>> UdpSender::BuildUdpPackets(
+    const FrameData& frame, const std::vector<ObjectInfo>& objs) 
+{
     std::vector<std::vector<uint8_t>> packets;
-    if (payload_.empty()) return packets;
 
-    size_t total_size = payload_.size();
+     std::vector<std::vector<uint8_t>> packets;
+
+    // 1. 이미지가 비어있다면 반환
+    if (frame.img_bgr.empty()) return packets;
+
+    // 2. JPEG 압축
+    std::vector<uchar> jpeg_buf;
+    std::vector<int> params = {cv::IMWRITE_JPEG_QUALITY, 90};  // 압축률 조정 가능
+    bool success = cv::imencode(".jpg", frame.img_bgr, jpeg_buf, params);
+    if (!success || jpeg_buf.empty()) return packets;
+
+    // 3. 패킷 수 계산
+    size_t total_size = jpeg_buf.size();
     int payload_per_packet = MAX_PACKET_SIZE - PAYLOAD_OFFSET;
     int total_packets = (total_size + payload_per_packet - 1) / payload_per_packet;
 
+    // 4. 패킷 생성
     for (int i = 0; i < total_packets; ++i) {
         int offset = i * payload_per_packet;
         int chunk_size = std::min((int)(total_size - offset), payload_per_packet);
 
         std::vector<uint8_t> packet(PAYLOAD_OFFSET + chunk_size);
 
-        // Header
-        uint32_t fid_net = htonl(frame_id);
+        // Header (0 ~ 11)
+        uint32_t magic_net = htonl(MAGIC);
+        uint32_t fid_net = htonl(frame.frame_id); 
         uint16_t pid_net = htons(i);
         uint16_t tpkts_net = htons(total_packets);
-        memcpy(&packet[0], &fid_net, 4);
-        memcpy(&packet[4], &pid_net, 2);
-        memcpy(&packet[6], &tpkts_net, 2);
 
-        
-        // ObjectInfo 5개 고정
-        for (int j = 0; j < NUM_OBJECTS; ++j) {
+        memcpy(&packet[0],  &magic_net,  4);
+        memcpy(&packet[4],  &fid_net,    4);
+        memcpy(&packet[8],  &pid_net,    2);
+        memcpy(&packet[10], &tpkts_net,  2);
+
+        // ObjectInfo (offset 12)
+        for (int j = 0; j < OBJECT_COUNT; ++j) {
             ObjectInfo obj = (j < objs.size()) ? objs[j] : ObjectInfo{};
-            memcpy(&packet[10 + j * sizeof(ObjectInfo)], &obj, sizeof(ObjectInfo));
+            memcpy(&packet[HEADER_SIZE + j * OBJECTINFO_SIZE], &obj, OBJECTINFO_SIZE);
         }
 
-        // Payload
-        memcpy(&packet[PAYLOAD_OFFSET], payload_.data() + offset, chunk_size);
+        // Payload (offset 12 + 70 = 82)
+        memcpy(&packet[PAYLOAD_OFFSET], jpeg_buf.data() + offset, chunk_size);
 
         packets.push_back(std::move(packet));
     }

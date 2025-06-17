@@ -17,12 +17,6 @@ void Task_sendState(TcpStateChannel& tcpStateChannel , BIT& bit ,Logger& logger)
 */
 void Task_receiveCmd(TcpCmdChannel& tcpCmdChannel,MotorControl& motorcontrol,Logger& logger);
 
-/**
-    패킷 생성, 로깅, 패킷 송신
-*/
-void Task_sendData(Logger& logger);
-
-
 /** 
     모터 제어
 */

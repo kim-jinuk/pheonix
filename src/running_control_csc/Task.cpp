@@ -159,31 +159,6 @@ void Task_receiveCmd(TcpCmdChannel& tcpCmdChannel , MotorControl& motorcontrol,L
 
 }
 
-void Task_sendData(UdpSender& sender ,Logger& logger) {
-
-
-    while (true) {
-        {
-            std::unique_lock<std::mutex> lock(statesync.mtx);
-            statesync.cv.wait(lock, [] \
-            { return sysInfo.current_state.load() \
-                ==State::RUNNING; }); 
-        }
-        std::cout << "Task_sendData thread wake up" <<std::endl;
-        std::shared_ptr<FramePacket> last_sent;
-        while (sysInfo.current_state.load() == State::RUNNING) {
-             /*
-             TODO
-             */
-            
-            
-            std::this_thread::sleep_for(std::chrono::milliseconds(30));
-        }
-    }
-
-}
-
-
 
 void Task_moveMotor(MotorControl& motorcontrol) {
     

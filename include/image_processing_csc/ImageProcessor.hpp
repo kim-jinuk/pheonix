@@ -15,14 +15,15 @@ public :
     
 };
 
-class DevelopUnit{
+class ImageProcessor {
 
 public :
-    static void enhance(std::shared_ptr<FrameData>& frame);
+    cv::Mat enhance_edges(const cv::Mat &src, float strength = 1.0f);
+    cv::Mat enhance_contrast(const cv::Mat& src,
+                                double clip_limit = 4.0,
+                                cv::Size tile_grid = {32, 32});
+    cv::Mat overlay(cv::Mat &src, vector<InferenceResult>& info);
 };
 
-class OverlayUnit {
 
-public :
-    void overlay(std::shared_ptr<FrameData>& frame);
-};
+

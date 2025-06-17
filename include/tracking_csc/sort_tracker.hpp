@@ -1,23 +1,22 @@
 #pragma once
+#include "running_control_csc/globals.hpp"
 #include <opencv2/opencv.hpp>
-#include "tracking/kalman_tracker.hpp"
 #include <vector>
-#include <deque>
-#include <algorithm>
+#include <memory>
 
-struct TrackResult {
-    int id;
-    cv::Rect box;
-};
+
+namespace tracking {
 
 class SortTracker {
-public:
-    SortTracker(int max_age=10, int min_hits=3, float iou_thr=0.3);
-    std::vector<TrackResult> update(const std::vector<cv::Rect>& dets);
-
-private:
-    float iou(const cv::Rect& a, const cv::Rect& b);
-    int max_age_, min_hits_, next_id_;
-    float iou_thr_;
-    std::vector<KalmanTracker> trackers_;
+ public:
+    explicit SortTracker(float iou_threshold = 0.3f);
+    // Update with freshly detected boxes; returns (bbox, id)
+    std::vector<std::pair<cv::Rect2f,int>> update(const std::vector<cv::Rect2f>& detections);
+ private:
+    float iou_thresh_;
+    int next_id_ = 0;
+    std::vector<Track> tracks_;
+    static float IoU(const cv::Rect2f &a, const cv::Rect2f &b);
+    void step_kalman(Track &t);
 };
+}

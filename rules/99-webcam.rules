@@ -1,1 +1,0 @@
-SUBSYSTEM=="video4linux", ATTR{name}=="HD Pro Webcam C920", ATTRS{idVendor}=="046d", ATTRS{idProduct}=="08e5", SYMLINK+="video-cam"

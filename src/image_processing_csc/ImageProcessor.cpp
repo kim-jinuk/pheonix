@@ -52,38 +52,81 @@ void CaptureUnit::closeCamera() {
     return !frame->img_bgr.empty();
 }
 
-void DevelopUnit::enhance(std::shared_ptr<FrameData>& frame) {
-    cv::Mat& img = frame->img_bgr;
 
-    if (cam_opt.use_clahe.load()) {
-        cv::Ptr<cv::CLAHE> clahe = cv::createCLAHE();
-        cv::Mat lab; cv::cvtColor(img, lab, cv::COLOR_BGR2Lab);
-        std::vector<cv::Mat> lab_planes(3);
-        cv::split(lab, lab_planes);
-        clahe->apply(lab_planes[0], lab_planes[0]);
-        cv::merge(lab_planes, lab);
-        cv::cvtColor(lab, img, cv::COLOR_Lab2BGR);
-    }
+ cv::Mat ImageProcessor::enhance_edges(const cv::Mat &src, float strength = 1.0f) {
+    v::Mat blur;
+    cv::GaussianBlur(src, blur, {0,0}, 3);
+    cv::Mat sharp;
+    cv::addWeighted(src, 1.0 + strength, blur, -strength, 0, sharp);
+    return sharp;
 
-    if (cam_opt.use_sharpen.load()) {
-        cv::Mat sharp;
-        cv::GaussianBlur(img, sharp, cv::Size(0, 0), 3);
-        cv::addWeighted(img, 1.5, sharp, -0.5, 0, img);
-    }
+ }
+cv::Mat ImageProcessor::enhance_contrast(const cv::Mat& src,
+                                double clip_limit = 4.0,
+                                cv::Size tile_grid = {32, 32})
+{
+    cv::Mat out;
 
-    if (cam_opt.use_denoise.load()) {
-        cv::fastNlMeansDenoisingColored(img, img, 10, 10, 7, 21);
-    }
+    if (src.channels() == 3) {
+        // ----- 컬러 프레임 -----
+        cv::Mat lab;
+        cv::cvtColor(src, lab,
+                     src.type() == CV_8UC3 ? cv::COLOR_BGR2Lab
+                                           : cv::COLOR_RGB2Lab);
 
-    if (cam_opt.use_unsharp.load()) {
-        cv::Mat blurred;
-        cv::GaussianBlur(img, blurred, cv::Size(0, 0), 1.0);
-        cv::addWeighted(img, 1.3, blurred, -0.3, 0, img);
+        std::vector<cv::Mat> channels;
+        cv::split(lab, channels);          // L, a, b
+
+        // CLAHE(Contrast Limited Adaptive Histogram Equalization)
+        cv::Ptr<cv::CLAHE> clahe = cv::createCLAHE(clip_limit, tile_grid);
+        clahe->apply(channels[0], channels[0]);
+
+        cv::merge(channels, lab);
+        cv::cvtColor(lab, out,
+                     src.type() == CV_8UC3 ? cv::COLOR_Lab2BGR
+                                           : cv::COLOR_Lab2RGB);
     }
+    else {
+        // ----- 그레이스케일 -----
+        cv::equalizeHist(src, out);
+    }
+    return out;
+
+
 }
+    cv::Mat overlay(cv::Mat &src, vector<InferenceResult>& info) {
 
+        for (const auto& res : info) {
+            // 사각형 박스 그리기
+            cv::Rect box(
+                static_cast<int>(res.x1),
+                static_cast<int>(res.y1),
+                static_cast<int>(res.x2 - res.x1),
+                static_cast<int>(res.y2 - res.y1)
+            );
+            cv::rectangle(src, box, cv::Scalar(0, 255, 0), 2); // 초록색 테두리
 
-void OverlayUnit::overlay(std::shared_ptr<FrameData>& frame) {
+            // 텍스트 만들기
+            std::string label = res.candidate + " " + cv::format("%.2f", res.score);
 
-    std::cout << "overlay" << std::endl;
-}
+            int baseLine = 0;
+            cv::Size labelSize = cv::getTextSize(label, cv::FONT_HERSHEY_SIMPLEX, 0.5, 1, &baseLine);
+            int top = std::max(static_cast<int>(res.y1), labelSize.height);
+
+            // 텍스트 배경
+            cv::rectangle(
+                src,
+                cv::Point(res.x1, top - labelSize.height),
+                cv::Point(res.x1 + labelSize.width, top + baseLine),
+                cv::Scalar(0, 255, 0), cv::FILLED
+            );
+
+            // 텍스트 그리기
+            cv::putText(
+                src, label,
+                cv::Point(res.x1, top),
+                cv::FONT_HERSHEY_SIMPLEX,
+                0.5, cv::Scalar(0, 0, 0), 1
+            );
+        }
+    }
