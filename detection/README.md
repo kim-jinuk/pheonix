@@ -19,8 +19,10 @@ cmake .. \
 make
 ```
 
-## run
+# run
+```
 sudo ./detection --model <model_name> --labels <label_name>
+```
 
 # fps
 9~10 fps
