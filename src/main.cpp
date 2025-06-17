@@ -16,6 +16,9 @@
 #include "tensorflow/lite/model.h"
 #include "tflite_wrapper.h"
 
+#include "preprocessing/edge_enhance.hpp"
+#include "tracking/sort_tracker.hpp"
+
 cxxopts::ParseResult parse_args(int argc, char** argv) {
   cxxopts::Options options(
       "edge_tflite_cv", "An example of using opencv with tflite/edgetpu in c++.");

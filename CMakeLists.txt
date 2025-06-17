@@ -4,7 +4,7 @@ project(tflite-opencv-example)
 set(CMAKE_C_FLAGS "-Wall -pthread")
 set(CMAKE_C_FLAGS_DEBUG "-g -O0")
 set(CMAKE_C_FLAGS_RELEASE "-O3")
-set(CMAKE_CXX_FLAGS "${CMAKE_C_FLAGS} -std=c++11 -lstdc++")
+set(CMAKE_CXX_FLAGS "${CMAKE_C_FLAGS} -std=c++17 -lstdc++")
 set(CMAKE_CXX_FLAGS_DEBUG ${CMAKE_C_FLAGS_DEBUG})
 set(CMAKE_CXX_FLAGS_RELEASE ${CMAKE_C_FLAGS_RELEASE})
 
@@ -76,7 +76,8 @@ ExternalProject_Add(glog
     GIT_REPOSITORY https://github.com/google/glog
     GIT_PROGRESS 1
     GIT_SHALLOW 1
-    CMAKE_ARGS -DWITH_GFLAGS=OFF
+    GIT_TAG v0.6.0
+    CMAKE_ARGS -DWITH_GFLAGS=OFF -DBUILD_TESTING=OFF -DGLOG_BUILD_TESTS=OFF -DWITH_GTEST=OFF
     -DCMAKE_INSTALL_PREFIX=${CMAKE_BINARY_DIR}/glog_install
     -DCMAKE_INSTALL_LIBDIR=lib
     PREFIX "glog"
@@ -93,6 +94,7 @@ ExternalProject_Add(tensorflow
     PREFIX "tensorflow"
     CONFIGURE_COMMAND ./tensorflow/lite/tools/make/download_dependencies.sh
     BUILD_IN_SOURCE 1
+    PATCH_COMMAND sed -i "1s/^/#include <limits>\\n/" tensorflow/lite/experimental/ruy/block_map.cc
     BUILD_COMMAND ${TF_COMMAND}
     BUILD_BYPRODUCTS libtensorflow-lite.a ${CMAKE_BINARY_DIR}/tensorflow/src/tensorflow/tensorflow/lite/tools/make/downloads/fft2d/fftsg.c
     BUILD_BYPRODUCTS libtensorflow-lite.a ${CMAKE_BINARY_DIR}/tensorflow/src/tensorflow/tensorflow/lite/tools/optimize/sparsity/format_converter.cc
@@ -112,6 +114,7 @@ include_directories(${CMAKE_BINARY_DIR}/tensorflow/src/tensorflow/tensorflow/lit
 include_directories(${CMAKE_BINARY_DIR}/tensorflow/src/tensorflow/tensorflow/lite/tools/make/downloads/flatbuffers/include/)
 include_directories(${CMAKE_BINARY_DIR}/glog_install/include)
 include_directories(${CMAKE_BINARY_DIR}/opencv_install/include)
+include_directories(${CMAKE_BINARY_DIR}/opencv)
 link_directories(${CMAKE_BINARY_DIR})
 link_directories(${CMAKE_BINARY_DIR}/absl_install/lib)
 link_directories(${CMAKE_BINARY_DIR}/glog_install/lib)
@@ -129,17 +132,31 @@ add_library(tflite_wrapper
 target_link_libraries(tflite_wrapper label_utils ${TF_LITE_LIB})
 add_dependencies(tflite_wrapper label_utils tensorflow)
 
+add_library(preprocessing
+  src/preprocessing/edge_enhance.cpp
+  src/preprocessing/contrast.cpp
+)
+target_include_directories(preprocessing PUBLIC ${CMAKE_SOURCE_DIR}/include/preprocessing)
+target_link_libraries(preprocessing PUBLIC ${OPENCV_LIBRARIES})
+
+add_library(tracking
+  src/tracking/sort_tracker.cpp
+)
+target_include_directories(tracking PUBLIC ${CMAKE_SOURCE_DIR}/include/tracking)
+target_link_libraries(tracking PUBLIC ${OPENCV_LIBRARIES})
+
 add_library(detection_camera
   src/detection_camera.cc
   include/detection_camera.h)
+target_include_directories(detection_camera PUBLIC ${CMAKE_SOURCE_DIR}/include/preprocessing ${CMAKE_SOURCE_DIR}/include/tracking)
 target_link_libraries(detection_camera tflite_wrapper ${TF_LITE_LIB} ${OPENCV_LIBRARIES})
-add_dependencies(detection_camera tflite_wrapper tensorflow opencv)
+add_dependencies(detection_camera preprocessing tracking tflite_wrapper tensorflow opencv)
 
 add_executable(edge
   src/main.cpp
   ${CMAKE_BINARY_DIR}/tensorflow/src/tensorflow/tensorflow/lite/tools/make/downloads/fft2d/fftsg.c
   ${CMAKE_BINARY_DIR}/tensorflow/src/tensorflow/tensorflow/lite/tools/optimize/sparsity/format_converter.cc
 )
-target_link_libraries(edge detection_camera tflite_wrapper ${OPENCV_LIBRARIES} ${TF_LITE_LIB} ${LIB_EDGETPU})
-add_dependencies(edge detection_camera tflite_wrapper tensorflow opencv)
+target_link_libraries(edge detection_camera preprocessing tracking tflite_wrapper ${OPENCV_LIBRARIES} ${TF_LITE_LIB} ${LIB_EDGETPU})
+add_dependencies(edge detection_camera preprocessing tracking tflite_wrapper tensorflow opencv)
 
