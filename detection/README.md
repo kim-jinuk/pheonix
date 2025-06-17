@@ -3,8 +3,10 @@ source /workspace/peta_prj/Clocked_pwm_peta_v2/zynq_sdk/environment-setup-cortex
 export TOOLCHAIN_DIR=/opt/gcc-linaro-12.2.1-2022.11-x86_64_arm-linux-gnueabihf
 export CC=${TOOLCHAIN_DIR}/bin/arm-linux-gnueabihf-gcc
 export CXX=${TOOLCHAIN_DIR}/bin/arm-linux-gnueabihf-g++
+
 cd src
-mkdir build && cd build 
+mkdir build && cd build
+
 cmake .. \
   -DCMAKE_SYSROOT=${SDKTARGETSYSROOT} \
   -DCMAKE_FIND_ROOT_PATH=${SDKTARGETSYSROOT} \
@@ -12,9 +14,10 @@ cmake .. \
   -DTARGET_FPU=neon \
   -DTARGET_FLOAT=hard   \
   -DCMAKE_BUILD_TYPE=Release
+
 make
 
-## run:
+## run
 sudo ./detection --model <model_name> --labels <label_name>
 
 # fps
