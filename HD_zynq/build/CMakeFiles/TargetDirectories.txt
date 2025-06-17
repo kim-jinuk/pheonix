@@ -1,0 +1,3 @@
+/mnt/hgfs/share/icd_final_pheonix-HD - boost_video/build/CMakeFiles/thread_structure.dir
+/mnt/hgfs/share/icd_final_pheonix-HD - boost_video/build/CMakeFiles/edit_cache.dir
+/mnt/hgfs/share/icd_final_pheonix-HD - boost_video/build/CMakeFiles/rebuild_cache.dir

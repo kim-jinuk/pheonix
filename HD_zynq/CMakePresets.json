@@ -1,0 +1,34 @@
+{
+    "version": 3,
+    "cmakeMinimumRequired": {
+        "major": 3,
+        "minor": 19
+    },
+    "configurePresets": [
+        {
+            "name": "host",
+            "description": "Linux x86_64 native build",
+            "generator": "Unix Makefiles",
+            "binaryDir": "${sourceDir}/build"
+        },
+        {
+            "name": "arm",
+            "description": "ARM cross-compile build for Zynq",
+            "generator": "Unix Makefiles",
+            "binaryDir": "${sourceDir}/build_arm",
+            "toolchainFile": "toolchain.cmake"
+        },
+        {
+            "name": "myproject0520_CC",
+            "displayName": "Configure preset using toolchain file",
+            "description": "Sets Ninja generator, build and install directory",
+            "generator": "Ninja",
+            "binaryDir": "${sourceDir}/out/build/${presetName}",
+            "cacheVariables": {
+                "CMAKE_BUILD_TYPE": "Debug",
+                "CMAKE_TOOLCHAIN_FILE": "",
+                "CMAKE_INSTALL_PREFIX": "${sourceDir}/out/install/${presetName}"
+            }
+        }
+    ]
+}
