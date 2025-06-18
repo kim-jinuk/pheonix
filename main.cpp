@@ -7,14 +7,19 @@
 #include "running_control_csc/CfgLoader.hpp"
 #include "running_control_csc/Task.hpp"
 #include "running_control_csc/ImgTaskv1.hpp"
+#include "running_control_csc/ImgTaskv2.hpp"
 #include "running_control_csc/Logger.hpp"
+#include "running_control_csc/sender.hpp"
 #include "image_processing_csc/ImageProcessor.hpp"
 #include "detecting_csc/edgetpu_detector.hpp"
+#include "tracking_csc/sort_tracker.hpp"
 #include <signal.h>
 #include <thread>
 #include <iostream>
 #include <atomic>
 #include <unistd.h>
+#define IMG_VERSION 2
+
 using namespace std;
 std::ostream& operator<<(std::ostream& os, State s) {
     switch (s) {
@@ -60,9 +65,9 @@ int main() {
         use_edgetpu
     );
     /* tracker*/
-    tracking::SortTracker tracker();
+    tracking::SortTracker tracker(0.3f);
     /* Image processor*/
-    ImageProcessor imgprocessor();
+    ImageProcessor imgprocessor;
     /* BIT */
     BIT bit;
     /* TCPcmd */
@@ -82,8 +87,17 @@ int main() {
     std::thread sendStateThread(Task_sendState, std::ref(tcpStateChannel), std::ref(bit), std::ref(logger)); 
     std::thread receiveCmdThread(Task_receiveCmd, std::ref(tcpCmdChannel),std::ref(motorcontrol),std::ref(logger)); 
     std::thread moveMotorThread(Task_moveMotor,std::ref(motorcontrol)); 
-    std::thread ImageProcessingThread(Task_ImageProcessing,std::ref(capunit),std::ref(imgprocessor),std::ref(detector),std::ref(tracker),std::ref(sender));
-    
+
+#if IMG_VERSION == 1
+    std::thread ImageProcessingThread(Task_ImageProcessing, std::ref(capunit),std::ref(imgprocessor),\
+                                    std::ref(detector),std::ref(tracker),std::ref(sender));
+#elif IMG_VERSION == 2
+    std::thread image_processThread(Task_img_process, std::ref(capunit),std::ref(imgprocessor),std::ref(sender),std::ref(tracker), std::ref(enhance_to_infer));
+    std::thread inferThread(Task_infer, std::ref(detector), std::ref(enhance_to_infer));
+#endif
+
+
+
     while (true) {
     std::this_thread::sleep_for(std::chrono::hours(24));
     }

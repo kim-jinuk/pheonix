@@ -13,7 +13,7 @@ public:
     UdpSender(const std::string& ip, int port);
     ~UdpSender();
 
-    std::vector<std::vector<uint8_t>> BuildUdpPackets(const FramePtr& frame, const std::vector<ObjectInfo>& objs); 
+    std::vector<std::vector<uint8_t>> BuildUdpPackets(const FrameData& frame, const std::vector<ObjectInfo>& objs); 
     void UdpSend(const std::vector<std::vector<uint8_t>>& packets);  
 private:
     int sock_;

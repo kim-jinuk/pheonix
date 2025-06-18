@@ -1,34 +1,46 @@
 {
-    "version": 3,
-    "cmakeMinimumRequired": {
-        "major": 3,
-        "minor": 19
-    },
-    "configurePresets": [
-        {
-            "name": "host",
-            "description": "Linux x86_64 native build",
-            "generator": "Unix Makefiles",
-            "binaryDir": "${sourceDir}/build"
-        },
-        {
-            "name": "arm",
-            "description": "ARM cross-compile build for Zynq",
-            "generator": "Unix Makefiles",
-            "binaryDir": "${sourceDir}/build_arm",
-            "toolchainFile": "toolchain.cmake"
-        },
-        {
-            "name": "myproject0520_CC",
-            "displayName": "Configure preset using toolchain file",
-            "description": "Sets Ninja generator, build and install directory",
-            "generator": "Ninja",
-            "binaryDir": "${sourceDir}/out/build/${presetName}",
-            "cacheVariables": {
-                "CMAKE_BUILD_TYPE": "Debug",
-                "CMAKE_TOOLCHAIN_FILE": "",
-                "CMAKE_INSTALL_PREFIX": "${sourceDir}/out/install/${presetName}"
-            }
-        }
-    ]
+  "version": 4,
+  "cmakeMinimumRequired": {
+    "major": 3,
+    "minor": 19
+  },
+  "configurePresets": [
+    {
+      "name": "zynq-arm-linaro-release",
+      "displayName": "Zynq ARM Release (Linaro Toolchain)",
+      "description": "Cross-compile for Zynq using Linaro GCC 12.2.1",
+      "generator": "Unix Makefiles",
+      "binaryDir": "${sourceDir}/out/build",
+      "cacheVariables": {
+                "CMAKE_BUILD_TYPE": "Release",
+                "CMAKE_SYSTEM_NAME": "Linux",
+                "CMAKE_SYSTEM_PROCESSOR": "arm",
+                "CMAKE_C_COMPILER": "/opt/gcc-linaro-12.2.1-2022.11-x86_64_arm-linux-gnueabihf/bin/arm-linux-gnueabihf-gcc",
+                "CMAKE_CXX_COMPILER": "/opt/gcc-linaro-12.2.1-2022.11-x86_64_arm-linux-gnueabihf/bin/arm-linux-gnueabihf-g++",
+
+                "CMAKE_SYSROOT": "/workspace/peta_prj/Clocked_pwm_peta_v2/zynq_sdk/sysroots/cortexa9t2hf-neon-xilinx-linux-gnueabi",
+
+                "CMAKE_FIND_ROOT_PATH_MODE_PROGRAM": "NEVER",
+                "CMAKE_FIND_ROOT_PATH_MODE_LIBRARY": "ONLY",
+                "CMAKE_FIND_ROOT_PATH_MODE_INCLUDE": "ONLY",
+
+                "TARGET_CPU": "cortex-a9",
+                "TARGET_FPU": "neon",
+                "TARGET_FLOAT": "hard"
+                },
+      "environment": {
+        "PKG_CONFIG_SYSROOT_DIR": "/workspace/peta_prj/Clocked_pwm_peta_v2/zynq_sdk/sysroots/cortexa9t2hf-neon-xilinx-linux-gnueabi",
+        "PKG_CONFIG_PATH": "/workspace/peta_prj/Clocked_pwm_peta_v2/zynq_sdk/sysroots/cortexa9t2hf-neon-xilinx-linux-gnueabi/usr/lib/pkgconfig"
+      }
+    }
+  ],
+  "buildPresets": [
+    {
+      "name": "zynq-arm-linaro-release",
+      "displayName": "Build for Zynq ARM (Release - Linaro)",
+      "configurePreset": "zynq-arm-linaro-release",
+      "description": "Build using Linaro toolchain",
+      "jobs": 8
+    }
+  ]
 }

@@ -1,7 +1,7 @@
 #pragma once
 #include "running_control_csc/globals.hpp"
 #include <opencv2/opencv.hpp>
-
+#include <vector>
 class CaptureUnit {
 
 private :
@@ -22,7 +22,7 @@ public :
     cv::Mat enhance_contrast(const cv::Mat& src,
                                 double clip_limit = 4.0,
                                 cv::Size tile_grid = {32, 32});
-    cv::Mat overlay(cv::Mat &src, vector<InferenceResult>& info);
+    cv::Mat overlay(cv::Mat &src, std::vector<InferenceResult>& info);
 };
 
 

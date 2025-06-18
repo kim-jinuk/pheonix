@@ -206,9 +206,9 @@ extern Position pos;
 extern std::mutex pos_mtx;
 
 extern TargetInfo targetInfo;
+extern std::unordered_map<int,std::string> m_track_label;
 
-
-#define MAX_QUEUE_SIZE 3
+#define MAX_QUEUE_SIZE 1
 template<typename T>
 class ThreadSafeQueue {
 private:
@@ -256,6 +256,9 @@ public:
     }
 }
 };
+
+
 using FramePtr = std::shared_ptr<FrameData>;
 extern ThreadSafeQueue<FramePtr> enhance_to_infer;
-extern ThreadSafeQueue<FramePtr> infer_to_send;
+extern std::vector<InferenceResult> InferResult;
+extern std::mutex infer_mtx;

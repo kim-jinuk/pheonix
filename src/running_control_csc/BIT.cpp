@@ -37,9 +37,17 @@ bool BIT::isCamConnected() {
 } 
 
 bool BIT::isTpuConnected() {
-    /**
-        TODO
-    */
+    // FILE* pipe = popen("lsusb | grep -c 1a6e:089a", "r");
+    // if (!pipe) return false;
+
+    // char buffer[16];
+    // if (fgets(buffer, sizeof(buffer), pipe)) {
+    //     int count = std::atoi(buffer);
+    //     pclose(pipe);
+    //     return count > 0;
+    // }
+
+    // pclose(pipe);
     return true;
 }
 

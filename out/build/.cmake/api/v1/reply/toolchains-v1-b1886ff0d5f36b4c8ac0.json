@@ -1,0 +1,109 @@
+{
+	"kind" : "toolchains",
+	"toolchains" : 
+	[
+		{
+			"compiler" : 
+			{
+				"id" : "GNU",
+				"implicit" : 
+				{
+					"includeDirectories" : 
+					[
+						"/opt/gcc-linaro-12.2.1-2022.11-x86_64_arm-linux-gnueabihf/lib/gcc/arm-linux-gnueabihf/12.2.1/include",
+						"/opt/gcc-linaro-12.2.1-2022.11-x86_64_arm-linux-gnueabihf/lib/gcc/arm-linux-gnueabihf/12.2.1/include-fixed",
+						"/opt/gcc-linaro-12.2.1-2022.11-x86_64_arm-linux-gnueabihf/arm-linux-gnueabihf/include",
+						"/workspace/peta_prj/Clocked_pwm_peta_v2/zynq_sdk/sysroots/cortexa9t2hf-neon-xilinx-linux-gnueabi/usr/include"
+					],
+					"linkDirectories" : 
+					[
+						"/opt/gcc-linaro-12.2.1-2022.11-x86_64_arm-linux-gnueabihf/lib/gcc/arm-linux-gnueabihf/12.2.1",
+						"/opt/gcc-linaro-12.2.1-2022.11-x86_64_arm-linux-gnueabihf/lib/gcc/arm-linux-gnueabihf",
+						"/opt/gcc-linaro-12.2.1-2022.11-x86_64_arm-linux-gnueabihf/lib/gcc",
+						"/opt/gcc-linaro-12.2.1-2022.11-x86_64_arm-linux-gnueabihf/arm-linux-gnueabihf/lib",
+						"/workspace/peta_prj/Clocked_pwm_peta_v2/zynq_sdk/sysroots/cortexa9t2hf-neon-xilinx-linux-gnueabi/lib",
+						"/workspace/peta_prj/Clocked_pwm_peta_v2/zynq_sdk/sysroots/cortexa9t2hf-neon-xilinx-linux-gnueabi/usr/lib"
+					],
+					"linkFrameworkDirectories" : [],
+					"linkLibraries" : 
+					[
+						"gcc",
+						"gcc_s",
+						"c",
+						"gcc",
+						"gcc_s"
+					]
+				},
+				"path" : "/opt/gcc-linaro-12.2.1-2022.11-x86_64_arm-linux-gnueabihf/bin/arm-linux-gnueabihf-gcc",
+				"version" : "12.2.1"
+			},
+			"language" : "C",
+			"sourceFileExtensions" : 
+			[
+				"c",
+				"m"
+			]
+		},
+		{
+			"compiler" : 
+			{
+				"id" : "GNU",
+				"implicit" : 
+				{
+					"includeDirectories" : 
+					[
+						"/opt/gcc-linaro-12.2.1-2022.11-x86_64_arm-linux-gnueabihf/arm-linux-gnueabihf/include/c++/12.2.1",
+						"/opt/gcc-linaro-12.2.1-2022.11-x86_64_arm-linux-gnueabihf/arm-linux-gnueabihf/include/c++/12.2.1/arm-linux-gnueabihf",
+						"/opt/gcc-linaro-12.2.1-2022.11-x86_64_arm-linux-gnueabihf/arm-linux-gnueabihf/include/c++/12.2.1/backward",
+						"/opt/gcc-linaro-12.2.1-2022.11-x86_64_arm-linux-gnueabihf/lib/gcc/arm-linux-gnueabihf/12.2.1/include",
+						"/opt/gcc-linaro-12.2.1-2022.11-x86_64_arm-linux-gnueabihf/lib/gcc/arm-linux-gnueabihf/12.2.1/include-fixed",
+						"/opt/gcc-linaro-12.2.1-2022.11-x86_64_arm-linux-gnueabihf/arm-linux-gnueabihf/include",
+						"/workspace/peta_prj/Clocked_pwm_peta_v2/zynq_sdk/sysroots/cortexa9t2hf-neon-xilinx-linux-gnueabi/usr/include"
+					],
+					"linkDirectories" : 
+					[
+						"/opt/gcc-linaro-12.2.1-2022.11-x86_64_arm-linux-gnueabihf/lib/gcc/arm-linux-gnueabihf/12.2.1",
+						"/opt/gcc-linaro-12.2.1-2022.11-x86_64_arm-linux-gnueabihf/lib/gcc/arm-linux-gnueabihf",
+						"/opt/gcc-linaro-12.2.1-2022.11-x86_64_arm-linux-gnueabihf/lib/gcc",
+						"/opt/gcc-linaro-12.2.1-2022.11-x86_64_arm-linux-gnueabihf/arm-linux-gnueabihf/lib",
+						"/workspace/peta_prj/Clocked_pwm_peta_v2/zynq_sdk/sysroots/cortexa9t2hf-neon-xilinx-linux-gnueabi/lib",
+						"/workspace/peta_prj/Clocked_pwm_peta_v2/zynq_sdk/sysroots/cortexa9t2hf-neon-xilinx-linux-gnueabi/usr/lib"
+					],
+					"linkFrameworkDirectories" : [],
+					"linkLibraries" : 
+					[
+						"stdc++",
+						"m",
+						"gcc_s",
+						"gcc",
+						"c",
+						"gcc_s",
+						"gcc"
+					]
+				},
+				"path" : "/opt/gcc-linaro-12.2.1-2022.11-x86_64_arm-linux-gnueabihf/bin/arm-linux-gnueabihf-g++",
+				"version" : "12.2.1"
+			},
+			"language" : "CXX",
+			"sourceFileExtensions" : 
+			[
+				"C",
+				"M",
+				"c++",
+				"cc",
+				"cpp",
+				"cxx",
+				"mm",
+				"mpp",
+				"CPP",
+				"ixx",
+				"cppm"
+			]
+		}
+	],
+	"version" : 
+	{
+		"major" : 1,
+		"minor" : 0
+	}
+}

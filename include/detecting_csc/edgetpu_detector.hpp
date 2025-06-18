@@ -8,6 +8,8 @@
 #include <string>
 #include <memory>
 #include <vector>
+#include <fstream>
+#include <iostream>
 #include <opencv2/opencv.hpp>
 #include "edgetpu.h"
 #include "tensorflow/lite/interpreter.h"
@@ -21,7 +23,7 @@
 
 namespace edge {
 
-
+std::map<int, std::string> ParseLabel(const std::string& label_path);
 
 class TfLiteWrapper {
 public:

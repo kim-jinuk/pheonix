@@ -1,0 +1,3 @@
+/workspace/DAN/pheonix/out/build/CMakeFiles/EOIR_system.dir
+/workspace/DAN/pheonix/out/build/CMakeFiles/edit_cache.dir
+/workspace/DAN/pheonix/out/build/CMakeFiles/rebuild_cache.dir

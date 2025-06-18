@@ -4,12 +4,40 @@
 #include <iostream>
 #include <memory>
 #include <vector>
-
+#include <fstream>
+#include <iostream>
+#include <map>
+#include <regex>
+#include <string>
 #include "tensorflow/lite/builtin_op_data.h"
 #include "tensorflow/lite/kernels/register.h"
 
 #include "running_control_csc/globals.hpp"
+
+using std::getline;
+using std::ifstream;
+using std::istringstream;
+using std::map;
+using std::regex;
+using std::regex_replace;
+using std::string;
+
 namespace edge {
+
+std::map<int, std::string> ParseLabel(const std::string& label_path) {
+  map<int, string> ret;
+  ifstream label_file(label_path);
+  if (!label_file.good()) return ret;
+  for (string line; getline(label_file, line);) {
+    istringstream ss(line);
+    int id;
+    ss >> id;
+    line = regex_replace(line, regex("^[0-9]+ +"), "");
+    ret.emplace(id, line);
+  }
+  return ret;
+
+}
 
 TfLiteWrapper::TfLiteWrapper(
     const std::string& model_path, const std::string& label_path, const float threshold,

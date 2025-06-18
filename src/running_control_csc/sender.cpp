@@ -4,7 +4,7 @@
 #include <iostream>
 #include <unistd.h>
 #include <opencv2/opencv.hpp>
-
+#include <vector>
 #define MAX_PACKET_SIZE 1400
 
 
@@ -39,14 +39,12 @@ std::vector<std::vector<uint8_t>> UdpSender::BuildUdpPackets(
 {
     std::vector<std::vector<uint8_t>> packets;
 
-     std::vector<std::vector<uint8_t>> packets;
-
     // 1. 이미지가 비어있다면 반환
     if (frame.img_bgr.empty()) return packets;
 
     // 2. JPEG 압축
     std::vector<uchar> jpeg_buf;
-    std::vector<int> params = {cv::IMWRITE_JPEG_QUALITY, 90};  // 압축률 조정 가능
+    std::vector<int> params = {cv::IMWRITE_JPEG_QUALITY, 80};  // 압축률 조정 가능
     bool success = cv::imencode(".jpg", frame.img_bgr, jpeg_buf, params);
     if (!success || jpeg_buf.empty()) return packets;
 

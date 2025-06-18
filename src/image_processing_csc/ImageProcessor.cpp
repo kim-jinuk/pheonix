@@ -1,8 +1,8 @@
 
 #include "image_processing_csc/ImageProcessor.hpp"
 #include "running_control_csc/globals.hpp"
-
-
+#include <opencv2/opencv.hpp>
+#include <vector>
 CaptureUnit::CaptureUnit() {
     cap.set(cv::CAP_PROP_FRAME_WIDTH, 640);
     cap.set(cv::CAP_PROP_FRAME_HEIGHT, 480);
@@ -16,8 +16,9 @@ bool CaptureUnit::openCamera() {
     }
     cap.set(cv::CAP_PROP_FRAME_WIDTH, 640);
     cap.set(cv::CAP_PROP_FRAME_HEIGHT, 480);
-
+    cap.set(cv::CAP_PROP_FOURCC, cv::VideoWriter::fourcc('M', 'J', 'P', 'G'));
      // --- 카메라 설정 확인 ---
+     
     double width = cap.get(cv::CAP_PROP_FRAME_WIDTH);
     double height = cap.get(cv::CAP_PROP_FRAME_HEIGHT);
     double fps = cap.get(cv::CAP_PROP_FPS);
@@ -53,8 +54,8 @@ void CaptureUnit::closeCamera() {
 }
 
 
- cv::Mat ImageProcessor::enhance_edges(const cv::Mat &src, float strength = 1.0f) {
-    v::Mat blur;
+ cv::Mat ImageProcessor::enhance_edges(const cv::Mat &src, float strength) {
+    cv::Mat blur;
     cv::GaussianBlur(src, blur, {0,0}, 3);
     cv::Mat sharp;
     cv::addWeighted(src, 1.0 + strength, blur, -strength, 0, sharp);
@@ -62,8 +63,8 @@ void CaptureUnit::closeCamera() {
 
  }
 cv::Mat ImageProcessor::enhance_contrast(const cv::Mat& src,
-                                double clip_limit = 4.0,
-                                cv::Size tile_grid = {32, 32})
+                                double clip_limit,
+                                cv::Size tile_grid)
 {
     cv::Mat out;
 
@@ -94,39 +95,7 @@ cv::Mat ImageProcessor::enhance_contrast(const cv::Mat& src,
 
 
 }
-    cv::Mat overlay(cv::Mat &src, vector<InferenceResult>& info) {
-
-        for (const auto& res : info) {
-            // 사각형 박스 그리기
-            cv::Rect box(
-                static_cast<int>(res.x1),
-                static_cast<int>(res.y1),
-                static_cast<int>(res.x2 - res.x1),
-                static_cast<int>(res.y2 - res.y1)
-            );
-            cv::rectangle(src, box, cv::Scalar(0, 255, 0), 2); // 초록색 테두리
-
-            // 텍스트 만들기
-            std::string label = res.candidate + " " + cv::format("%.2f", res.score);
-
-            int baseLine = 0;
-            cv::Size labelSize = cv::getTextSize(label, cv::FONT_HERSHEY_SIMPLEX, 0.5, 1, &baseLine);
-            int top = std::max(static_cast<int>(res.y1), labelSize.height);
-
-            // 텍스트 배경
-            cv::rectangle(
-                src,
-                cv::Point(res.x1, top - labelSize.height),
-                cv::Point(res.x1 + labelSize.width, top + baseLine),
-                cv::Scalar(0, 255, 0), cv::FILLED
-            );
-
-            // 텍스트 그리기
-            cv::putText(
-                src, label,
-                cv::Point(res.x1, top),
-                cv::FONT_HERSHEY_SIMPLEX,
-                0.5, cv::Scalar(0, 0, 0), 1
-            );
-        }
-    }
+cv::Mat overlay(cv::Mat &src, std::vector<InferenceResult>& info) {
+    cv::Mat i;
+    return i;
+}

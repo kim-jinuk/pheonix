@@ -4,14 +4,11 @@
 #include "running_control_csc/BIT.hpp"
 #include "running_control_csc/receiver.hpp"
 #include "running_control_csc/Logger.hpp"
+#include "running_control_csc/sender.hpp"
 #include "image_processing_csc/ImageProcessor.hpp"
+#include "detecting_csc/edgetpu_detector.hpp"
+#include "tracking_csc/sort_tracker.hpp"
+#include "edgetpu.h"
 
+void Task_ImageProcessing(CaptureUnit& capunit ,ImageProcessor& imgprocessor,edge::TfLiteWrapper& detector, tracking::SortTracker& tracker , UdpSender& sender);
 
-void Task_ImageProcessing(CaptureUnit& capunit /*,EdgeTpuDetector& detector, SortTracker& tracker*/);
-
-
-void Task_cap_enhance(CaptureUnit& capunit , ThreadSafeQueue<FramePtr>& out_queue);
-
-void Task_infer_track();
-
-void Task_send();

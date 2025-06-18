@@ -162,7 +162,7 @@ void Task_receiveCmd(TcpCmdChannel& tcpCmdChannel , MotorControl& motorcontrol,L
 
 void Task_moveMotor(MotorControl& motorcontrol) {
     
-    std::cout << "motor thread is created" <<std::endl;
+  //  std::cout << "motor thread is created" <<std::endl;
     while (true) {
         {
             std::unique_lock<std::mutex> lock(statesync.mtx);

@@ -7,6 +7,7 @@
 #include <mutex>
 #include <condition_variable>
 #include <string>
+#include <map>
 
 SystemInfo sysInfo;
 StateSync statesync;
@@ -17,11 +18,11 @@ std::mutex pos_mtx;
 TargetInfo targetInfo;
 Cam_opt cam_opt;
 
-std::shared_ptr<FramePacket> latest_pkt;
-std::mutex pkt_mtx;
 
 std::vector<std::string> State_str={"CHECKING", "IDLE", "RUNNING"};
 std::vector<std::string> Mode_str={"SCAN", "MANUAL", "TRACKING"};
+
+std::unordered_map<int,std::string> m_track_label;
 
 static const std::vector<std::string> CmdFlagStr = {
     "Mode_change",
@@ -41,5 +42,5 @@ const std::unordered_map<CmdFlag, std::vector<std::string>> cmdDict = {
 
 
 ThreadSafeQueue<FramePtr> enhance_to_infer;
-ThreadSafeQueue<FramePtr> infer_to_send;
-
+std::vector<InferenceResult> InferResult;
+std::mutex infer_mtx;
