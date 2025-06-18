@@ -99,6 +99,7 @@ file(GLOB SRC
    ${CMAKE_CURRENT_SOURCE_DIR}/src/image_processing_csc/ImageProcessor.cpp
    ${CMAKE_CURRENT_SOURCE_DIR}/src/tracking_csc/sort_tracker.cpp
    ${CMAKE_CURRENT_SOURCE_DIR}/src/detecting_csc/edgetpu_detector.cpp
+
     )
 
 add_executable(EOIR_system ${SRC})

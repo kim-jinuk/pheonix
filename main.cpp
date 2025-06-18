@@ -92,7 +92,7 @@ int main() {
     std::thread ImageProcessingThread(Task_ImageProcessing, std::ref(capunit),std::ref(imgprocessor),\
                                     std::ref(detector),std::ref(tracker),std::ref(sender));
 #elif IMG_VERSION == 2
-    std::thread image_processThread(Task_img_process, std::ref(capunit),std::ref(imgprocessor),std::ref(sender),std::ref(tracker), std::ref(enhance_to_infer));
+    std::thread image_processThread(Task_img_process, std::ref(capunit),std::ref(imgprocessor),std::ref(sender),std::ref(tracker),  std::ref(detector),std::ref(enhance_to_infer));
     std::thread inferThread(Task_infer, std::ref(detector), std::ref(enhance_to_infer));
 #endif
 

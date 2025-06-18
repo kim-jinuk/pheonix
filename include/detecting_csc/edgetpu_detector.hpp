@@ -23,7 +23,7 @@
 
 namespace edge {
 
-std::map<int, std::string> ParseLabel(const std::string& label_path);
+std::map<uint8_t, std::string> ParseLabel(const std::string& label_path);
 
 class TfLiteWrapper {
 public:
@@ -46,13 +46,15 @@ public:
   std::chrono::microseconds get_prev_duration() const;
   // Destructor.
   ~TfLiteWrapper() = default;
-
+  const std::map<uint8_t, std::string>& get_label_map() const; //Dan
+  uint8_t get_class_id(const std::string& label) const;   //DAN
 private:
   std::unique_ptr<tflite::FlatBufferModel> m_model;
   std::unique_ptr<tflite::Interpreter> m_interpreter;
   std::vector<int> m_input_shape;
   std::vector<size_t> m_output_shape;
-  std::map<int, std::string> m_labels;
+  std::map<uint8_t, std::string> m_labels;
+  std::map<std::string, uint8_t> m_label_to_id; //DAN
   float m_threshold;
   std::chrono::microseconds m_prev_inference_duration;
 };

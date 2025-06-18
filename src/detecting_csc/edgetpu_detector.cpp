@@ -9,6 +9,7 @@
 #include <map>
 #include <regex>
 #include <string>
+#include <cmath>
 #include "tensorflow/lite/builtin_op_data.h"
 #include "tensorflow/lite/kernels/register.h"
 
@@ -24,8 +25,8 @@ using std::string;
 
 namespace edge {
 
-std::map<int, std::string> ParseLabel(const std::string& label_path) {
-  map<int, string> ret;
+std::map<uint8_t, std::string> ParseLabel(const std::string& label_path) {
+  map<uint8_t, string> ret;
   ifstream label_file(label_path);
   if (!label_file.good()) return ret;
   for (string line; getline(label_file, line);) {
@@ -64,6 +65,10 @@ TfLiteWrapper::TfLiteWrapper(
   }
   m_labels = ParseLabel(label_path);
   m_threshold = threshold;
+  // [추가] label → id 맵 구성
+  for (const auto& [id, label] : m_labels) {
+      m_label_to_id[label] = id;
+  }
 }
 
 void TfLiteWrapper::InitTfLiteWrapperEdgetpu(
@@ -94,6 +99,7 @@ const std::vector<InferenceResult> TfLiteWrapper::GetResults(
     const std::vector<std::vector<float>>& output) {
   std::vector<InferenceResult> results;
   int n = lround(output[3][0]);
+  n = std::min(n, 5); // 객체 수 제한... DAN 추가
   for (int i = 0; i < n; i++) {
     int id = lround(output[1][i]);
     float score = output[2][i];
@@ -148,6 +154,16 @@ const std::vector<InferenceResult> TfLiteWrapper::RunInference(
 
 std::chrono::microseconds TfLiteWrapper::get_prev_duration() const {
   return m_prev_inference_duration;
+}
+// [추가] id → label
+const std::map<uint8_t, std::string>& TfLiteWrapper::get_label_map() const {
+    return m_labels;
+}
+
+// [추가] label → id
+uint8_t TfLiteWrapper::get_class_id(const std::string& label) const {
+    auto it = m_label_to_id.find(label);
+    return (it != m_label_to_id.end()) ? it->second : -1;
 }
 
 }  // namespace edge

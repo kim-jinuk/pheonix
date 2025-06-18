@@ -13,10 +13,10 @@
 #include <iostream>
 #define IMG_WIDTH 640
 #define IMG_HEIGHT 480
+#define MAX_OBJECTS 5
 
 
-
-void Task_img_process(CaptureUnit& capunit ,ImageProcessor& imgprocessor, UdpSender& sender,tracking::SortTracker& tracker, ThreadSafeQueue<FramePtr>& out_queue) {
+void Task_img_process(CaptureUnit& capunit ,ImageProcessor& imgprocessor, UdpSender& sender,tracking::SortTracker& tracker,edge::TfLiteWrapper& detector ,ThreadSafeQueue<FramePtr>& out_queue) {
     uint32_t frame_num=0;
     while (true) {
         {
@@ -43,17 +43,22 @@ void Task_img_process(CaptureUnit& capunit ,ImageProcessor& imgprocessor, UdpSen
                 out_queue.push(frame);
             }
             
+            // 결과 받아옴. (string ,score x1,y1,x2,y2)
             {
              std::lock_guard<std::mutex> lock(infer_mtx);
              candidates=InferResult;
             }
 
+
             std::vector<cv::Rect2f> det_boxes;
             det_boxes.reserve(candidates.size());
             // 5. tracking
+            // infer 결과의 박스 정보 채움
             for (const auto& c : candidates) {
                 det_boxes.emplace_back(c.x1, c.y1, c.x2 - c.x1, c.y2 - c.y1);
             }
+            // 박스 정보를 바탕으로 <bbox, int> 가져옴, int 는 id
+            // tracked는 <bbbox, int> 저장되어있음
             const auto tracked = tracker.update(det_boxes);
             auto iou = [](const cv::Rect2f& a, const cv::Rect2f& b)
                 {
@@ -61,7 +66,7 @@ void Task_img_process(CaptureUnit& capunit ,ImageProcessor& imgprocessor, UdpSen
                     float uni   = a.area() + b.area() - inter;
                     return uni>0 ? inter/uni : 0.f; 
                 };
-
+            // iou 계산해서 추론 결과에 있는 최종 cls 반영 + id에 해당하는 cls 반영(m_track_label)
             for (size_t i = 0; i < tracked.size(); ++i) {
                 int id = tracked[i].second;
                 // detection → track 매칭 (가장 IoU 큰 박스)
@@ -81,6 +86,7 @@ void Task_img_process(CaptureUnit& capunit ,ImageProcessor& imgprocessor, UdpSen
             const auto& f = "Inference Rate: ";
                   //  + std::to_string(1000000 / detector.get_prev_duration().count()) + " fps";
             cv::putText(frame->img_bgr, f, cv::Point(0, 20), cv::FONT_HERSHEY_COMPLEX, .8, cvred, 1.5, 8, 0);
+            // tracked 
             for (const auto& [box,id] : tracked) {
                 int l = static_cast<int>(box.x * IMG_WIDTH);
                 int t = static_cast<int>(box.y * IMG_HEIGHT);
@@ -96,10 +102,72 @@ void Task_img_process(CaptureUnit& capunit ,ImageProcessor& imgprocessor, UdpSen
                             cv::FONT_HERSHEY_COMPLEX, .8, cvred, 1.5);
             }
 
-            std::vector<ObjectInfo> objs(5); //dummy
-            auto packets=sender.BuildUdpPackets(*frame, objs);
-            sender.UdpSend(packets);
+            // 보낼 정보 저장하기
+            std::vector<ObjectInfo> objects; 
+            int i=0;
+            for (const auto& [box, track_id] : tracked) {
+                ObjectInfo obj;
 
+                // 1. tracking ID
+                obj.tracking_id = static_cast<uint8_t>(track_id);
+
+                // 2. Label → 클래스 ID
+                auto it = m_track_label.find(track_id);
+                int b= track_id;
+                if (it != m_track_label.end()) {
+                    const std::string& label = it->second;
+                    int a =obj.cls;
+                    
+                    std::cout << "[DEBUG] track_id=" << b << ", label='" << label << "'";
+                    obj.cls = detector.get_class_id(label);
+                    std::cout << ", mapped cls=" << a << std::endl;
+                    // 
+                    // std::cout << label << "cls :" << a <<std::endl;
+                } else {
+                    std::cout << "[DEBUG] track_id=" << b << " not found in m_track_label!" << std::endl;
+                    obj.cls = 255;
+                }
+                // 3. 좌표 (0~1 → pixel)
+                obj.x = static_cast<int16_t>(box.x * IMG_WIDTH);
+                obj.y = static_cast<int16_t>(box.y * IMG_HEIGHT);
+                obj.w = static_cast<int16_t>(box.width * IMG_WIDTH);
+                obj.h = static_cast<int16_t>(box.height * IMG_HEIGHT);
+
+                // 4. confidence score  InferenceResult 기준
+                if (i < candidates.size()) {
+                    obj.conf = candidates[i].score;
+                } 
+                else {
+                    obj.conf = 0.0f;
+                }
+                objects.push_back(obj);
+                i++;
+            }
+
+
+             while (objects.size() < 5) {
+                objects.push_back(ObjectInfo{255, 255, -1, -1, -1, -1, 0.0f});
+             }
+
+            std::cout << "=== ObjectInfo List ===" << std::endl;
+            std::cout << std::dec; 
+            for (size_t i = 0; i < objects.size(); ++i) {
+                const auto& obj = objects[i];
+                if (objects[i].cls==255) continue;
+                int a=frame->frame_id, b=obj.cls,c=obj.tracking_id;
+                std::cout << "frame_num : "<< a
+                        << "[" << i << "] "
+                        << "cls: " <<  b
+                        << ", track_id: " <<  c
+                        << ", x: " << obj.x
+                        << ", y: " << obj.y
+                        << ", w: " << obj.w
+                        << ", h: " << obj.h
+                        << ", conf: " << obj.conf
+                        << std::endl;
+            }
+            auto packets=sender.BuildUdpPackets(*frame, objects);
+            sender.UdpSend(packets);
 
         }
 
@@ -120,7 +188,7 @@ void Task_infer( edge::TfLiteWrapper& detector, ThreadSafeQueue<FramePtr>& in_qu
         while (sysInfo.current_state.load() == State::RUNNING) {
             
             FramePtr frame = in_queue.wait_and_pop();
-            std::cout <<"try infer..." <<std::endl;
+          //  std::cout <<"try infer..." <<std::endl;
             cv::Mat rgb_frame, resized_frame;
            // std::vector<InferenceResult> candidates;
             cv::cvtColor( frame->img_bgr, rgb_frame, cv::COLOR_BGR2RGB);
@@ -131,7 +199,7 @@ void Task_infer( edge::TfLiteWrapper& detector, ThreadSafeQueue<FramePtr>& in_qu
                 resized_frame.data,
                 resized_frame.data + resized_frame.cols * resized_frame.rows * resized_frame.elemSize());
             auto candidates = detector.RunInference(input);
-                    std::cout <<"finish infer..." <<std::endl;
+                  //  std::cout <<"finish infer..." <<std::endl;
             {
              std::lock_guard<std::mutex> lock(infer_mtx);
              InferResult=candidates;

@@ -10,5 +10,5 @@
 #include "tracking_csc/sort_tracker.hpp"
 #include "edgetpu.h"
 
-void Task_img_process(CaptureUnit& capunit ,ImageProcessor& imgprocessor, UdpSender& sender,tracking::SortTracker& tracker, ThreadSafeQueue<FramePtr>& out_queue);
+void Task_img_process(CaptureUnit& capunit ,ImageProcessor& imgprocessor, UdpSender& sender,tracking::SortTracker& tracker,edge::TfLiteWrapper& detector, ThreadSafeQueue<FramePtr>& out_queue);
 void Task_infer( edge::TfLiteWrapper& detector, ThreadSafeQueue<FramePtr>& in_queue);
