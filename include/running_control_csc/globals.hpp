@@ -220,7 +220,7 @@ public:
     void push(const T& item) {
         {
             std::lock_guard<std::mutex> lock(mutex_);
-            if (queue_.size()<=MAX_QUEUE_SIZE)
+            if (queue_.size()>MAX_QUEUE_SIZE)
                 queue_.pop();
             queue_.push(item);
         }

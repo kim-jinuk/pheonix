@@ -59,7 +59,6 @@ void ManualMotor::enqueueDelta(uint8_t delta) {
 }
 
 void ManualMotor::updateAngle() {
-    std::cout << "MANUAL logic"<<std::endl;
 
     {
         std::lock_guard<std::mutex> lock(queue_mtx);

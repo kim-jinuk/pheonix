@@ -32,14 +32,17 @@ void Task_img_process(CaptureUnit& capunit ,ImageProcessor& imgprocessor, UdpSen
 
             if (!capunit.capture(frame)) {
                 std::cout << "cap failed" <<std::endl;
+                continue;
             }
             std::vector<InferenceResult> candidates;
             frame->frame_id=frame_num++;
             frame->img_bgr = imgprocessor.enhance_edges(frame->img_bgr);
 
-            if (frame_num%3==0)
+            if (frame_num%3==0) {
+                std::cout << " try push" <<std::endl;
                 out_queue.push(frame);
-
+            }
+            
             {
              std::lock_guard<std::mutex> lock(infer_mtx);
              candidates=InferResult;
@@ -117,6 +120,7 @@ void Task_infer( edge::TfLiteWrapper& detector, ThreadSafeQueue<FramePtr>& in_qu
         while (sysInfo.current_state.load() == State::RUNNING) {
             
             FramePtr frame = in_queue.wait_and_pop();
+            std::cout <<"try infer..." <<std::endl;
             cv::Mat rgb_frame, resized_frame;
            // std::vector<InferenceResult> candidates;
             cv::cvtColor( frame->img_bgr, rgb_frame, cv::COLOR_BGR2RGB);
@@ -127,7 +131,7 @@ void Task_infer( edge::TfLiteWrapper& detector, ThreadSafeQueue<FramePtr>& in_qu
                 resized_frame.data,
                 resized_frame.data + resized_frame.cols * resized_frame.rows * resized_frame.elemSize());
             auto candidates = detector.RunInference(input);
-
+                    std::cout <<"finish infer..." <<std::endl;
             {
              std::lock_guard<std::mutex> lock(infer_mtx);
              InferResult=candidates;
