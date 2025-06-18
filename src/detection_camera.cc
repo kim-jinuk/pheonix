@@ -10,6 +10,7 @@
 #include "tracking/sort_tracker.hpp"
 
 #include <chrono>
+#include <algorithm>
 
 namespace edge {
 
@@ -25,101 +26,117 @@ DetectionCamera::DetectionCamera(
       m_preprocess(preprocess) {}
 
 void DetectionCamera::Run() {
-  const auto& input_tensor_shape = m_interpreter.GetInputShape();
-  const auto width = input_tensor_shape[1];
-  const auto height = input_tensor_shape[2];
+  const auto &in_shape = m_interpreter.GetInputShape();
+  const int mdl_w = in_shape[1];
+  const int mdl_h = in_shape[2];
 
-  // Initializing cameras.
+  // ───────── camera ─────────
   if (!m_camera.isOpened()) {
-    std::cerr << "Unable to open camera!\n";
-    exit(0);
-  } else {
-    m_camera.set(cv::CAP_PROP_FPS, 30.0f);
-    m_camera.set(cv::CAP_PROP_FRAME_HEIGHT, m_height);
-    m_camera.set(cv::CAP_PROP_FRAME_WIDTH, m_width);
-    // In case user gives incorrect parameters, cv will re-adjust, we reset our
-    // values to fit cv.
-    m_height = m_camera.get(cv::CAP_PROP_FRAME_HEIGHT);
-    m_width = m_camera.get(cv::CAP_PROP_FRAME_WIDTH);
+    std::cerr << "Unable to open camera!\n"; return;
   }
+  m_camera.set(cv::CAP_PROP_FPS, 30.0);
+  m_camera.set(cv::CAP_PROP_FRAME_HEIGHT, m_height);
+  m_camera.set(cv::CAP_PROP_FRAME_WIDTH,  m_width);
+  m_height = static_cast<int>(m_camera.get(cv::CAP_PROP_FRAME_HEIGHT));
+  m_width  = static_cast<int>(m_camera.get(cv::CAP_PROP_FRAME_WIDTH));
 
-  const auto& cvred = cv::Scalar(0, 0, 255);
-  const auto& cvblue = cv::Scalar(255, 0, 0);
-  cv::Mat frame;
-  auto start_ts = std::chrono::steady_clock::now();
-  for (;;) {
-    m_camera.read(frame);
-    if (!m_camera.read(frame)) break;  // Blank frame!
-    ++m_frame_counter;
-    cv::Mat resized_frame;
-    cv::Mat enhanced = frame;
-    for (const auto& step : m_preprocess) {
-        if (step == "contrast")
-            preprocessing::contrast::apply(enhanced);
-        else if (step == "edge")
-            preprocessing::edge::apply(enhanced);
-    }
-    // Converts image colors.
-    cvtColor(enhanced, resized_frame, cv::COLOR_BGR2RGB);
-    // Resize image to fit input tensors shape.
-    cv::resize(resized_frame, resized_frame, cv::Size(width, height));
-    std::vector<uint8_t> input(
-        resized_frame.data,
-        resized_frame.data + (resized_frame.cols * resized_frame.rows * resized_frame.elemSize()));
+  const cv::Scalar RED (0,0,255), BLUE(255,0,0);
 
-    const auto& candidates = m_interpreter.RunInference(input);
+  cv::Mat frame; int fcnt = 0; std::vector<cv::Rect> roi_list;
 
-    std::cout << "Inference Time: " << m_interpreter.get_prev_duration().count()
-              << " microseconds\n";
-    
-    std::vector<cv::Rect2f> det_boxes;
-    det_boxes.reserve(candidates.size());
-    for (const auto& c : candidates) {
-      det_boxes.emplace_back(c.x1, c.y1, c.x2 - c.x1, c.y2 - c.y1);
-    }
-    const auto tracked = m_tracker.update(det_boxes);
-    auto iou = [](const cv::Rect2f& a, const cv::Rect2f& b){
-      float inter = (a & b).area();
-      float uni   = a.area() + b.area() - inter;
-      return uni>0 ? inter/uni : 0.f;
-    };
-    for (size_t i = 0; i < tracked.size(); ++i) {
-      int id = tracked[i].second;
-      // detection → track 매칭 (가장 IoU 큰 박스)
-      float best = 0.f;
-      std::string best_label;
-      for (const auto& c : candidates) {
-        cv::Rect2f r(c.x1,c.y1,c.x2-c.x1,c.y2-c.y1);
-        float     v = iou(r, tracked[i].first);
-        if (v > best) { best = v; best_label = c.candidate; }
+  // alias for detection element type
+  using Det = typename decltype(m_interpreter.RunInference(std::vector<uint8_t>{}))::value_type;
+
+  while (m_camera.read(frame)) {
+    ++m_frame_counter; ++fcnt;
+    const bool full = (fcnt % 30 == 1) || roi_list.empty();
+
+    std::vector<Det> dets;
+
+    auto preprocess_rgb = [&](const cv::Mat &src, cv::Mat &dst){
+      cv::Mat tmp = src;
+      for(const auto &s: m_preprocess){
+        if(s=="contrast") preprocessing::contrast::apply(tmp);
+        else if(s=="edge") preprocessing::edge::apply(tmp);
       }
-      if (best > 0.3f) m_track_label[id] = best_label;
+      cv::cvtColor(tmp, dst, cv::COLOR_BGR2RGB);
+      cv::resize(dst, dst, {mdl_w,mdl_h});
+    };
+
+    if(full){
+      cv::Mat rgb; preprocess_rgb(frame,rgb);
+      std::vector<uint8_t> input(rgb.data, rgb.data+rgb.total()*rgb.elemSize());
+      dets = m_interpreter.RunInference(input);
+    } else {
+      for(const auto &roi_orig: roi_list){
+        if(roi_orig.width<4||roi_orig.height<4) continue;
+        cv::Rect pad = roi_orig;
+        pad.x = std::clamp(pad.x - pad.width/8, 0, frame.cols-1);
+        pad.y = std::clamp(pad.y - pad.height/8,0, frame.rows-1);
+        pad.width  = std::clamp(roi_orig.width*5/4,1, frame.cols-pad.x);
+        pad.height = std::clamp(roi_orig.height*5/4,1, frame.rows-pad.y);
+        if(pad.width<4||pad.height<4) continue;
+        cv::Mat patch = frame(pad);
+        cv::Mat rgb; preprocess_rgb(patch,rgb);
+        std::vector<uint8_t> input(rgb.data, rgb.data+rgb.total()*rgb.elemSize());
+        auto partial = m_interpreter.RunInference(input);
+        for(auto &p: partial){
+          p.x1 = p.x1 * pad.width  / mdl_w + pad.x;
+          p.y1 = p.y1 * pad.height / mdl_h + pad.y;
+          p.x2 = p.x2 * pad.width  / mdl_w + pad.x;
+          p.y2 = p.y2 * pad.height / mdl_h + pad.y;
+          dets.push_back(p);
+        }
+      }
     }
-    
-    const auto& f = "Inference Rate: "
-                    + std::to_string(1000000 / m_interpreter.get_prev_duration().count()) + " fps";
-    cv::putText(frame, f, cv::Point(0, 20), cv::FONT_HERSHEY_COMPLEX, .8, cvred, 1.5, 8, 0);
 
-    for (const auto& [box,id] : tracked) {
-      int l = static_cast<int>(box.x * m_width);
-      int t = static_cast<int>(box.y * m_height);
-      int r = static_cast<int>((box.x+box.width)  * m_width);
-      int b = static_cast<int>((box.y+box.height) * m_height);
+    // keep only person top‑5
+    std::vector<Det> persons; persons.reserve(5);
+    for(const auto &d: dets){
+      if(d.candidate=="person"){ persons.push_back(d); if(persons.size()==5) break; }
+    }
+    dets.swap(persons);
 
-      cv::rectangle(frame, {l,t}, {r,b}, cvblue, 2);
+    // tracking
+    std::vector<cv::Rect2f> boxes; boxes.reserve(dets.size());
+    for(const auto &d: dets) boxes.emplace_back(d.x1,d.y1,d.x2-d.x1,d.y2-d.y1);
+    auto tracked = m_tracker.update(boxes);
 
-      std::string text = m_track_label.count(id)
-                         ? m_track_label[id] + "#" + std::to_string(id)
-                         : std::string("id#") + std::to_string(id);
-      cv::putText(frame, text, {l, t-6},
-                  cv::FONT_HERSHEY_COMPLEX, .8, cvred, 1.5);
+    // map detection -> track label
+    auto iou=[&](const cv::Rect2f&a,const cv::Rect2f&b){float inter=(a&b).area();float uni=a.area()+b.area()-inter;return uni>0?inter/uni:0.f;};
+    for(const auto &[box,id]:tracked){
+      float best=0; std::string lbl;
+      for(const auto &d: dets){ cv::Rect2f r(d.x1,d.y1,d.x2-d.x1,d.y2-d.y1); float v=iou(r,box); if(v>best){best=v; lbl=d.candidate;} }
+      if(best>0.3) m_track_label[id]=lbl;
     }
 
-    cv::imshow("Live Inference", frame);
+    // update roi list
+    roi_list.clear();
+    for(const auto &[box,id]:tracked){
+      int l=std::clamp(int(box.x*m_width),0,m_width-1);
+      int t=std::clamp(int(box.y*m_height),0,m_height-1);
+      int r=std::clamp(int((box.x+box.width)*m_width),0,m_width-1);
+      int b=std::clamp(int((box.y+box.height)*m_height),0,m_height-1);
+      int w=r-l, h=b-t; if(w>4&&h>4) roi_list.emplace_back(l,t,w,h);
+    }
+
+    // draw
+    for(const auto &[box,id]:tracked){
+      int l=int(box.x*m_width); int t=int(box.y*m_height);
+      int r=int((box.x+box.width)*m_width); int b=int((box.y+box.height)*m_height);
+      cv::rectangle(frame,{l,t},{r,b},BLUE,2);
+      std::string txt=(m_track_label.count(id)?m_track_label[id]:"id" )+"#"+std::to_string(id);
+      cv::putText(frame,txt,{l,t-6},cv::FONT_HERSHEY_COMPLEX,0.8,RED,1.5);
+    }
+
+    std::string fps="Inf:"+std::to_string(int(1e6/m_interpreter.get_prev_duration().count()))+" fps";
+    cv::putText(frame,fps,{0,20},cv::FONT_HERSHEY_COMPLEX,0.8,RED,1.5);
+
+    cv::imshow("Live Inference",frame);
     cv::waitKey(1);
   }
 }
 
-DetectionCamera::~DetectionCamera() {}
+DetectionCamera::~DetectionCamera(){}
 
-}  // namespace edge
+} // namespace edge
