@@ -2,22 +2,14 @@
 #include <opencv2/opencv.hpp>
 #include "preprocessing/contrast.hpp"
 
-namespace preprocessing {
+namespace preprocessing::edge {
 /**
- * Simple unsharp‑mask edge enhancement.
+ * In-place un-sharp-mask edge enhancement.
  */
-inline cv::Mat enhance_edges(const cv::Mat &src, float strength = 1.0f) {
+inline void apply(cv::Mat& img, float strength = 1.0f)
+{
     cv::Mat blur;
-    cv::GaussianBlur(src, blur, {0,0}, 3);
-    cv::Mat sharp;
-    cv::addWeighted(src, 1.0 + strength, blur, -strength, 0, sharp);
-    return sharp;
+    cv::GaussianBlur(img, blur, {0,0}, 3);
+    cv::addWeighted(img, 1.0f + strength, blur, -strength, 0, img);
 }
-
-/**
- * Convenience composition – runs contrast then edge.
- */
-inline cv::Mat apply(const cv::Mat &frame) {
-    return enhance_edges(enhance_contrast(frame));
-}
-}
+}   // namespace preprocessing::edge

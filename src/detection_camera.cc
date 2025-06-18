@@ -6,6 +6,7 @@
 #include "tensorflow/lite/model.h"
 
 #include "preprocessing/edge_enhance.hpp"
+#include "preprocessing/contrast.hpp"
 #include "tracking/sort_tracker.hpp"
 
 #include <chrono>
@@ -15,12 +16,13 @@ namespace edge {
 DetectionCamera::DetectionCamera(
     const std::string& model_path, const std::string& label_path, const float threshold,
     std::shared_ptr<edgetpu::EdgeTpuContext> edgetpu_context, const bool edgetpu, const int source,
-    const int height, const int width, const bool verbose)
+    const int height, const int width, const bool verbose, const std::vector<std::string>& preprocess)
     : m_interpreter(model_path, label_path, threshold, edgetpu_context, edgetpu),
       m_camera(source),
       m_height(height),
       m_width(width),
-      m_verbose(verbose) {}
+      m_verbose(verbose),
+      m_preprocess(preprocess) {}
 
 void DetectionCamera::Run() {
   const auto& input_tensor_shape = m_interpreter.GetInputShape();
@@ -50,7 +52,13 @@ void DetectionCamera::Run() {
     if (!m_camera.read(frame)) break;  // Blank frame!
     ++m_frame_counter;
     cv::Mat resized_frame;
-    cv::Mat enhanced = preprocessing::apply(frame);
+    cv::Mat enhanced = frame;
+    for (const auto& step : m_preprocess) {
+        if (step == "contrast")
+            preprocessing::contrast::apply(enhanced);
+        else if (step == "edge")
+            preprocessing::edge::apply(enhanced);
+    }
     // Converts image colors.
     cvtColor(enhanced, resized_frame, cv::COLOR_BGR2RGB);
     // Resize image to fit input tensors shape.

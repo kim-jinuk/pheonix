@@ -5,6 +5,7 @@
         "string": "cpp",
         "chrono": "cpp",
         "deque": "cpp",
-        "vector": "cpp"
+        "vector": "cpp",
+        "unordered_set": "cpp"
     }
 }

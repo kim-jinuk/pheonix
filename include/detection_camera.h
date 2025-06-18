@@ -17,7 +17,8 @@ public:
   DetectionCamera(
       const std::string& model, const std::string& label_path, const float threshold,
       std::shared_ptr<edgetpu::EdgeTpuContext> edgetpu_context, const bool edgetpu,
-      const int source, const int height, const int width, const bool verbose);
+      const int source, const int height, const int width, const bool verbose,
+      const std::vector<std::string>& prep);
   DetectionCamera() = delete;
   // Loops camera frame and performs inference on each frame.
   void Run();
@@ -29,6 +30,7 @@ private:
   cv::VideoCapture m_camera;
   tracking::SortTracker    m_tracker{0.3f};
   std::unordered_map<int,std::string> m_track_label;
+  std::vector<std::string> m_preprocess;
   int m_height;
   int m_width;
   const bool m_verbose;

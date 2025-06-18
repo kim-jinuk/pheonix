@@ -1,18 +1,18 @@
 #pragma once
 #include <opencv2/opencv.hpp>
 
-namespace preprocessing {
-
+namespace preprocessing::contrast {
 /**
- * 간단 대비 향상:
- *   • BGR/RGB 입력  → Lab 변환 후 L 채널만 CLAHE(또는 equalizeHist)
- *   • GRAY 입력     → equalizeHist
+ * In-place contrast enhancement.
+ *  - 컬러 → Lab·L 채널 CLAHE
+ *  - GRAY  → equalizeHist
  */
-inline cv::Mat enhance_contrast(const cv::Mat& src,
-                                double clip_limit = 4.0,
-                                cv::Size tile_grid = {32, 32})
+inline void apply(cv::Mat& img,
+                  double clip_limit = 4.0,
+                  cv::Size tile_grid = {32, 32})
 {
     cv::Mat out;
+    const cv::Mat& src = img;
 
     if (src.channels() == 3) {
         // ----- 컬러 프레임 -----
@@ -37,7 +37,7 @@ inline cv::Mat enhance_contrast(const cv::Mat& src,
         // ----- 그레이스케일 -----
         cv::equalizeHist(src, out);
     }
-    return out;
+    img = std::move(out);
 }
 
-}  // namespace preprocessing
+}  // namespace preprocessing::contrast

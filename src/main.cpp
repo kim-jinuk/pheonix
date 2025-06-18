@@ -16,6 +16,7 @@
 #include "tensorflow/lite/model.h"
 #include "tflite_wrapper.h"
 
+#include "preprocessing/contrast.hpp"
 #include "preprocessing/edge_enhance.hpp"
 #include "tracking/sort_tracker.hpp"
 
@@ -32,6 +33,7 @@ cxxopts::ParseResult parse_args(int argc, char** argv) {
     ("edgetpu", "To run with EdgeTPU.", cxxopts::value<bool>()->default_value("false"))
     ("height", "Camera image height.", cxxopts::value<int>()->default_value("480"))
     ("width", "Camera image width.", cxxopts::value<int>()->default_value("640"))
+    ("preprocess", "Comma-separated list - order matters (e.g. edge,contrast)", cxxopts::value<std::string>()->default_value(""))
     ("help", "Print Usage");
   // clang-format on
 
@@ -55,13 +57,25 @@ int main(int argc, char** argv) {
   const auto source = args["video_source"].as<int>();
   const bool verbose = args["verbose"].as<bool>();
 
+  std::vector<std::string> preprocess_list;
+  if (args.count("preprocess")) {
+    const auto raw = args["preprocess"].as<std::string>();
+    std::stringstream ss(raw);
+    std::string item;
+    while (std::getline(ss, item, ',')) {
+      item.erase(std::remove_if(item.begin(), item.end(), ::isspace), item.end());
+      std::transform(item.begin(), item.end(), item.begin(), ::tolower);
+      preprocess_list.push_back(item);          // { "contrast", "edge", … }
+    }
+  }
+
   // Get edgetpu context.
   std::shared_ptr<edgetpu::EdgeTpuContext> edgetpu_context =
       edgetpu::EdgeTpuManager::GetSingleton()->OpenDevice();
   // Creates the detection camera instance.
   edge::DetectionCamera dc(
       model_path, label_path, threshold, edgetpu_context, with_edgetpu, source, image_height,
-      image_width, verbose);
+      image_width, verbose, preprocess_list);
   dc.Run();
 
   return 0;
