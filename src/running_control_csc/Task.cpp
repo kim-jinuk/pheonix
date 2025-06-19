@@ -63,7 +63,7 @@ void Task_sendState(TcpStateChannel& tcpStateChannel , BIT& bit ,Logger& logger 
             }
             
 
-            std::this_thread::sleep_for(std::chrono::milliseconds(100));
+            std::this_thread::sleep_for(std::chrono::milliseconds(30));
           //  std::cout <<"send loop doing..." <<std::endl;
         }
 
@@ -102,6 +102,12 @@ void Task_receiveCmd(TcpCmdChannel& tcpCmdChannel , MotorControl& motorcontrol,L
         statesync.cv.notify_all();
         
         motorcontrol.setStrategy(static_cast<uint8_t>(Mode::MANUAL));
+        {
+            std::lock_guard<std::mutex> lock(pos_mtx);
+            pos.yaw=90;
+            pos.pitch=90;
+        }
+        std::cout << "set MANUAL motor" << std::endl;
         while (sysInfo.current_state.load()==State::RUNNING) {
             TcpCommand cmd;
             std::cout << "CMD thread Wait CMD... " << std::endl;
@@ -134,11 +140,19 @@ void Task_receiveCmd(TcpCmdChannel& tcpCmdChannel , MotorControl& motorcontrol,L
                     }
                     break;
                 case track :
-                    std::cout<< "do tracking"<<std::endl;
+                    int aaa;
                     targetInfo.id.store(cmd.cmd);
-                    sysInfo.current_mode.store(static_cast<Mode>(cmd.cmd));
+                    aaa=cmd.cmd;
+                    std::cout<< "do tracking id :"<< aaa <<std::endl;
+                    sysInfo.current_mode.store(Mode::TRACKING);
                     motorcontrol.setStrategy(cmd.cmd);
                     break;
+                case InitMotor :
+                    if (sysInfo.current_mode.load()==(Mode::MANUAL)) {
+                        std::lock_guard<std::mutex> lock(pos_mtx);
+                        pos.yaw=90;
+                        pos.pitch=90;
+                    }
                 default :
                     break;
             }
@@ -152,7 +166,9 @@ void Task_receiveCmd(TcpCmdChannel& tcpCmdChannel , MotorControl& motorcontrol,L
         }
         // 장치 이상으로 (다른 스레드가 RUNNING에서 다른 상태로 보내면) 기존 소켓 닫기
         tcpCmdChannel.disconnect_sock();
-        std::cout << "TCP cmd channel disconnected, thread sleep 0.3s..." << std::endl;
+        motorcontrol.setStrategy(static_cast<uint8_t>(Mode::DEFAULT));
+        std::cout << "set DEFAULt motor" << std::endl;
+       // std::cout << "TCP cmd channel disconnected, thread sleep 0.3s..." << std::endl;
         
         std::this_thread::sleep_for(std::chrono::milliseconds(300));
     }

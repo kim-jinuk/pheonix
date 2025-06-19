@@ -36,10 +36,10 @@ void Task_img_process(CaptureUnit& capunit ,ImageProcessor& imgprocessor, UdpSen
             }
             std::vector<InferenceResult> candidates;
             frame->frame_id=frame_num++;
-            frame->img_bgr = imgprocessor.enhance_edges(frame->img_bgr);
-
+            // imgprocessor.enhance_edges(frame->img_bgr);
+            // imgprocessor.enhance_contrast(frame->img_bgr);
             if (frame_num%3==0) {
-                std::cout << " try push" <<std::endl;
+              //  std::cout << " try push" <<std::endl;
                 out_queue.push(frame);
             }
             
@@ -118,13 +118,13 @@ void Task_img_process(CaptureUnit& capunit ,ImageProcessor& imgprocessor, UdpSen
                     const std::string& label = it->second;
                     int a =obj.cls;
                     
-                    std::cout << "[DEBUG] track_id=" << b << ", label='" << label << "'";
+                //    std::cout << "[DEBUG] track_id=" << b << ", label='" << label << "'";
                     obj.cls = detector.get_class_id(label);
-                    std::cout << ", mapped cls=" << a << std::endl;
+                //    std::cout << ", mapped cls=" << a << std::endl;
                     // 
                     // std::cout << label << "cls :" << a <<std::endl;
                 } else {
-                    std::cout << "[DEBUG] track_id=" << b << " not found in m_track_label!" << std::endl;
+                //    std::cout << "[DEBUG] track_id=" << b << " not found in m_track_label!" << std::endl;
                     obj.cls = 255;
                 }
                 // 3. 좌표 (0~1 → pixel)
@@ -149,22 +149,45 @@ void Task_img_process(CaptureUnit& capunit ,ImageProcessor& imgprocessor, UdpSen
                 objects.push_back(ObjectInfo{255, 255, -1, -1, -1, -1, 0.0f});
              }
 
-            std::cout << "=== ObjectInfo List ===" << std::endl;
+            //std::cout << "=== ObjectInfo List ===" << std::endl;
             std::cout << std::dec; 
-            for (size_t i = 0; i < objects.size(); ++i) {
-                const auto& obj = objects[i];
-                if (objects[i].cls==255) continue;
-                int a=frame->frame_id, b=obj.cls,c=obj.tracking_id;
-                std::cout << "frame_num : "<< a
-                        << "[" << i << "] "
-                        << "cls: " <<  b
-                        << ", track_id: " <<  c
-                        << ", x: " << obj.x
-                        << ", y: " << obj.y
-                        << ", w: " << obj.w
-                        << ", h: " << obj.h
-                        << ", conf: " << obj.conf
-                        << std::endl;
+            // for (size_t i = 0; i < objects.size(); ++i) {
+            //     const auto& obj = objects[i];
+            //     if (objects[i].cls==255) continue;
+            //     int a=frame->frame_id, b=obj.cls,c=obj.tracking_id;
+            //     std::cout << "frame_num : "<< a
+            //             << "[" << i << "] "
+            //             << "cls: " <<  b
+            //             << ", track_id: " <<  c
+            //             << ", x: " << obj.x
+            //             << ", y: " << obj.y
+            //             << ", w: " << obj.w
+            //             << ", h: " << obj.h
+            //             << ", conf: " << obj.conf
+            //             << std::endl;
+            // }
+
+            if (sysInfo.current_mode==Mode::TRACKING) {
+                uint8_t id=targetInfo.id.load();
+            //    int idd=id;
+            //    std::cout<<"target id:" <<idd<<std::endl;
+                int i=0;
+                for (i=0;i<MAX_OBJECTS;i++) {
+                    if (objects[i].tracking_id==id) {
+                        
+                        int16_t center_x = objects[i].x + objects[i].w / 2;
+                        int16_t center_y = objects[i].y + objects[i].h / 2;
+                        int x=center_x;
+                        int y=center_y;
+                     //   std::cout<< "target x :"  <<x << "target y:" << y << std::endl;
+                        targetInfo.setXY(center_x, center_y);
+                        break;
+                    }
+                }
+                if (i>=MAX_OBJECTS) {
+                    targetInfo.setXY(MISSTARGET, MISSTARGET);
+                }
+                
             }
             auto packets=sender.BuildUdpPackets(*frame, objects);
             sender.UdpSend(packets);
@@ -198,11 +221,18 @@ void Task_infer( edge::TfLiteWrapper& detector, ThreadSafeQueue<FramePtr>& in_qu
                 std::vector<uint8_t> input(
                 resized_frame.data,
                 resized_frame.data + resized_frame.cols * resized_frame.rows * resized_frame.elemSize());
-            auto candidates = detector.RunInference(input);
-                  //  std::cout <<"finish infer..." <<std::endl;
+            auto all_candidates = detector.RunInference(input);
+            std::vector<InferenceResult> filtered_candidates;
+            for (const auto& c : all_candidates) {
+                if (allowed_labels.count(c.candidate)) {
+                    filtered_candidates.push_back(c);
+                    if (filtered_candidates.size() >= 5) break;
+                }
+            }
+                   std::cout <<"finish infer..." <<std::endl;
             {
              std::lock_guard<std::mutex> lock(infer_mtx);
-             InferResult=candidates;
+             InferResult = std::move(filtered_candidates);
             }
             
         }

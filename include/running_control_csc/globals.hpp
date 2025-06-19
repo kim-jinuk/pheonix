@@ -7,6 +7,7 @@
 #include <condition_variable>
 #include <string>
 #include <opencv2/opencv.hpp>
+#include <unordered_set>
 #define TCP_MAGIC_WORD 0xA5A5
 #define MISSTARGET 9999
 /**
@@ -92,7 +93,7 @@ struct  __attribute__((packed)) TcpCommand {
     for TCP cmd foramt
 */
 enum {
-    Mode_num, Cam_num,Prep_opt,move_motor,track
+    Mode_num, Cam_num,Prep_opt,move_motor,track,InitMotor
 };
 /**
     for sending upd
@@ -149,17 +150,17 @@ struct Position {
 struct TargetInfo {
     std::atomic<uint8_t> id;
 
-    int x;
-    int y;
+    int16_t x;
+    int16_t y;
     mutable std::mutex mtx;
 public:
-    void setXY(int new_x, int new_y) {
+    void setXY(int16_t new_x, int16_t new_y) {
         std::lock_guard<std::mutex> lock(mtx);
         x = new_x;
         y = new_y;
     }
 
-    std::pair<int, int> getXY() const {
+    std::pair<int16_t, int16_t> getXY() const {
         std::lock_guard<std::mutex> lock(mtx);
         return {x, y};
     }
@@ -188,6 +189,7 @@ enum class CmdFlag : uint8_t{
     Prep_opt, 
     Move_motor,
     Tracking,
+    InitMotor,
     COUNT
 };
 
@@ -257,6 +259,7 @@ public:
 }
 };
 
+extern const std::unordered_set<std::string> allowed_labels ;
 
 using FramePtr = std::shared_ptr<FrameData>;
 extern ThreadSafeQueue<FramePtr> enhance_to_infer;

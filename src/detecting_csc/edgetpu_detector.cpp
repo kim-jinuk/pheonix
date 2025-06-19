@@ -99,7 +99,7 @@ const std::vector<InferenceResult> TfLiteWrapper::GetResults(
     const std::vector<std::vector<float>>& output) {
   std::vector<InferenceResult> results;
   int n = lround(output[3][0]);
-  n = std::min(n, 5); // 객체 수 제한... DAN 추가
+//  n = std::min(n, 5); // 객체 수 제한... DAN 추가
   for (int i = 0; i < n; i++) {
     int id = lround(output[1][i]);
     float score = output[2][i];

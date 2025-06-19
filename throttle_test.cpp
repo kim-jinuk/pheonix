@@ -15,7 +15,7 @@
 #define IMG_HEIGHT 480
 
 using namespace std::chrono;
-
+std::vector<InferenceResult> candidates;
 int main() {
     CaptureUnit cap;
     ImageProcessor imgproc;
@@ -42,13 +42,13 @@ int main() {
         if (!cap.capture(frame)) continue;
         auto t1 = steady_clock::now();
 
-        frame->img_bgr = imgproc.enhance_edges(frame->img_bgr);
+        imgproc.enhance_edges(frame->img_bgr);
         auto t2 = steady_clock::now();
 
-        frame->img_bgr = imgproc.enhance_contrast(frame->img_bgr);
+        imgproc.enhance_contrast(frame->img_bgr);
         auto t3 = steady_clock::now();
 
-        std::vector<InferenceResult> candidates;
+        
         auto infer_start = steady_clock::now();
 
         if (frame_num++ % 3 == 0) {

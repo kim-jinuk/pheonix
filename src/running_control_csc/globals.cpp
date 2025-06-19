@@ -8,6 +8,7 @@
 #include <condition_variable>
 #include <string>
 #include <map>
+#include <unordered_set>
 
 SystemInfo sysInfo;
 StateSync statesync;
@@ -41,6 +42,10 @@ const std::unordered_map<CmdFlag, std::vector<std::string>> cmdDict = {
 };
 
 
+
+const std::unordered_set<std::string> allowed_labels = {
+    "person", "airplane", "bus", "truck", "car"
+};
 ThreadSafeQueue<FramePtr> enhance_to_infer;
 std::vector<InferenceResult> InferResult;
 std::mutex infer_mtx;

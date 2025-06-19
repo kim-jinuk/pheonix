@@ -4,7 +4,7 @@
 #include "running_control_csc/globals.hpp"
 #include <iostream>
 #include <cmath>
-
+#include <unistd.h>
 /* 
     SCAN
 */
@@ -95,54 +95,57 @@ void ManualMotor::updateAngle() {
     Tracking
 */
 void TrackingMotor::updateAngle() {
-    std::cout << "TRACKING logic"<<std::endl;
-    std::pair<int,int> targetPos=targetInfo.getXY();;
-
+ //   std::cout << "TRACKING logic"<<std::endl;
+    std::pair<int16_t,int16_t> targetPos=targetInfo.getXY();;
+    //std::cout << "target x:" << targetPos.first << "target y:" << targetPos.second <<std::endl;
     if (targetPos.first==MISSTARGET && targetPos.second==MISSTARGET) {
-        std::cout <<"Miss target"<< std::endl;
+        //std::cout <<"Miss target"<< std::endl;
         return;
     }
 
     constexpr int CENTER_X = 320;  
     constexpr int CENTER_Y = 240;
-    constexpr int DEADZONE = 20;  
+    constexpr int DEADZONE = 100;  
     constexpr int ZONE1 = 50;     
     constexpr int ZONE2 = 100;    
-
-    int dx = targetPos.first - CENTER_X;
-    int dy = targetPos.second - CENTER_Y;
+    int yaw=pos.yaw;
+    int pitch=pos.pitch;
+    int dx =static_cast<int>(targetPos.first) - CENTER_X;
+    int dy =static_cast<int>(targetPos.second) - CENTER_Y;
+   // std::cout << "dx: " <<dx << " dy :"<< dy<<std::endl; 
 
     if (std::abs(dx) <= DEADZONE) {
         std::cout << "Yaw: Deadzone, no move" << std::endl;
     } else if (std::abs(dx) <= ZONE1) {
         std::cout << "Yaw: small adjust" << std::endl;
-        pos.yaw+=static_cast<int>(dx * 0.2);
+        yaw+=-dx/std::abs(dx);
     } else {
         std::cout << "Yaw: strong adjust" << std::endl;
-        pos.yaw+=static_cast<int>(dx * 0.4);
+        yaw+=-2*dx/std::abs(dx);
     }
 
     // pitch 방향 제어
     if (std::abs(dy) <= DEADZONE) {
         std::cout << "Pitch: Deadzone, no move" << std::endl;
-    } else if (std::abs(dy) <= ZONE1) {
+    } 
+    else {
         std::cout << "Pitch: small adjust" << std::endl;
-        pos.pitch+=static_cast<int>(dy * 0.1);
-    } else {
-        std::cout << "Pitch: strong adjust" << std::endl;
-        pos.pitch+=static_cast<int>(dy * 0.2);
+        pitch+=dy/std::abs(dy);
     }
 
     
-    if (pos.yaw>=180)
-        pos.yaw=180;
-    else if (pos.yaw<=0)
-        pos.yaw=0;
+    if (yaw>=180)
+        yaw=180;
+    else if (yaw<=0)
+        yaw=0;
 
-    if (pos.pitch>=180)
-        pos.pitch=180;
-    else if (pos.pitch<=0)
-        pos.pitch=0;
+    if (pitch>=180)
+        pitch=180;
+    else if (pitch<=0)
+        pitch=0;
+    pos.yaw=static_cast<uint8_t>(yaw);
+    pos.pitch=static_cast<uint8_t>(pitch);
+    usleep(2000);
 }
 
 /*

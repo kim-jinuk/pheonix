@@ -85,7 +85,7 @@ std::vector<std::pair<cv::Rect2f,int>> SortTracker::update(const std::vector<cv:
     }
 
     // 4. Cull stale tracks (no update for >30 frames)
-    tracks_.erase(std::remove_if(tracks_.begin(), tracks_.end(), [](const Track &t){return t.time_since_update>30;}), tracks_.end());
+    tracks_.erase(std::remove_if(tracks_.begin(), tracks_.end(), [](const Track &t){return t.time_since_update>10;}), tracks_.end());
 
     // 5. Output list
     std::vector<std::pair<cv::Rect2f,int>> out;

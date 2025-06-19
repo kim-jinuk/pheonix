@@ -4,12 +4,17 @@
 #include <opencv2/opencv.hpp>
 #include <vector>
 CaptureUnit::CaptureUnit() {
-    cap.set(cv::CAP_PROP_FRAME_WIDTH, 640);
-    cap.set(cv::CAP_PROP_FRAME_HEIGHT, 480);
+    pipeline= 
+    "v4l2src device=/dev/video0 ! "
+    "image/jpeg, width=640, height=480, framerate=30/1 ! "
+    "jpegdec ! "
+    "videoconvert ! "
+    "appsink";
 }
 
 bool CaptureUnit::openCamera() {
     cap.open(0);
+   // cap.open(pipeline, cv::CAP_GSTREAMER);
     if (!cap.isOpened()) {
         std::cerr << "[CaptureUnit] Failed to open camera" << std::endl;
         return false;
@@ -54,46 +59,29 @@ void CaptureUnit::closeCamera() {
 }
 
 
- cv::Mat ImageProcessor::enhance_edges(const cv::Mat &src, float strength) {
-    cv::Mat blur;
-    cv::GaussianBlur(src, blur, {0,0}, 3);
-    cv::Mat sharp;
-    cv::addWeighted(src, 1.0 + strength, blur, -strength, 0, sharp);
-    return sharp;
+ void ImageProcessor::enhance_edges(cv::Mat &img, float strength) {
+    if (img.empty()) return;
+
+    const float s = strength;
+    static thread_local cv::Mat k;
+    if (k.empty() || k.at<float>(1,1) != 1.f + 4*s) {
+        k = (cv::Mat_<float>(3,3) <<
+             0, -s, 0,
+            -s, 1.f + 4*s, -s,
+             0, -s, 0);
+    }
+
+    cv::filter2D(img, img, -1, k, {-1,-1}, 0, cv::BORDER_REPLICATE);
 
  }
-cv::Mat ImageProcessor::enhance_contrast(const cv::Mat& src,
-                                double clip_limit,
-                                cv::Size tile_grid)
+void ImageProcessor::enhance_contrast(cv::Mat &img, float alpha , int beta)
 {
-    cv::Mat out;
+    if (img.empty()) return;
 
-    if (src.channels() == 3) {
-        // ----- 컬러 프레임 -----
-        cv::Mat lab;
-        cv::cvtColor(src, lab,
-                     src.type() == CV_8UC3 ? cv::COLOR_BGR2Lab
-                                           : cv::COLOR_RGB2Lab);
+    if (img.depth() != CV_8U)
+        img.convertTo(img, CV_8U);
 
-        std::vector<cv::Mat> channels;
-        cv::split(lab, channels);          // L, a, b
-
-        // CLAHE(Contrast Limited Adaptive Histogram Equalization)
-        cv::Ptr<cv::CLAHE> clahe = cv::createCLAHE(clip_limit, tile_grid);
-        clahe->apply(channels[0], channels[0]);
-
-        cv::merge(channels, lab);
-        cv::cvtColor(lab, out,
-                     src.type() == CV_8UC3 ? cv::COLOR_Lab2BGR
-                                           : cv::COLOR_Lab2RGB);
-    }
-    else {
-        // ----- 그레이스케일 -----
-        cv::equalizeHist(src, out);
-    }
-    return out;
-
-
+    img.convertTo(img, -1, alpha, beta); // in‑place 변환=
 }
 cv::Mat overlay(cv::Mat &src, std::vector<InferenceResult>& info) {
     cv::Mat i;
