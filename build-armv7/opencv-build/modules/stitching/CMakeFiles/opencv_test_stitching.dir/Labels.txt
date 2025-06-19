@@ -1,0 +1,29 @@
+# Target labels
+ Main
+ opencv_stitching
+ AccuracyTest
+# Source files and their labels
+/home/jssuengl/Desktop/test/edgetpu-detection-camera/build-armv7/opencv/modules/stitching/test/ocl/test_warpers.cpp
+ Main
+ opencv_stitching
+ AccuracyTest
+/home/jssuengl/Desktop/test/edgetpu-detection-camera/build-armv7/opencv/modules/stitching/test/test_blenders.cpp
+ Main
+ opencv_stitching
+ AccuracyTest
+/home/jssuengl/Desktop/test/edgetpu-detection-camera/build-armv7/opencv/modules/stitching/test/test_blenders.cuda.cpp
+ Main
+ opencv_stitching
+ AccuracyTest
+/home/jssuengl/Desktop/test/edgetpu-detection-camera/build-armv7/opencv/modules/stitching/test/test_main.cpp
+ Main
+ opencv_stitching
+ AccuracyTest
+/home/jssuengl/Desktop/test/edgetpu-detection-camera/build-armv7/opencv/modules/stitching/test/test_matchers.cpp
+ Main
+ opencv_stitching
+ AccuracyTest
+/home/jssuengl/Desktop/test/edgetpu-detection-camera/build-armv7/opencv/modules/stitching/test/test_precomp.hpp
+ Main
+ opencv_stitching
+ AccuracyTest

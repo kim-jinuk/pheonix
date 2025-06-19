@@ -1,0 +1,13 @@
+/home/jssuengl/Desktop/test/edgetpu-detection-camera/build-armv7/CMakeFiles/edge.dir
+/home/jssuengl/Desktop/test/edgetpu-detection-camera/build-armv7/CMakeFiles/detection_camera.dir
+/home/jssuengl/Desktop/test/edgetpu-detection-camera/build-armv7/CMakeFiles/rebuild_cache.dir
+/home/jssuengl/Desktop/test/edgetpu-detection-camera/build-armv7/CMakeFiles/tracking.dir
+/home/jssuengl/Desktop/test/edgetpu-detection-camera/build-armv7/CMakeFiles/tflite_wrapper.dir
+/home/jssuengl/Desktop/test/edgetpu-detection-camera/build-armv7/CMakeFiles/label_utils.dir
+/home/jssuengl/Desktop/test/edgetpu-detection-camera/build-armv7/CMakeFiles/glog.dir
+/home/jssuengl/Desktop/test/edgetpu-detection-camera/build-armv7/CMakeFiles/absl.dir
+/home/jssuengl/Desktop/test/edgetpu-detection-camera/build-armv7/CMakeFiles/preprocessing.dir
+/home/jssuengl/Desktop/test/edgetpu-detection-camera/build-armv7/CMakeFiles/tensorflow.dir
+/home/jssuengl/Desktop/test/edgetpu-detection-camera/build-armv7/CMakeFiles/rerun.dir
+/home/jssuengl/Desktop/test/edgetpu-detection-camera/build-armv7/CMakeFiles/edit_cache.dir
+/home/jssuengl/Desktop/test/edgetpu-detection-camera/build-armv7/CMakeFiles/opencv.dir

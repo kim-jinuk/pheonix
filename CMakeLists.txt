@@ -159,4 +159,3 @@ add_executable(edge
 )
 target_link_libraries(edge detection_camera preprocessing tracking tflite_wrapper ${OPENCV_LIBRARIES} ${TF_LITE_LIB} ${LIB_EDGETPU})
 add_dependencies(edge detection_camera preprocessing tracking tflite_wrapper tensorflow opencv)
-

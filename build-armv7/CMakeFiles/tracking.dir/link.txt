@@ -1,0 +1,2 @@
+arm-linux-gnueabihf-ar qc libtracking.a  CMakeFiles/tracking.dir/src/tracking/sort_tracker.cpp.o
+/usr/bin/arm-linux-gnueabihf-ranlib libtracking.a

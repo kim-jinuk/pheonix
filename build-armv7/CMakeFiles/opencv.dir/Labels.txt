@@ -1,0 +1,13 @@
+# Target labels
+ opencv
+# Source files and their labels
+/home/jssuengl/Desktop/test/edgetpu-detection-camera/build-armv7/CMakeFiles/opencv
+/home/jssuengl/Desktop/test/edgetpu-detection-camera/build-armv7/CMakeFiles/opencv.rule
+/home/jssuengl/Desktop/test/edgetpu-detection-camera/build-armv7/CMakeFiles/opencv-complete.rule
+/home/jssuengl/Desktop/test/edgetpu-detection-camera/build-armv7/opencv-prefix/src/opencv-stamp/opencv-install.rule
+/home/jssuengl/Desktop/test/edgetpu-detection-camera/build-armv7/opencv-prefix/src/opencv-stamp/opencv-mkdir.rule
+/home/jssuengl/Desktop/test/edgetpu-detection-camera/build-armv7/opencv-prefix/src/opencv-stamp/opencv-download.rule
+/home/jssuengl/Desktop/test/edgetpu-detection-camera/build-armv7/opencv-prefix/src/opencv-stamp/opencv-update.rule
+/home/jssuengl/Desktop/test/edgetpu-detection-camera/build-armv7/opencv-prefix/src/opencv-stamp/opencv-patch.rule
+/home/jssuengl/Desktop/test/edgetpu-detection-camera/build-armv7/opencv-prefix/src/opencv-stamp/opencv-configure.rule
+/home/jssuengl/Desktop/test/edgetpu-detection-camera/build-armv7/opencv-prefix/src/opencv-stamp/opencv-build.rule

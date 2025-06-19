@@ -1,0 +1,2 @@
+arm-linux-gnueabihf-ar qc liblabel_utils.a  CMakeFiles/label_utils.dir/src/label_utils.cc.o
+/usr/bin/arm-linux-gnueabihf-ranlib liblabel_utils.a

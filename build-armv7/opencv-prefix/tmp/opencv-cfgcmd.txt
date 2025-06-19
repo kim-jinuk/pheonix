@@ -1,0 +1,1 @@
+cmd='/usr/local/bin/cmake;-DCMAKE_BUILD_TYPE=RELEASE;-DFORCE_VTK=ON;-DWITH_TBB=ON;-DWITH_V4L=ON;-DWITH_QT=OFF;-DWITH_GTK_2_x=ON;-DWITH_OPENGL=ON;-DCMAKE_INSTALL_PREFIX=/home/jssuengl/Desktop/test/edgetpu-detection-camera/build-armv7/opencv_install;-GUnix Makefiles;<SOURCE_DIR><SOURCE_SUBDIR>'

@@ -1,0 +1,2 @@
+arm-linux-gnueabihf-ar qc libpreprocessing.a  CMakeFiles/preprocessing.dir/src/preprocessing/edge_enhance.cpp.o CMakeFiles/preprocessing.dir/src/preprocessing/contrast.cpp.o
+/usr/bin/arm-linux-gnueabihf-ranlib libpreprocessing.a

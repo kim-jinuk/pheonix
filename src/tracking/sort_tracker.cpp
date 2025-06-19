@@ -3,90 +3,62 @@
 
 namespace tracking {
 
-static cv::KalmanFilter createKF(const cv::Rect2f &bbox) {
-    cv::KalmanFilter kf(7, 4, 0);
-    // state = [cx, cy, s, r, vx, vy, vs]
-    kf.transitionMatrix = (cv::Mat_<float>(7,7) <<
-        1,0,0,0,1,0,0,
-        0,1,0,0,0,1,0,
-        0,0,1,0,0,0,1,
-        0,0,0,1,0,0,0,
-        0,0,0,0,1,0,0,
-        0,0,0,0,0,1,0,
-        0,0,0,0,0,0,1);
-    setIdentity(kf.measurementMatrix);
-    setIdentity(kf.processNoiseCov, cv::Scalar::all(1e-2));
-    setIdentity(kf.measurementNoiseCov, cv::Scalar::all(1e-1));
-    setIdentity(kf.errorCovPost, cv::Scalar::all(1));
-    float cx = bbox.x + bbox.width/2;
-    float cy = bbox.y + bbox.height/2;
-    float s  = bbox.area();
-    float r  = bbox.width / bbox.height;
-    kf.statePost = (cv::Mat_<float>(7,1) << cx,cy,s,r,0,0,0);
-    return kf;
+SortTracker::SortTracker(float iou_thr) : iou_thr_(iou_thr) {}
+
+float SortTracker::IoU(const cv::Rect2f& a, const cv::Rect2f& b) const {
+    float inter = (a & b).area();
+    float uni = a.area() + b.area() - inter;
+    return uni > 0 ? inter / uni : 0.f;
 }
 
-SortTracker::SortTracker(float iou) : iou_thresh_(iou) {}
-
-float SortTracker::IoU(const cv::Rect2f &a, const cv::Rect2f &b) {
-    const float inter = (a & b).area();
-    const float uni = a.area() + b.area() - inter;
-    return uni > 0 ? inter/uni : 0.f;
-}
-
-void SortTracker::step_kalman(Track &t) {
-    cv::Mat pred = t.kf.predict();
-    float cx = pred.at<float>(0), cy = pred.at<float>(1);
-    float s = pred.at<float>(2), r = pred.at<float>(3);
-    float w = std::sqrt(s*r);
-    float h = s / w;
-    t.bbox = {cx - w/2, cy - h/2, w, h};
+float SortTracker::dist2(const cv::Rect2f& a, const cv::Rect2f& b) const {
+    float ax = a.x + a.width*0.5f, ay = a.y + a.height*0.5f;
+    float bx = b.x + b.width*0.5f, by = b.y + b.height*0.5f;
+    float dx = ax - bx, dy = ay - by;
+    return dx*dx + dy*dy;
 }
 
 std::vector<std::pair<cv::Rect2f,int>> SortTracker::update(const std::vector<cv::Rect2f>& dets) {
-    // 1. Predict existing tracks
-    for (auto &t : tracks_) step_kalman(t);
+    // 1. dead‑reckoning predict
+    for (auto &t : tracks_) {
+        t.bbox.x += t.vx;
+        t.bbox.y += t.vy;
+        t.miss++;
+    }
 
-    // 2. Associate detections ↔ tracks via IoU (greedy)
-    std::vector<int> det_matched(dets.size(), -1);
-    for (size_t ti = 0; ti < tracks_.size(); ++ti) {
-        float best_iou = iou_thresh_;
-        int best_di = -1;
-        for (size_t di = 0; di < dets.size(); ++di) {
-            if (det_matched[di] != -1) continue;
-            float iou = IoU(tracks_[ti].bbox, dets[di]);
-            if (iou > best_iou) { best_iou = iou; best_di = di; }
+    // 2. Greedy IoU match
+    std::vector<int> det_used(dets.size(), -1);
+    for (auto &t : tracks_) {
+        float best = iou_thr_; int best_di = -1;
+        for (size_t di=0; di<dets.size(); ++di) if(det_used[di]==-1) {
+            float d2 = dist2(t.bbox, dets[di]);
+            if (d2 < best) { best = d2; best_di = static_cast<int>(di); }
         }
-        if (best_di >= 0) {
-            // measurement update
-            const cv::Rect2f &bbox = dets[best_di];
-            float cx = bbox.x + bbox.width/2;
-            float cy = bbox.y + bbox.height/2;
-            float s  = bbox.area();
-            float r  = bbox.width / bbox.height;
-            tracks_[ti].kf.correct((cv::Mat_<float>(4,1)<<cx,cy,s,r));
-            tracks_[ti].bbox = bbox;
-            tracks_[ti].time_since_update = 0;
-            det_matched[best_di] = ti;
-        } else {
-            tracks_[ti].time_since_update++;
+        if (best_di >= 0 && IoU(t.bbox, dets[best_di]) >= iou_thr_) {
+            const auto &d = dets[best_di];
+            // velocity EMA (α=0.7)
+            t.vx = 0.7f * (d.x - t.bbox.x) + 0.3f * t.vx;
+            t.vy = 0.7f * (d.y - t.bbox.y) + 0.3f * t.vy;
+            t.bbox = d;
+            t.miss = 0;
+            det_used[best_di] = 1;
         }
     }
 
-    // 3. Spawn new tracks for unmatched detections
-    for (size_t di = 0; di < dets.size(); ++di) if (det_matched[di]==-1) {
-        Track t;
-        t.id = next_id_++;
-        t.kf = createKF(dets[di]);
-        t.bbox = dets[di];
-        tracks_.push_back(std::move(t));
+    // 3. New tracks
+    for (size_t di=0; di<dets.size(); ++di) if(det_used[di]==-1) {
+        if (static_cast<int>(tracks_.size()) >= kMaxTracks) break;
+        Track t{next_id_++, dets[di]};
+        tracks_.push_back(t);
     }
 
-    // 4. Cull stale tracks (no update for >30 frames)
-    tracks_.erase(std::remove_if(tracks_.begin(), tracks_.end(), [](const Track &t){return t.time_since_update>30;}), tracks_.end());
+    // 4. Prune stale
+    tracks_.erase(std::remove_if(tracks_.begin(), tracks_.end(),
+                 [](const Track &t){return t.miss>30;}), tracks_.end());
 
-    // 5. Output list
+    // 5. Output
     std::vector<std::pair<cv::Rect2f,int>> out;
+    out.reserve(tracks_.size());
     for (auto &t : tracks_) out.emplace_back(t.bbox, t.id);
     return out;
 }

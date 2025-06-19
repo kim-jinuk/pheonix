@@ -1,0 +1,43 @@
+{
+	"sources" : 
+	[
+		{
+			"file" : "/home/jssuengl/Desktop/test/edgetpu-detection-camera/build-armv7/CMakeFiles/tensorflow"
+		},
+		{
+			"file" : "/home/jssuengl/Desktop/test/edgetpu-detection-camera/build-armv7/CMakeFiles/tensorflow.rule"
+		},
+		{
+			"file" : "/home/jssuengl/Desktop/test/edgetpu-detection-camera/build-armv7/CMakeFiles/tensorflow-complete.rule"
+		},
+		{
+			"file" : "/home/jssuengl/Desktop/test/edgetpu-detection-camera/build-armv7/tensorflow/src/tensorflow-stamp/tensorflow-install.rule"
+		},
+		{
+			"file" : "/home/jssuengl/Desktop/test/edgetpu-detection-camera/build-armv7/tensorflow/src/tensorflow-stamp/tensorflow-mkdir.rule"
+		},
+		{
+			"file" : "/home/jssuengl/Desktop/test/edgetpu-detection-camera/build-armv7/tensorflow/src/tensorflow-stamp/tensorflow-download.rule"
+		},
+		{
+			"file" : "/home/jssuengl/Desktop/test/edgetpu-detection-camera/build-armv7/tensorflow/src/tensorflow-stamp/tensorflow-update.rule"
+		},
+		{
+			"file" : "/home/jssuengl/Desktop/test/edgetpu-detection-camera/build-armv7/tensorflow/src/tensorflow-stamp/tensorflow-patch.rule"
+		},
+		{
+			"file" : "/home/jssuengl/Desktop/test/edgetpu-detection-camera/build-armv7/tensorflow/src/tensorflow-stamp/tensorflow-configure.rule"
+		},
+		{
+			"file" : "/home/jssuengl/Desktop/test/edgetpu-detection-camera/build-armv7/tensorflow/src/tensorflow-stamp/tensorflow-build.rule"
+		}
+	],
+	"target" : 
+	{
+		"labels" : 
+		[
+			"tensorflow"
+		],
+		"name" : "tensorflow"
+	}
+}

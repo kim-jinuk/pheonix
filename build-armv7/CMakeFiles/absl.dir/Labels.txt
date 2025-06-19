@@ -1,0 +1,13 @@
+# Target labels
+ absl
+# Source files and their labels
+/home/jssuengl/Desktop/test/edgetpu-detection-camera/build-armv7/CMakeFiles/absl
+/home/jssuengl/Desktop/test/edgetpu-detection-camera/build-armv7/CMakeFiles/absl.rule
+/home/jssuengl/Desktop/test/edgetpu-detection-camera/build-armv7/CMakeFiles/absl-complete.rule
+/home/jssuengl/Desktop/test/edgetpu-detection-camera/build-armv7/absl/src/absl-stamp/absl-install.rule
+/home/jssuengl/Desktop/test/edgetpu-detection-camera/build-armv7/absl/src/absl-stamp/absl-mkdir.rule
+/home/jssuengl/Desktop/test/edgetpu-detection-camera/build-armv7/absl/src/absl-stamp/absl-download.rule
+/home/jssuengl/Desktop/test/edgetpu-detection-camera/build-armv7/absl/src/absl-stamp/absl-update.rule
+/home/jssuengl/Desktop/test/edgetpu-detection-camera/build-armv7/absl/src/absl-stamp/absl-patch.rule
+/home/jssuengl/Desktop/test/edgetpu-detection-camera/build-armv7/absl/src/absl-stamp/absl-configure.rule
+/home/jssuengl/Desktop/test/edgetpu-detection-camera/build-armv7/absl/src/absl-stamp/absl-build.rule

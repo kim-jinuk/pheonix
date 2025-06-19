@@ -1,0 +1,2 @@
+arm-linux-gnueabihf-ar qc libdetection_camera.a  CMakeFiles/detection_camera.dir/src/detection_camera.cc.o
+/usr/bin/arm-linux-gnueabihf-ranlib libdetection_camera.a

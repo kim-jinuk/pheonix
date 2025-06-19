@@ -1,27 +1,35 @@
 #pragma once
 #include <opencv2/opencv.hpp>
 #include <vector>
-#include <memory>
 
 namespace tracking {
+
 struct Track {
     int id;
-    cv::KalmanFilter kf;
     cv::Rect2f bbox;
-    int age = 0;
-    int time_since_update = 0;
+    float vx = 0.f, vy = 0.f;   // velocity (dead‑reckoning)
+    int miss = 0;
 };
 
 class SortTracker {
  public:
-    explicit SortTracker(float iou_threshold = 0.3f);
-    // Update with freshly detected boxes; returns (bbox, id)
-    std::vector<std::pair<cv::Rect2f,int>> update(const std::vector<cv::Rect2f>& detections);
+  explicit SortTracker(float iou_thr = 0.3f);
+
+  /**
+   * @brief Update tracker with current detections
+   * @param detections bounding boxes in norm/absolute coords
+   * @return vector of <bbox,id>
+   */
+  std::vector<std::pair<cv::Rect2f,int>> update(const std::vector<cv::Rect2f>& detections);
+  float dist2(const cv::Rect2f& a, const cv::Rect2f& b) const;
+  static constexpr int kMaxTracks = 32;
+
  private:
-    float iou_thresh_;
-    int next_id_ = 0;
-    std::vector<Track> tracks_;
-    static float IoU(const cv::Rect2f &a, const cv::Rect2f &b);
-    void step_kalman(Track &t);
+  float IoU(const cv::Rect2f& a, const cv::Rect2f& b) const;
+
+  float iou_thr_;
+  int next_id_ = 0;
+  std::vector<Track> tracks_;
 };
-}
+
+} // namespace tracking

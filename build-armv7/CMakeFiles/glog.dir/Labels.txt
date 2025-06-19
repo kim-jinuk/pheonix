@@ -1,0 +1,13 @@
+# Target labels
+ glog
+# Source files and their labels
+/home/jssuengl/Desktop/test/edgetpu-detection-camera/build-armv7/CMakeFiles/glog
+/home/jssuengl/Desktop/test/edgetpu-detection-camera/build-armv7/CMakeFiles/glog.rule
+/home/jssuengl/Desktop/test/edgetpu-detection-camera/build-armv7/CMakeFiles/glog-complete.rule
+/home/jssuengl/Desktop/test/edgetpu-detection-camera/build-armv7/glog/src/glog-stamp/glog-install.rule
+/home/jssuengl/Desktop/test/edgetpu-detection-camera/build-armv7/glog/src/glog-stamp/glog-mkdir.rule
+/home/jssuengl/Desktop/test/edgetpu-detection-camera/build-armv7/glog/src/glog-stamp/glog-download.rule
+/home/jssuengl/Desktop/test/edgetpu-detection-camera/build-armv7/glog/src/glog-stamp/glog-update.rule
+/home/jssuengl/Desktop/test/edgetpu-detection-camera/build-armv7/glog/src/glog-stamp/glog-patch.rule
+/home/jssuengl/Desktop/test/edgetpu-detection-camera/build-armv7/glog/src/glog-stamp/glog-configure.rule
+/home/jssuengl/Desktop/test/edgetpu-detection-camera/build-armv7/glog/src/glog-stamp/glog-build.rule

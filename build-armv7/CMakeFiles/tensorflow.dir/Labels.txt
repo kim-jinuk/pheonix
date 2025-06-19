@@ -1,0 +1,13 @@
+# Target labels
+ tensorflow
+# Source files and their labels
+/home/jssuengl/Desktop/test/edgetpu-detection-camera/build-armv7/CMakeFiles/tensorflow
+/home/jssuengl/Desktop/test/edgetpu-detection-camera/build-armv7/CMakeFiles/tensorflow.rule
+/home/jssuengl/Desktop/test/edgetpu-detection-camera/build-armv7/CMakeFiles/tensorflow-complete.rule
+/home/jssuengl/Desktop/test/edgetpu-detection-camera/build-armv7/tensorflow/src/tensorflow-stamp/tensorflow-install.rule
+/home/jssuengl/Desktop/test/edgetpu-detection-camera/build-armv7/tensorflow/src/tensorflow-stamp/tensorflow-mkdir.rule
+/home/jssuengl/Desktop/test/edgetpu-detection-camera/build-armv7/tensorflow/src/tensorflow-stamp/tensorflow-download.rule
+/home/jssuengl/Desktop/test/edgetpu-detection-camera/build-armv7/tensorflow/src/tensorflow-stamp/tensorflow-update.rule
+/home/jssuengl/Desktop/test/edgetpu-detection-camera/build-armv7/tensorflow/src/tensorflow-stamp/tensorflow-patch.rule
+/home/jssuengl/Desktop/test/edgetpu-detection-camera/build-armv7/tensorflow/src/tensorflow-stamp/tensorflow-configure.rule
+/home/jssuengl/Desktop/test/edgetpu-detection-camera/build-armv7/tensorflow/src/tensorflow-stamp/tensorflow-build.rule

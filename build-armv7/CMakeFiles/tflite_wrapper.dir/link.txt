@@ -1,0 +1,2 @@
+arm-linux-gnueabihf-ar qc libtflite_wrapper.a  CMakeFiles/tflite_wrapper.dir/src/tflite_wrapper.cc.o
+/usr/bin/arm-linux-gnueabihf-ranlib libtflite_wrapper.a
