@@ -19,8 +19,13 @@ public :
 class ImageProcessor {
 
 public :
-    void enhance_edges(cv::Mat &img, float strength = 1.0f);
-    void enhance_contrast(cv::Mat &img, float alpha = 1.3f, int beta = -20);
+    void enhance_edges(cv::Mat& img, cv::Mat& buf);
+    void enhance_contrast(cv::Mat& img,
+                  float gain   = 1.1f,   // 대비 10 % 증가
+                  float gamma  = 0.9f,   // 살짝 밝게
+                  int   offset = 0) ;     // 밝기 오프셋
+    void enhance_dehaze(cv::Mat& img);
+    cv::Mat ToPseudoIR(const cv::Mat& bgr);
     cv::Mat overlay(cv::Mat &src, std::vector<InferenceResult>& info);
 };
 

@@ -1507,7 +1507,6 @@ CMakeFiles/EOIR_system.dir/main.cpp.o: ../../main.cpp \
   ../../include/running_control_csc/Task.hpp \
   ../../include/running_control_csc/Logger.hpp \
   ../../include/image_processing_csc/ImageProcessor.hpp \
-  ../../include/running_control_csc/ImgTaskv1.hpp \
   ../../include/running_control_csc/sender.hpp \
   ../../include/detecting_csc/edgetpu_detector.hpp \
   /workspace/TPU/libedgetpu/tflite/public/edgetpu.h \
@@ -1576,9 +1575,9 @@ CMakeFiles/EOIR_system.dir/main.cpp.o: ../../main.cpp \
   /workspace/TPU/tensorflow_src/tensorflow/lite/profiling/telemetry/telemetry_status.h \
   /workspace/TPU/tensorflow_src/tensorflow/lite/model_builder.h \
   ../../include/tracking_csc/sort_tracker.hpp \
-  ../../include/running_control_csc/ImgTaskv2.hpp \
   /opt/gcc-linaro-12.2.1-2022.11-x86_64_arm-linux-gnueabihf/arm-linux-gnueabihf/include/c++/12.2.1/thread \
-  /opt/gcc-linaro-12.2.1-2022.11-x86_64_arm-linux-gnueabihf/arm-linux-gnueabihf/include/c++/12.2.1/bits/this_thread_sleep.h
+  /opt/gcc-linaro-12.2.1-2022.11-x86_64_arm-linux-gnueabihf/arm-linux-gnueabihf/include/c++/12.2.1/bits/this_thread_sleep.h \
+  ../../include/running_control_csc/ImgTaskv4.hpp
 
 CMakeFiles/EOIR_system.dir/src/detecting_csc/edgetpu_detector.cpp.o: ../../src/detecting_csc/edgetpu_detector.cpp \
   /workspace/peta_prj/Clocked_pwm_peta_v2/zynq_sdk/sysroots/cortexa9t2hf-neon-xilinx-linux-gnueabi/usr/include/stdc-predef.h \
@@ -3294,7 +3293,7 @@ CMakeFiles/EOIR_system.dir/src/running_control_csc/CfgLoader.cpp.o: ../../src/ru
   /opt/gcc-linaro-12.2.1-2022.11-x86_64_arm-linux-gnueabihf/arm-linux-gnueabihf/include/c++/12.2.1/arm-linux-gnueabihf/bits/c++io.h \
   /opt/gcc-linaro-12.2.1-2022.11-x86_64_arm-linux-gnueabihf/arm-linux-gnueabihf/include/c++/12.2.1/bits/fstream.tcc
 
-CMakeFiles/EOIR_system.dir/src/running_control_csc/ImgTaskv2.cpp.o: ../../src/running_control_csc/ImgTaskv2.cpp \
+CMakeFiles/EOIR_system.dir/src/running_control_csc/ImgTaskv4.cpp.o: ../../src/running_control_csc/ImgTaskv4.cpp \
   /workspace/peta_prj/Clocked_pwm_peta_v2/zynq_sdk/sysroots/cortexa9t2hf-neon-xilinx-linux-gnueabi/usr/include/stdc-predef.h \
   ../../include/running_control_csc/MotorControl.hpp \
   /opt/gcc-linaro-12.2.1-2022.11-x86_64_arm-linux-gnueabihf/arm-linux-gnueabihf/include/c++/12.2.1/queue \
@@ -12609,6 +12608,8 @@ CMakeFiles/EOIR_system.dir/src/tracking_csc/sort_tracker.cpp.o: ../../src/tracki
 
 /opt/gcc-linaro-12.2.1-2022.11-x86_64_arm-linux-gnueabihf/arm-linux-gnueabihf/include/c++/12.2.1/bitset:
 
+../../include/running_control_csc/ImgTaskv4.hpp:
+
 /opt/gcc-linaro-12.2.1-2022.11-x86_64_arm-linux-gnueabihf/arm-linux-gnueabihf/include/c++/12.2.1/thread:
 
 ../../include/tracking_csc/sort_tracker.hpp:
@@ -13276,8 +13277,6 @@ CMakeFiles/EOIR_system.dir/src/tracking_csc/sort_tracker.cpp.o: ../../src/tracki
 /workspace/peta_prj/Clocked_pwm_peta_v2/zynq_sdk/sysroots/cortexa9t2hf-neon-xilinx-linux-gnueabi/usr/include/bits/cpu-set.h:
 
 /workspace/peta_prj/Clocked_pwm_peta_v2/zynq_sdk/sysroots/cortexa9t2hf-neon-xilinx-linux-gnueabi/usr/include/netinet/in.h:
-
-../../include/running_control_csc/ImgTaskv2.hpp:
 
 ../../include/running_control_csc/receiver.hpp:
 
@@ -14043,6 +14042,8 @@ CMakeFiles/EOIR_system.dir/src/tracking_csc/sort_tracker.cpp.o: ../../src/tracki
 
 /workspace/peta_prj/Clocked_pwm_peta_v2/zynq_sdk/sysroots/cortexa9t2hf-neon-xilinx-linux-gnueabi/usr/include/opencv4/opencv2/flann/miniflann.hpp:
 
+../../src/running_control_csc/ImgTaskv4.cpp:
+
 /opt/gcc-linaro-12.2.1-2022.11-x86_64_arm-linux-gnueabihf/arm-linux-gnueabihf/include/c++/12.2.1/bits/sstream.tcc:
 
 /workspace/peta_prj/Clocked_pwm_peta_v2/zynq_sdk/sysroots/cortexa9t2hf-neon-xilinx-linux-gnueabi/usr/include/bits/libc-header-start.h:
@@ -14635,8 +14636,6 @@ CMakeFiles/EOIR_system.dir/src/tracking_csc/sort_tracker.cpp.o: ../../src/tracki
 
 /workspace/peta_prj/Clocked_pwm_peta_v2/zynq_sdk/sysroots/cortexa9t2hf-neon-xilinx-linux-gnueabi/usr/include/boost/asio/traits/set_error_free.hpp:
 
-../../include/running_control_csc/ImgTaskv1.hpp:
-
 /opt/gcc-linaro-12.2.1-2022.11-x86_64_arm-linux-gnueabihf/arm-linux-gnueabihf/include/c++/12.2.1/arm-linux-gnueabihf/bits/ctype_inline.h:
 
 /workspace/peta_prj/Clocked_pwm_peta_v2/zynq_sdk/sysroots/cortexa9t2hf-neon-xilinx-linux-gnueabi/usr/include/opencv4/opencv2/flann/saving.h:
@@ -15204,8 +15203,6 @@ CMakeFiles/EOIR_system.dir/src/tracking_csc/sort_tracker.cpp.o: ../../src/tracki
 /workspace/peta_prj/Clocked_pwm_peta_v2/zynq_sdk/sysroots/cortexa9t2hf-neon-xilinx-linux-gnueabi/usr/include/boost/preprocessor/list/fold_right.hpp:
 
 /workspace/peta_prj/Clocked_pwm_peta_v2/zynq_sdk/sysroots/cortexa9t2hf-neon-xilinx-linux-gnueabi/usr/include/bits/sigthread.h:
-
-../../src/running_control_csc/ImgTaskv2.cpp:
 
 /workspace/peta_prj/Clocked_pwm_peta_v2/zynq_sdk/sysroots/cortexa9t2hf-neon-xilinx-linux-gnueabi/usr/include/boost/asio/detail/completion_handler.hpp:
 

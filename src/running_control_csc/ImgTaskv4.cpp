@@ -16,7 +16,9 @@
 #define MAX_OBJECTS 5
 
 
-void Task_img_process(CaptureUnit& capunit ,ImageProcessor& imgprocessor, UdpSender& sender,tracking::SortTracker& tracker,edge::TfLiteWrapper& detector ,ThreadSafeQueue<FramePtr>& out_queue) {
+void Task_img_process(CaptureUnit& capunit ,ImageProcessor& imgprocessor,tracking::SortTracker& tracker, \
+    edge::TfLiteWrapper& detector ,ThreadSafeQueue<FramePtr>& out_queue ,ThreadSafeQueue<SendPacket> &send_queue) {
+
     uint32_t frame_num=0;
     while (true) {
         {
@@ -29,29 +31,23 @@ void Task_img_process(CaptureUnit& capunit ,ImageProcessor& imgprocessor, UdpSen
         while (sysInfo.current_state.load() == State::RUNNING) {
             
             auto frame = std::make_shared<FrameData>();
-
             if (!capunit.capture(frame)) {
                 std::cout << "cap failed" <<std::endl;
                 continue;
             }
+            
             std::vector<InferenceResult> candidates;
             frame->frame_id=frame_num++;
-            /* enhance*/
-            imgprocessor.enhance_edges(frame->img_bgr);
-            imgprocessor.enhance_contrast(frame->img_bgr);
-            std::cout << "img type: " << frame->img_bgr.type() << std::endl;
-
-            if (frame_num%3==0) {
+            if (frame_num %  INFER_PER_FRAME ==0) {
               //  std::cout << " try push" <<std::endl;
                 out_queue.push(frame);
             }
-            
+
             // 결과 받아옴. (string ,score x1,y1,x2,y2)
             {
              std::lock_guard<std::mutex> lock(infer_mtx);
              candidates=InferResult;
             }
-
 
             std::vector<cv::Rect2f> det_boxes;
             det_boxes.reserve(candidates.size());
@@ -82,13 +78,8 @@ void Task_img_process(CaptureUnit& capunit ,ImageProcessor& imgprocessor, UdpSen
                 }
                 if (best > 0.3f) m_track_label[id] = best_label;
             }
-
-
             const auto& cvred = cv::Scalar(0, 0, 255);
             const auto& cvblue = cv::Scalar(255, 0, 0);
-            const auto& f = "Inference Rate: ";
-                  //  + std::to_string(1000000 / detector.get_prev_duration().count()) + " fps";
-            cv::putText(frame->img_bgr, f, cv::Point(0, 20), cv::FONT_HERSHEY_COMPLEX, .8, cvred, 1.5, 8, 0);
             // tracked 
             for (const auto& [box,id] : tracked) {
                 int l = static_cast<int>(box.x * IMG_WIDTH);
@@ -124,7 +115,7 @@ void Task_img_process(CaptureUnit& capunit ,ImageProcessor& imgprocessor, UdpSen
                 //    std::cout << "[DEBUG] track_id=" << b << ", label='" << label << "'";
                     obj.cls = detector.get_class_id(label);
                 //    std::cout << ", mapped cls=" << a << std::endl;
-                    // 
+
                     // std::cout << label << "cls :" << a <<std::endl;
                 } else {
                 //    std::cout << "[DEBUG] track_id=" << b << " not found in m_track_label!" << std::endl;
@@ -153,7 +144,7 @@ void Task_img_process(CaptureUnit& capunit ,ImageProcessor& imgprocessor, UdpSen
              }
 
             //std::cout << "=== ObjectInfo List ===" << std::endl;
-            std::cout << std::dec; 
+           // std::cout << std::dec; 
             // for (size_t i = 0; i < objects.size(); ++i) {
             //     const auto& obj = objects[i];
             //     if (objects[i].cls==255) continue;
@@ -192,9 +183,10 @@ void Task_img_process(CaptureUnit& capunit ,ImageProcessor& imgprocessor, UdpSen
                 }
                 
             }
-            auto packets=sender.BuildUdpPackets(*frame, objects);
-            sender.UdpSend(packets);
-
+            // ir change
+            frame->img_bgr=imgprocessor.ToPseudoIR(frame->img_bgr);
+            // push to Task_sendImageMeta
+            send_queue.push(SendPacket{frame, objects});
         }
 
         capunit.closeCamera();
@@ -202,7 +194,7 @@ void Task_img_process(CaptureUnit& capunit ,ImageProcessor& imgprocessor, UdpSen
 }
 
 
-void Task_infer( edge::TfLiteWrapper& detector, ThreadSafeQueue<FramePtr>& in_queue) {
+void Task_infer(ImageProcessor& imgprocessor ,edge::TfLiteWrapper& detector, ThreadSafeQueue<FramePtr>& in_queue) {
     while (true) {
         {
             std::unique_lock<std::mutex> lock(statesync.mtx);
@@ -210,21 +202,25 @@ void Task_infer( edge::TfLiteWrapper& detector, ThreadSafeQueue<FramePtr>& in_qu
             { return sysInfo.current_state.load() \
                 ==State::RUNNING; }); 
         }
-
+        cv::Mat ws_tmp(cv::Size(300, 300), CV_8UC3);
         while (sysInfo.current_state.load() == State::RUNNING) {
             
             FramePtr frame = in_queue.wait_and_pop();
           //  std::cout <<"try infer..." <<std::endl;
             cv::Mat rgb_frame, resized_frame;
-           // std::vector<InferenceResult> candidates;
-            cv::cvtColor( frame->img_bgr, rgb_frame, cv::COLOR_BGR2RGB);
-                // 2. 리사이즈
-            cv::resize(rgb_frame, resized_frame, cv::Size(300, 300));
-                // 3. 데이터 추출
-                std::vector<uint8_t> input(
-                resized_frame.data,
-                resized_frame.data + resized_frame.cols * resized_frame.rows * resized_frame.elemSize());
+            cv::resize(frame->img_bgr, resized_frame, cv::Size(300, 300), 0, 0, cv::INTER_LINEAR);
+            imgprocessor.enhance_contrast(resized_frame);
+            imgprocessor.enhance_edges(resized_frame, ws_tmp);
+            imgprocessor.enhance_dehaze(resized_frame);
+
+            // std::vector<InferenceResult> candidates;
+            cv::cvtColor( resized_frame, rgb_frame, cv::COLOR_BGR2RGB);
+            
+            std::vector<uint8_t> input(
+            rgb_frame.data,
+            rgb_frame.data + rgb_frame.cols * rgb_frame.rows * rgb_frame.elemSize());
             auto all_candidates = detector.RunInference(input);
+
             std::vector<InferenceResult> filtered_candidates;
             for (const auto& c : all_candidates) {
                 if (allowed_labels.count(c.candidate)) {
@@ -236,8 +232,26 @@ void Task_infer( edge::TfLiteWrapper& detector, ThreadSafeQueue<FramePtr>& in_qu
             {
              std::lock_guard<std::mutex> lock(infer_mtx);
              InferResult = std::move(filtered_candidates);
-            }
-            
+            }        
+        }
+        in_queue.clear();
+    }
+
+}
+
+void Task_sendImageMeta( UdpSender& sender,ThreadSafeQueue<SendPacket>& in_queue) {
+    while (true) {
+        {
+            std::unique_lock<std::mutex> lock(statesync.mtx);
+            statesync.cv.wait(lock, [] \
+            { return sysInfo.current_state.load() \
+                ==State::RUNNING; }); 
+        }
+
+        while (sysInfo.current_state.load() == State::RUNNING) {
+            SendPacket pkt = in_queue.wait_and_pop();
+            auto packets = sender.BuildUdpPackets(*pkt.frame, pkt.objects);
+            sender.UdpSend(packets);
         }
         in_queue.clear();
     }

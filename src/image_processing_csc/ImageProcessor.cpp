@@ -59,30 +59,90 @@ void CaptureUnit::closeCamera() {
 }
 
 
- void ImageProcessor::enhance_edges(cv::Mat &img, float strength) {
-    if (img.empty()) return;
+ void ImageProcessor::enhance_edges(cv::Mat& img, cv::Mat& buf) {
+    if (img.empty() || !cam_opt.enhance_edges.load()) return;
 
-    const float s = strength;
-    static thread_local cv::Mat k;
-    if (k.empty() || k.at<float>(1,1) != 1.f + 4*s) {
-        k = (cv::Mat_<float>(3,3) <<
-             0, -s, 0,
-            -s, 1.f + 4*s, -s,
-             0, -s, 0);
-    }
-
-    cv::filter2D(img, img, -1, k, {-1,-1}, 0, cv::BORDER_REPLICATE);
+    buf.create(img.size(), img.type());
+    cv::blur(img, buf, {3,3});
+    cv::addWeighted(img, 2.0f, buf, -1.0f, 0.0, img);
 
  }
-void ImageProcessor::enhance_contrast(cv::Mat &img, float alpha , int beta)
+void ImageProcessor::enhance_contrast(cv::Mat& img,  float gain , float gamma ,   int offset)
 {
-    if (img.empty()) return;
+    if (img.empty() || cam_opt.enhance_contrast.load()) return;
+    CV_Assert(img.depth() == CV_8U);   // 8-bit only
 
-    if (img.depth() != CV_8U)
-        img.convertTo(img, CV_8U);
+    // ───── LUT 한 번만 준비 ─────
+    struct Lut {
+        std::array<uchar,256> tbl;
+        float g{}, gm1{};
+        float gn{}, off{};
+    };
+    static Lut cache;
 
-    img.convertTo(img, -1, alpha, beta); // in‑place 변환=
+    if (cache.tbl[1] == 0 ||                // first-time
+        cache.g  != gain   ||
+        cache.gm1!= gamma  ||
+        cache.off!= offset)
+    {
+        cache.g  = gain;
+        cache.gm1= gamma;
+        cache.off= offset;
+
+        for (int i = 0; i < 256; ++i)
+        {
+            float x = i / 255.f;
+            // gamma 보정
+            x = std::pow(x, gamma);
+            // 선형 gain + offset
+            int v = static_cast<int>(x * 255.f * gain + offset + 0.5f);
+            cache.tbl[i] = static_cast<uchar>(std::clamp(v, 0, 255));
+        }
+    }
+
+    cv::LUT(img,
+            cv::Mat(1, 256, CV_8UC1, cache.tbl.data()),
+            img);          // in-place
 }
+
+void ImageProcessor::enhance_dehaze(cv::Mat& img) {
+
+    if (img.empty() || cam_opt.enhance_dehaze.load()) return;
+    CV_Assert(img.type() == CV_8UC3);
+
+    const int rows = img.rows;
+    const int cols = img.cols;
+
+    for (int y = 0; y < rows; ++y) {
+        uchar* ptr = img.ptr<uchar>(y);
+        for (int x = 0; x < cols; ++x) {
+            int b = ptr[3*x + 0];
+            int g = ptr[3*x + 1];
+            int r = ptr[3*x + 2];
+
+            int min_rgb = std::min({r, g, b});
+            float boost = 1.25f - (min_rgb / 255.f) * 0.25f;  // 밝은 영역은 덜 증가
+
+            ptr[3*x + 0] = cv::saturate_cast<uchar>(b * boost);
+            ptr[3*x + 1] = cv::saturate_cast<uchar>(g * boost);
+            ptr[3*x + 2] = cv::saturate_cast<uchar>(r * boost);
+        }
+    }
+
+}
+cv::Mat ImageProcessor::ToPseudoIR(const cv::Mat& bgr) {
+
+    if (!cam_opt.eo_ir.load()) return bgr;
+    cv::Mat gray, ir3;
+    cv::cvtColor(bgr, gray, cv::COLOR_BGR2GRAY);
+
+   
+    cv::bitwise_not(gray, gray);
+
+    cv::cvtColor(gray, ir3, cv::COLOR_GRAY2BGR);   // 3채널로 복제
+    return ir3;
+}
+
 cv::Mat overlay(cv::Mat &src, std::vector<InferenceResult>& info) {
     cv::Mat i;
     return i;

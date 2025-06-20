@@ -95,7 +95,7 @@ file(GLOB SRC
    ${CMAKE_CURRENT_SOURCE_DIR}/src/running_control_csc/pwm.cpp
    ${CMAKE_CURRENT_SOURCE_DIR}/src/running_control_csc/Logger.cpp 
    ${CMAKE_CURRENT_SOURCE_DIR}/src/running_control_csc/Task.cpp
-   ${CMAKE_CURRENT_SOURCE_DIR}/src/running_control_csc/ImgTaskv2.cpp
+   ${CMAKE_CURRENT_SOURCE_DIR}/src/running_control_csc/ImgTaskv4.cpp
    ${CMAKE_CURRENT_SOURCE_DIR}/src/image_processing_csc/ImageProcessor.cpp
    ${CMAKE_CURRENT_SOURCE_DIR}/src/tracking_csc/sort_tracker.cpp
    ${CMAKE_CURRENT_SOURCE_DIR}/src/detecting_csc/edgetpu_detector.cpp

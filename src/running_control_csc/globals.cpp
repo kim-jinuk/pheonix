@@ -46,6 +46,8 @@ const std::unordered_map<CmdFlag, std::vector<std::string>> cmdDict = {
 const std::unordered_set<std::string> allowed_labels = {
     "person", "airplane", "bus", "truck", "car"
 };
-ThreadSafeQueue<FramePtr> enhance_to_infer;
+ThreadSafeQueue<FramePtr> enhance_to_infer(INFER_QUEUE_SIZE);
 std::vector<InferenceResult> InferResult;
 std::mutex infer_mtx;
+
+ThreadSafeQueue<SendPacket> send_queue(SEND_QUEUE_SIZE);

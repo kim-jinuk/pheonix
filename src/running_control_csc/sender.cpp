@@ -8,9 +8,11 @@
 #include <thread>
 #include <boost/asio.hpp>
 #include <boost/bind.hpp>
+#include <chrono>
+
 #define MAX_PACKET_SIZE 1400
 using boost::asio::ip::udp;
-
+using namespace std::chrono;
 constexpr uint32_t MAGIC = 0xDEADBEEF;
 constexpr int HEADER_SIZE = 12; // Magic(4) + FrameID(4) + PacketID(2) + TotalPackets(2)
 constexpr int OBJECTINFO_SIZE = 14;
@@ -119,10 +121,13 @@ std::vector<std::vector<uint8_t>> UdpSender::BuildUdpPackets(
 
     // 2. JPEG 압축
     std::vector<uchar> jpeg_buf;
-    std::vector<int> params = {cv::IMWRITE_JPEG_QUALITY, 80};  // 압축률 조정 가능
+    std::vector<int> params = {cv::IMWRITE_JPEG_QUALITY, 60};  // 압축률 조정 가능
+    auto t0 = steady_clock::now(); 
     bool success = cv::imencode(".jpg", frame.img_bgr, jpeg_buf, params);
+    auto t1 = steady_clock::now(); 
     if (!success || jpeg_buf.empty()) return packets;
-
+    // std::cout << "[INFO] JPEG 압축 시간: "
+    //           << duration_cast<milliseconds>(t1 - t0).count() << " ms" << std::endl;
     // 3. 패킷 수 계산
     size_t total_size = jpeg_buf.size();
     int payload_per_packet = MAX_PACKET_SIZE - PAYLOAD_OFFSET;

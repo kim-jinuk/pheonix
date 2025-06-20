@@ -10,6 +10,7 @@
 #include <unordered_set>
 #define TCP_MAGIC_WORD 0xA5A5
 #define MISSTARGET 9999
+#define INFER_PER_FRAME 5
 /**
     State enum class
 */
@@ -64,17 +65,15 @@ struct Track {
     cam option
 */
 struct Cam_opt {
-    std::atomic<uint8_t> eo_ir;
-    std::atomic<uint8_t> use_clahe=1;
-    std::atomic<uint8_t> use_sharpen=1;
-    std::atomic<uint8_t> use_denoise=0;
-    std::atomic<uint8_t> use_unsharp=1;
+    std::atomic<uint8_t> eo_ir=0;
+    std::atomic<uint8_t> enhance_edges=0;
+    std::atomic<uint8_t> enhance_contrast=0;
+    std::atomic<uint8_t> enhance_dehaze=0;
 //    std::atomic<uint8_t> opt5;
     void fromCmd(uint8_t cmd) {
-        use_clahe.store((cmd & 0x01) != 0);
-        use_sharpen.store((cmd & 0x02) != 0);
-        use_denoise.store((cmd & 0x04) != 0);
-        use_unsharp.store((cmd & 0x08) != 0);
+        enhance_edges.store((cmd & 0x01) != 0);
+        enhance_contrast.store((cmd & 0x02) != 0);
+        enhance_dehaze.store((cmd & 0x04) != 0);
      //   opt5.store((cmd & 0x10) != 0);
     }
 };
@@ -210,19 +209,22 @@ extern std::mutex pos_mtx;
 extern TargetInfo targetInfo;
 extern std::unordered_map<int,std::string> m_track_label;
 
-#define MAX_QUEUE_SIZE 1
+#define INFER_QUEUE_SIZE 1
+#define SEND_QUEUE_SIZE 5
 template<typename T>
 class ThreadSafeQueue {
 private:
     std::queue<T> queue_;
     mutable std::mutex mutex_;
     std::condition_variable cv_;
+    size_t max_size_;
 
 public:
+    explicit ThreadSafeQueue(size_t max_size = 1) : max_size_(max_size) {}
     void push(const T& item) {
         {
             std::lock_guard<std::mutex> lock(mutex_);
-            if (queue_.size()>MAX_QUEUE_SIZE)
+            if (queue_.size()>max_size_)
                 queue_.pop();
             queue_.push(item);
         }
@@ -265,3 +267,10 @@ using FramePtr = std::shared_ptr<FrameData>;
 extern ThreadSafeQueue<FramePtr> enhance_to_infer;
 extern std::vector<InferenceResult> InferResult;
 extern std::mutex infer_mtx;
+
+struct SendPacket {
+    FramePtr frame;
+    std::vector<ObjectInfo> objects;
+};
+
+extern ThreadSafeQueue<SendPacket> send_queue;

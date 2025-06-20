@@ -16,7 +16,9 @@
 #define MAX_OBJECTS 5
 
 
-void Task_img_process(CaptureUnit& capunit ,ImageProcessor& imgprocessor, UdpSender& sender,tracking::SortTracker& tracker,edge::TfLiteWrapper& detector ,ThreadSafeQueue<FramePtr>& out_queue) {
+void Task_img_process(CaptureUnit& capunit ,ImageProcessor& imgprocessor,tracking::SortTracker& tracker, \
+    edge::TfLiteWrapper& detector ,ThreadSafeQueue<FramePtr>& out_queue ,ThreadSafeQueue<SendPacket> &send_queue) {
+
     uint32_t frame_num=0;
     while (true) {
         {
@@ -39,9 +41,9 @@ void Task_img_process(CaptureUnit& capunit ,ImageProcessor& imgprocessor, UdpSen
             /* enhance*/
             imgprocessor.enhance_edges(frame->img_bgr);
             imgprocessor.enhance_contrast(frame->img_bgr);
-            std::cout << "img type: " << frame->img_bgr.type() << std::endl;
+        //    std::cout << "img type: " << frame->img_bgr.type() << std::endl;
 
-            if (frame_num%3==0) {
+            if (frame_num%5==0) {
               //  std::cout << " try push" <<std::endl;
                 out_queue.push(frame);
             }
@@ -86,9 +88,6 @@ void Task_img_process(CaptureUnit& capunit ,ImageProcessor& imgprocessor, UdpSen
 
             const auto& cvred = cv::Scalar(0, 0, 255);
             const auto& cvblue = cv::Scalar(255, 0, 0);
-            const auto& f = "Inference Rate: ";
-                  //  + std::to_string(1000000 / detector.get_prev_duration().count()) + " fps";
-            cv::putText(frame->img_bgr, f, cv::Point(0, 20), cv::FONT_HERSHEY_COMPLEX, .8, cvred, 1.5, 8, 0);
             // tracked 
             for (const auto& [box,id] : tracked) {
                 int l = static_cast<int>(box.x * IMG_WIDTH);
@@ -124,7 +123,7 @@ void Task_img_process(CaptureUnit& capunit ,ImageProcessor& imgprocessor, UdpSen
                 //    std::cout << "[DEBUG] track_id=" << b << ", label='" << label << "'";
                     obj.cls = detector.get_class_id(label);
                 //    std::cout << ", mapped cls=" << a << std::endl;
-                    // 
+
                     // std::cout << label << "cls :" << a <<std::endl;
                 } else {
                 //    std::cout << "[DEBUG] track_id=" << b << " not found in m_track_label!" << std::endl;
@@ -192,9 +191,8 @@ void Task_img_process(CaptureUnit& capunit ,ImageProcessor& imgprocessor, UdpSen
                 }
                 
             }
-            auto packets=sender.BuildUdpPackets(*frame, objects);
-            sender.UdpSend(packets);
-
+            // push to Task_sendImageMeta
+            send_queue.push(SendPacket{frame, objects});
         }
 
         capunit.closeCamera();
@@ -236,8 +234,26 @@ void Task_infer( edge::TfLiteWrapper& detector, ThreadSafeQueue<FramePtr>& in_qu
             {
              std::lock_guard<std::mutex> lock(infer_mtx);
              InferResult = std::move(filtered_candidates);
-            }
-            
+            }        
+        }
+        in_queue.clear();
+    }
+
+}
+
+void Task_sendImageMeta( UdpSender& sender,ThreadSafeQueue<SendPacket>& in_queue) {
+    while (true) {
+        {
+            std::unique_lock<std::mutex> lock(statesync.mtx);
+            statesync.cv.wait(lock, [] \
+            { return sysInfo.current_state.load() \
+                ==State::RUNNING; }); 
+        }
+
+        while (sysInfo.current_state.load() == State::RUNNING) {
+            SendPacket pkt = in_queue.wait_and_pop();
+            auto packets = sender.BuildUdpPackets(*pkt.frame, pkt.objects);
+            sender.UdpSend(packets);
         }
         in_queue.clear();
     }

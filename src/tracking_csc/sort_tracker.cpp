@@ -30,6 +30,14 @@ static cv::KalmanFilter createKF(const cv::Rect2f &bbox) {
 
 SortTracker::SortTracker(float iou) : iou_thresh_(iou) {}
 
+std::vector<std::pair<cv::Rect2f,int>> SortTracker::predict_only()
+{
+    for (auto &t : tracks_) step_kalman(t);        // 칼만 예측만
+    std::vector<std::pair<cv::Rect2f,int>> out;
+    for (auto &t : tracks_) out.emplace_back(t.bbox, t.id);
+    return out;
+}
+
 float SortTracker::IoU(const cv::Rect2f &a, const cv::Rect2f &b) {
     const float inter = (a & b).area();
     const float uni = a.area() + b.area() - inter;

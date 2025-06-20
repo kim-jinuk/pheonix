@@ -6,8 +6,6 @@
 #include "running_control_csc/MotorControl.hpp"
 #include "running_control_csc/CfgLoader.hpp"
 #include "running_control_csc/Task.hpp"
-#include "running_control_csc/ImgTaskv1.hpp"
-#include "running_control_csc/ImgTaskv2.hpp"
 #include "running_control_csc/Logger.hpp"
 #include "running_control_csc/sender.hpp"
 #include "image_processing_csc/ImageProcessor.hpp"
@@ -18,7 +16,7 @@
 #include <iostream>
 #include <atomic>
 #include <unistd.h>
-#define IMG_VERSION 2
+#define IMG_VERSION 4
 
 using namespace std;
 std::ostream& operator<<(std::ostream& os, State s) {
@@ -89,11 +87,27 @@ int main() {
     std::thread moveMotorThread(Task_moveMotor,std::ref(motorcontrol)); 
 
 #if IMG_VERSION == 1
+#include "running_control_csc/ImgTaskv1.hpp"
     std::thread ImageProcessingThread(Task_ImageProcessing, std::ref(capunit),std::ref(imgprocessor),\
                                     std::ref(detector),std::ref(tracker),std::ref(sender));
 #elif IMG_VERSION == 2
-    std::thread image_processThread(Task_img_process, std::ref(capunit),std::ref(imgprocessor),std::ref(sender),std::ref(tracker),  std::ref(detector),std::ref(enhance_to_infer));
+#include "running_control_csc/ImgTaskv2.hpp"
+    std::thread image_processThread(Task_img_process, std::ref(capunit),std::ref(imgprocessor),std::ref(sender),std::ref(tracker), \
+                                     std::ref(detector),std::ref(enhance_to_infer));
     std::thread inferThread(Task_infer, std::ref(detector), std::ref(enhance_to_infer));
+
+#elif IMG_VERSION == 3 
+#include "running_control_csc/ImgTaskv3.hpp"
+    std::thread image_processThread(Task_img_process, std::ref(capunit),std::ref(imgprocessor), std::ref(tracker), \
+                                     std::ref(detector),std::ref(enhance_to_infer),std::ref(send_queue));
+    std::thread inferThread(Task_infer, std::ref(detector), std::ref(enhance_to_infer));
+    std::thread sendImgThread(Task_sendImageMeta, std::ref(sender), std::ref(send_queue));
+#elif IMG_VERSION == 4
+#include "running_control_csc/ImgTaskv4.hpp"
+    std::thread image_processThread(Task_img_process, std::ref(capunit),std::ref(imgprocessor), std::ref(tracker), \
+                                     std::ref(detector),std::ref(enhance_to_infer),std::ref(send_queue));
+    std::thread inferThread(Task_infer,std::ref(imgprocessor), std::ref(detector), std::ref(enhance_to_infer));
+    std::thread sendImgThread(Task_sendImageMeta, std::ref(sender), std::ref(send_queue));
 #endif
 
 

@@ -12,6 +12,7 @@ class SortTracker {
     explicit SortTracker(float iou_threshold = 0.3f);
     // Update with freshly detected boxes; returns (bbox, id)
     std::vector<std::pair<cv::Rect2f,int>> update(const std::vector<cv::Rect2f>& detections);
+    std::vector<std::pair<cv::Rect2f,int>> predict_only();
  private:
     float iou_thresh_;
     int next_id_ = 0;

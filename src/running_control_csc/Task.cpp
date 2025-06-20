@@ -128,13 +128,17 @@ void Task_receiveCmd(TcpCmdChannel& tcpCmdChannel , MotorControl& motorcontrol,L
                 case Cam_num :
                     std::cout<< "change EO/IR"<<std::endl;
                     cam_opt.eo_ir.store(cmd.cmd);
+
                     break;
-                case Prep_opt :
+                case Prep_opt : {
                     std::cout<< "set Prep_opt"<<std::endl;
                     cam_opt.fromCmd(cmd.cmd);
+                    int a=cam_opt.enhance_edges.load();
+                    int b=cam_opt.enhance_contrast.load();
+                    std::cout<< "edges : "<< a << " contrast : "<< b << std::endl;
                     break;
+                }
                 case move_motor :
-                    std::cout<< "move motor"<<std::endl;
                     if (sysInfo.current_mode.load() == Mode::MANUAL) {
                         motorcontrol.enqueueDeltaIfManual(cmd.cmd);
                     }

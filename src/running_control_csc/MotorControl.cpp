@@ -34,7 +34,7 @@ SCANMotor::~SCANMotor() {
 
 void SCANMotor::updateAngle() {
 
-    std::cout << "SCANMotor logic"<<std::endl;
+   // std::cout << "SCANMotor logic"<<std::endl;
     static const int STEP = 1;
 
     if (pos.yaw >= sweep_high || pos.yaw <= sweep_low) {
@@ -62,33 +62,40 @@ void ManualMotor::updateAngle() {
 
     {
         std::lock_guard<std::mutex> lock(queue_mtx);
-
+        int yaw=pos.yaw;
+        int pitch=pos.pitch;
         if (!delta_queue.empty()) 
         {
             uint8_t cmd = delta_queue.front();
             uint8_t motor_id = (cmd >> 1 ) & 0x01;
-            int8_t direction= (cmd & 0x01) ? -5: 5;
-
-            if (motor_id == 0) {
-                pos.yaw += direction;
-                if (pos.yaw>=180)
-                     pos.yaw=180;
-                else if (pos.yaw<=0)
-                    pos.yaw=0;
+            int direction= (cmd & 0x01) ? -5: 5;
+            
+            if (motor_id == 0) 
+            {
+                
+                yaw += direction;
+                if (yaw>=180)
+                     yaw=180;
+                else if (yaw<=0)
+                    yaw=0;
             }
                 
-            else {
-                pos.pitch += direction;
-                if (pos.pitch>=180)
-                    pos.pitch=180;
-                else if (pos.pitch<=0)
-                    pos.pitch=0;
+            else 
+            {
+                
+                pitch += direction;
+                if (pitch>=180)
+                    pitch=180;
+                else if (pitch<=0)
+                    pitch=0;
             }
             delta_queue.pop();
         }
-        
-
+        pos.yaw=yaw;
+        pos.pitch=pitch;
+       // std::cout << "yaw:" << pos.yaw << " pitch : " <<pos.pitch<<std::endl;
     }
+    
 }
 
 /* 
@@ -201,8 +208,7 @@ void MotorControl::runStrategy() {
     {
         std::lock_guard<std::mutex> lock(pos_mtx);
         if (local) local->updateAngle();
-        move();
-        
+        move(); 
     }
 }
 void MotorControl::enqueueDeltaIfManual(uint8_t delta) {
