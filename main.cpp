@@ -104,7 +104,7 @@ int main() {
     std::thread sendImgThread(Task_sendImageMeta, std::ref(sender), std::ref(send_queue));
 #elif IMG_VERSION == 4
 #include "running_control_csc/ImgTaskv4.hpp"
-    std::thread image_processThread(Task_img_process, std::ref(capunit),std::ref(imgprocessor), std::ref(tracker), \
+    std::thread image_processThread(Task_img_process, std::ref(logger) ,std::ref(capunit),std::ref(imgprocessor), std::ref(tracker), \
                                      std::ref(detector),std::ref(enhance_to_infer),std::ref(send_queue));
     std::thread inferThread(Task_infer,std::ref(imgprocessor), std::ref(detector), std::ref(enhance_to_infer));
     std::thread sendImgThread(Task_sendImageMeta, std::ref(sender), std::ref(send_queue));

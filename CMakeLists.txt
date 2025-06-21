@@ -83,8 +83,8 @@ file(GLOB SRC
     # ${CMAKE_CURRENT_SOURCE_DIR}/tflite_wrapper.cc
     # ${CMAKE_CURRENT_SOURCE_DIR}/detection_camera.cc
     # ${CMAKE_CURRENT_SOURCE_DIR}/label_utils.cc
-   # ${CMAKE_CURRENT_SOURCE_DIR}/main.cpp
    ${CMAKE_CURRENT_SOURCE_DIR}/main.cpp
+#    ${CMAKE_CURRENT_SOURCE_DIR}/test.cpp
    ${CMAKE_CURRENT_SOURCE_DIR}/src/running_control_csc/BIT.cpp
    ${CMAKE_CURRENT_SOURCE_DIR}/src/running_control_csc/receiver.cpp
    ${CMAKE_CURRENT_SOURCE_DIR}/src/running_control_csc/sender.cpp

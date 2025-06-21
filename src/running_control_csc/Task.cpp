@@ -62,7 +62,7 @@ void Task_sendState(TcpStateChannel& tcpStateChannel , BIT& bit ,Logger& logger 
                 break;
             }
             
-
+            logger.flush();
             std::this_thread::sleep_for(std::chrono::milliseconds(30));
           //  std::cout <<"send loop doing..." <<std::endl;
         }
@@ -160,6 +160,7 @@ void Task_receiveCmd(TcpCmdChannel& tcpCmdChannel , MotorControl& motorcontrol,L
                 default :
                     break;
             }
+            logger.logCmd(cmd.cmd_flag,cmd.cmd);
             // ack
             if (!tcpCmdChannel.sendAck(cmd)) {
                 sysInfo.TCP_cmd_connected.store(false); 

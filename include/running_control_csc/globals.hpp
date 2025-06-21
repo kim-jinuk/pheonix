@@ -37,6 +37,7 @@ struct FrameData {
 
     uint32_t frame_id;
     cv::Mat img_bgr;
+    std::string timestamp;
 };
 
 /**
@@ -181,16 +182,6 @@ struct StateSync {
     std::condition_variable cv;
 };
 
-// logging 관련
-enum class CmdFlag : uint8_t{
-    Mode_change,
-    EOIR_change,
-    Prep_opt, 
-    Move_motor,
-    Tracking,
-    InitMotor,
-    COUNT
-};
 
 
 

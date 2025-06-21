@@ -16,7 +16,7 @@
 #define MAX_OBJECTS 5
 
 
-void Task_img_process(CaptureUnit& capunit ,ImageProcessor& imgprocessor,tracking::SortTracker& tracker, \
+void Task_img_process(Logger& logger, CaptureUnit& capunit ,ImageProcessor& imgprocessor,tracking::SortTracker& tracker, \
     edge::TfLiteWrapper& detector ,ThreadSafeQueue<FramePtr>& out_queue ,ThreadSafeQueue<SendPacket> &send_queue) {
 
     uint32_t frame_num=0;
@@ -38,6 +38,7 @@ void Task_img_process(CaptureUnit& capunit ,ImageProcessor& imgprocessor,trackin
             
             std::vector<InferenceResult> candidates;
             frame->frame_id=frame_num++;
+            frame->timestamp=logger.getCurrentTimestamp();
             if (frame_num %  INFER_PER_FRAME ==0) {
               //  std::cout << " try push" <<std::endl;
                 out_queue.push(frame);
@@ -138,6 +139,7 @@ void Task_img_process(CaptureUnit& capunit ,ImageProcessor& imgprocessor,trackin
                 i++;
             }
 
+            logger.logMeta(frame->frame_id,frame->timestamp , objects);
 
              while (objects.size() < 5) {
                 objects.push_back(ObjectInfo{255, 255, -1, -1, -1, -1, 0.0f});
