@@ -139,19 +139,19 @@ CMakeFiles/EOIR_system.dir/src/running_control_csc/CfgLoader.cpp.s: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling CXX source to assembly CMakeFiles/EOIR_system.dir/src/running_control_csc/CfgLoader.cpp.s"
 	/opt/gcc-linaro-12.2.1-2022.11-x86_64_arm-linux-gnueabihf/bin/arm-linux-gnueabihf-g++ --sysroot=/workspace/peta_prj/Clocked_pwm_peta_v2/zynq_sdk/sysroots/cortexa9t2hf-neon-xilinx-linux-gnueabi $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /workspace/DAN/pheonix/src/running_control_csc/CfgLoader.cpp -o CMakeFiles/EOIR_system.dir/src/running_control_csc/CfgLoader.cpp.s
 
-CMakeFiles/EOIR_system.dir/src/running_control_csc/ImgTaskv4.cpp.o: CMakeFiles/EOIR_system.dir/flags.make
-CMakeFiles/EOIR_system.dir/src/running_control_csc/ImgTaskv4.cpp.o: ../../src/running_control_csc/ImgTaskv4.cpp
-CMakeFiles/EOIR_system.dir/src/running_control_csc/ImgTaskv4.cpp.o: CMakeFiles/EOIR_system.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/workspace/DAN/pheonix/out/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_6) "Building CXX object CMakeFiles/EOIR_system.dir/src/running_control_csc/ImgTaskv4.cpp.o"
-	/opt/gcc-linaro-12.2.1-2022.11-x86_64_arm-linux-gnueabihf/bin/arm-linux-gnueabihf-g++ --sysroot=/workspace/peta_prj/Clocked_pwm_peta_v2/zynq_sdk/sysroots/cortexa9t2hf-neon-xilinx-linux-gnueabi $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/EOIR_system.dir/src/running_control_csc/ImgTaskv4.cpp.o -MF CMakeFiles/EOIR_system.dir/src/running_control_csc/ImgTaskv4.cpp.o.d -o CMakeFiles/EOIR_system.dir/src/running_control_csc/ImgTaskv4.cpp.o -c /workspace/DAN/pheonix/src/running_control_csc/ImgTaskv4.cpp
+CMakeFiles/EOIR_system.dir/src/running_control_csc/ImgTaskv10.cpp.o: CMakeFiles/EOIR_system.dir/flags.make
+CMakeFiles/EOIR_system.dir/src/running_control_csc/ImgTaskv10.cpp.o: ../../src/running_control_csc/ImgTaskv10.cpp
+CMakeFiles/EOIR_system.dir/src/running_control_csc/ImgTaskv10.cpp.o: CMakeFiles/EOIR_system.dir/compiler_depend.ts
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/workspace/DAN/pheonix/out/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_6) "Building CXX object CMakeFiles/EOIR_system.dir/src/running_control_csc/ImgTaskv10.cpp.o"
+	/opt/gcc-linaro-12.2.1-2022.11-x86_64_arm-linux-gnueabihf/bin/arm-linux-gnueabihf-g++ --sysroot=/workspace/peta_prj/Clocked_pwm_peta_v2/zynq_sdk/sysroots/cortexa9t2hf-neon-xilinx-linux-gnueabi $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/EOIR_system.dir/src/running_control_csc/ImgTaskv10.cpp.o -MF CMakeFiles/EOIR_system.dir/src/running_control_csc/ImgTaskv10.cpp.o.d -o CMakeFiles/EOIR_system.dir/src/running_control_csc/ImgTaskv10.cpp.o -c /workspace/DAN/pheonix/src/running_control_csc/ImgTaskv10.cpp
 
-CMakeFiles/EOIR_system.dir/src/running_control_csc/ImgTaskv4.cpp.i: cmake_force
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing CXX source to CMakeFiles/EOIR_system.dir/src/running_control_csc/ImgTaskv4.cpp.i"
-	/opt/gcc-linaro-12.2.1-2022.11-x86_64_arm-linux-gnueabihf/bin/arm-linux-gnueabihf-g++ --sysroot=/workspace/peta_prj/Clocked_pwm_peta_v2/zynq_sdk/sysroots/cortexa9t2hf-neon-xilinx-linux-gnueabi $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /workspace/DAN/pheonix/src/running_control_csc/ImgTaskv4.cpp > CMakeFiles/EOIR_system.dir/src/running_control_csc/ImgTaskv4.cpp.i
+CMakeFiles/EOIR_system.dir/src/running_control_csc/ImgTaskv10.cpp.i: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing CXX source to CMakeFiles/EOIR_system.dir/src/running_control_csc/ImgTaskv10.cpp.i"
+	/opt/gcc-linaro-12.2.1-2022.11-x86_64_arm-linux-gnueabihf/bin/arm-linux-gnueabihf-g++ --sysroot=/workspace/peta_prj/Clocked_pwm_peta_v2/zynq_sdk/sysroots/cortexa9t2hf-neon-xilinx-linux-gnueabi $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /workspace/DAN/pheonix/src/running_control_csc/ImgTaskv10.cpp > CMakeFiles/EOIR_system.dir/src/running_control_csc/ImgTaskv10.cpp.i
 
-CMakeFiles/EOIR_system.dir/src/running_control_csc/ImgTaskv4.cpp.s: cmake_force
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling CXX source to assembly CMakeFiles/EOIR_system.dir/src/running_control_csc/ImgTaskv4.cpp.s"
-	/opt/gcc-linaro-12.2.1-2022.11-x86_64_arm-linux-gnueabihf/bin/arm-linux-gnueabihf-g++ --sysroot=/workspace/peta_prj/Clocked_pwm_peta_v2/zynq_sdk/sysroots/cortexa9t2hf-neon-xilinx-linux-gnueabi $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /workspace/DAN/pheonix/src/running_control_csc/ImgTaskv4.cpp -o CMakeFiles/EOIR_system.dir/src/running_control_csc/ImgTaskv4.cpp.s
+CMakeFiles/EOIR_system.dir/src/running_control_csc/ImgTaskv10.cpp.s: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling CXX source to assembly CMakeFiles/EOIR_system.dir/src/running_control_csc/ImgTaskv10.cpp.s"
+	/opt/gcc-linaro-12.2.1-2022.11-x86_64_arm-linux-gnueabihf/bin/arm-linux-gnueabihf-g++ --sysroot=/workspace/peta_prj/Clocked_pwm_peta_v2/zynq_sdk/sysroots/cortexa9t2hf-neon-xilinx-linux-gnueabi $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /workspace/DAN/pheonix/src/running_control_csc/ImgTaskv10.cpp -o CMakeFiles/EOIR_system.dir/src/running_control_csc/ImgTaskv10.cpp.s
 
 CMakeFiles/EOIR_system.dir/src/running_control_csc/Logger.cpp.o: CMakeFiles/EOIR_system.dir/flags.make
 CMakeFiles/EOIR_system.dir/src/running_control_csc/Logger.cpp.o: ../../src/running_control_csc/Logger.cpp
@@ -272,7 +272,7 @@ EOIR_system_OBJECTS = \
 "CMakeFiles/EOIR_system.dir/src/image_processing_csc/ImageProcessor.cpp.o" \
 "CMakeFiles/EOIR_system.dir/src/running_control_csc/BIT.cpp.o" \
 "CMakeFiles/EOIR_system.dir/src/running_control_csc/CfgLoader.cpp.o" \
-"CMakeFiles/EOIR_system.dir/src/running_control_csc/ImgTaskv4.cpp.o" \
+"CMakeFiles/EOIR_system.dir/src/running_control_csc/ImgTaskv10.cpp.o" \
 "CMakeFiles/EOIR_system.dir/src/running_control_csc/Logger.cpp.o" \
 "CMakeFiles/EOIR_system.dir/src/running_control_csc/MotorControl.cpp.o" \
 "CMakeFiles/EOIR_system.dir/src/running_control_csc/Task.cpp.o" \
@@ -290,7 +290,7 @@ EOIR_system: CMakeFiles/EOIR_system.dir/src/detecting_csc/edgetpu_detector.cpp.o
 EOIR_system: CMakeFiles/EOIR_system.dir/src/image_processing_csc/ImageProcessor.cpp.o
 EOIR_system: CMakeFiles/EOIR_system.dir/src/running_control_csc/BIT.cpp.o
 EOIR_system: CMakeFiles/EOIR_system.dir/src/running_control_csc/CfgLoader.cpp.o
-EOIR_system: CMakeFiles/EOIR_system.dir/src/running_control_csc/ImgTaskv4.cpp.o
+EOIR_system: CMakeFiles/EOIR_system.dir/src/running_control_csc/ImgTaskv10.cpp.o
 EOIR_system: CMakeFiles/EOIR_system.dir/src/running_control_csc/Logger.cpp.o
 EOIR_system: CMakeFiles/EOIR_system.dir/src/running_control_csc/MotorControl.cpp.o
 EOIR_system: CMakeFiles/EOIR_system.dir/src/running_control_csc/Task.cpp.o

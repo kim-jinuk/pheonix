@@ -13,7 +13,7 @@ set(CMAKE_DEPENDS_DEPENDENCY_FILES
   "/workspace/DAN/pheonix/src/image_processing_csc/ImageProcessor.cpp" "CMakeFiles/EOIR_system.dir/src/image_processing_csc/ImageProcessor.cpp.o" "gcc" "CMakeFiles/EOIR_system.dir/src/image_processing_csc/ImageProcessor.cpp.o.d"
   "/workspace/DAN/pheonix/src/running_control_csc/BIT.cpp" "CMakeFiles/EOIR_system.dir/src/running_control_csc/BIT.cpp.o" "gcc" "CMakeFiles/EOIR_system.dir/src/running_control_csc/BIT.cpp.o.d"
   "/workspace/DAN/pheonix/src/running_control_csc/CfgLoader.cpp" "CMakeFiles/EOIR_system.dir/src/running_control_csc/CfgLoader.cpp.o" "gcc" "CMakeFiles/EOIR_system.dir/src/running_control_csc/CfgLoader.cpp.o.d"
-  "/workspace/DAN/pheonix/src/running_control_csc/ImgTaskv4.cpp" "CMakeFiles/EOIR_system.dir/src/running_control_csc/ImgTaskv4.cpp.o" "gcc" "CMakeFiles/EOIR_system.dir/src/running_control_csc/ImgTaskv4.cpp.o.d"
+  "/workspace/DAN/pheonix/src/running_control_csc/ImgTaskv10.cpp" "CMakeFiles/EOIR_system.dir/src/running_control_csc/ImgTaskv10.cpp.o" "gcc" "CMakeFiles/EOIR_system.dir/src/running_control_csc/ImgTaskv10.cpp.o.d"
   "/workspace/DAN/pheonix/src/running_control_csc/Logger.cpp" "CMakeFiles/EOIR_system.dir/src/running_control_csc/Logger.cpp.o" "gcc" "CMakeFiles/EOIR_system.dir/src/running_control_csc/Logger.cpp.o.d"
   "/workspace/DAN/pheonix/src/running_control_csc/MotorControl.cpp" "CMakeFiles/EOIR_system.dir/src/running_control_csc/MotorControl.cpp.o" "gcc" "CMakeFiles/EOIR_system.dir/src/running_control_csc/MotorControl.cpp.o.d"
   "/workspace/DAN/pheonix/src/running_control_csc/Task.cpp" "CMakeFiles/EOIR_system.dir/src/running_control_csc/Task.cpp.o" "gcc" "CMakeFiles/EOIR_system.dir/src/running_control_csc/Task.cpp.o.d"

@@ -24,6 +24,7 @@ std::vector<std::string> State_str={"CHECKING", "IDLE", "RUNNING"};
 std::vector<std::string> Mode_str={"SCAN", "MANUAL", "TRACKING"};
 
 std::unordered_map<int,std::string> m_track_label;
+std::unordered_map<int, StableLabel> m_label_state;
 
 const std::unordered_set<std::string> allowed_labels = {
     "person", "airplane", "bus", "truck", "car"
@@ -33,3 +34,4 @@ std::vector<InferenceResult> InferResult;
 std::mutex infer_mtx;
 
 ThreadSafeQueue<SendPacket> send_queue(SEND_QUEUE_SIZE);
+

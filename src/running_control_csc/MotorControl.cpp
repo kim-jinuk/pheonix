@@ -59,7 +59,7 @@ void ManualMotor::enqueueDelta(uint8_t delta) {
 }
 
 void ManualMotor::updateAngle() {
-
+  //  std::cout << "ManualMotor logic"<<std::endl;
     {
         std::lock_guard<std::mutex> lock(queue_mtx);
         int yaw=pos.yaw;
@@ -102,7 +102,7 @@ void ManualMotor::updateAngle() {
     Tracking
 */
 void TrackingMotor::updateAngle() {
- //   std::cout << "TRACKING logic"<<std::endl;
+   // std::cout << "TRACKING logic"<<std::endl;
     std::pair<int16_t,int16_t> targetPos=targetInfo.getXY();;
     //std::cout << "target x:" << targetPos.first << "target y:" << targetPos.second <<std::endl;
     if (targetPos.first==MISSTARGET && targetPos.second==MISSTARGET) {
@@ -122,12 +122,12 @@ void TrackingMotor::updateAngle() {
    // std::cout << "dx: " <<dx << " dy :"<< dy<<std::endl; 
 
     if (std::abs(dx) <= DEADZONE) {
-        std::cout << "Yaw: Deadzone, no move" << std::endl;
+    //    std::cout << "Yaw: Deadzone, no move" << std::endl;
     } else if (std::abs(dx) <= ZONE1) {
-        std::cout << "Yaw: small adjust" << std::endl;
+     //   std::cout << "Yaw: small adjust" << std::endl;
         yaw+=-dx/std::abs(dx);
     } else {
-        std::cout << "Yaw: strong adjust" << std::endl;
+    //    std::cout << "Yaw: strong adjust" << std::endl;
         yaw+=-2*dx/std::abs(dx);
     }
 

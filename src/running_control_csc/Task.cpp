@@ -32,6 +32,7 @@ void Task_sendState(TcpStateChannel& tcpStateChannel , BIT& bit ,Logger& logger 
             tcpstate.tpu=sysInfo.TPU_state;
             tcpstate.cam=sysInfo.CAM_state;
             tcpstate.sdcard=sysInfo.logging_enabled;
+            tcpstate.cpu_temp=sysInfo.cpu_temp;
             
             // change state depending on device
             if (!(sysInfo.TPU_state && sysInfo.CAM_state)) {
@@ -149,7 +150,7 @@ void Task_receiveCmd(TcpCmdChannel& tcpCmdChannel , MotorControl& motorcontrol,L
                     aaa=cmd.cmd;
                     std::cout<< "do tracking id :"<< aaa <<std::endl;
                     sysInfo.current_mode.store(Mode::TRACKING);
-                    motorcontrol.setStrategy(cmd.cmd);
+                    motorcontrol.setStrategy(static_cast<uint8_t>(Mode::TRACKING));
                     break;
                 case InitMotor :
                     if (sysInfo.current_mode.load()==(Mode::MANUAL)) {

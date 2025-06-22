@@ -16,7 +16,7 @@
 #include <iostream>
 #include <atomic>
 #include <unistd.h>
-#define IMG_VERSION 4
+#define IMG_VERSION 10
 
 using namespace std;
 std::ostream& operator<<(std::ostream& os, State s) {
@@ -43,6 +43,35 @@ int main() {
     int tcp_cmd_port = std::stoi(cfg.get("TCP_CMD_PORT"));
     int tcp_state_port = std::stoi(cfg.get("TCP_STATE_PORT"));
     
+    
+    /* tracker*/
+#if TRACKING_VERSION == 1
+    tracking::SortTracker tracker(0.3f);
+   // tracking::SortTracker tracker(0.2f);
+#else
+    tracking::ByteTracker tracker;
+#endif
+    /* Image processor*/
+    ImageProcessor imgprocessor;
+    /* BIT */
+    BIT bit;
+    /* TCPcmd */
+    TcpCmdChannel tcpCmdChannel(tcp_cmd_port);
+    /* TCPstate*/
+    TcpStateChannel tcpStateChannel(tcp_state_port);
+    /* UDP */
+    UdpSender sender(udp_ip, udp_port);
+    /* Motor*/
+    MotorControl motorcontrol;
+    /* capunit*/
+    CaptureUnit capunit;
+    Logger logger("./logs");
+    
+
+    std::thread sendStateThread(Task_sendState, std::ref(tcpStateChannel), std::ref(bit), std::ref(logger)); 
+    bit.pbit();
+   
+
     std::string model_path = cfg.get("MODEL");
     std::string label_path = cfg.get("LABEL");
     float threshold = std::stof(cfg.get("THRESHOLD"));
@@ -62,27 +91,8 @@ int main() {
         context,
         use_edgetpu
     );
-    /* tracker*/
-    tracking::SortTracker tracker(0.3f);
-    /* Image processor*/
-    ImageProcessor imgprocessor;
-    /* BIT */
-    BIT bit;
-    /* TCPcmd */
-    TcpCmdChannel tcpCmdChannel(tcp_cmd_port);
-    /* TCPstate*/
-    TcpStateChannel tcpStateChannel(tcp_state_port);
-    /* UDP */
-    UdpSender sender(udp_ip, udp_port);
-    /* Motor*/
-    MotorControl motorcontrol;
-    /* capunit*/
-    CaptureUnit capunit;
-    Logger logger("./logs");
+
     
-    bit.pbit();
-   
-    std::thread sendStateThread(Task_sendState, std::ref(tcpStateChannel), std::ref(bit), std::ref(logger)); 
     std::thread receiveCmdThread(Task_receiveCmd, std::ref(tcpCmdChannel),std::ref(motorcontrol),std::ref(logger)); 
     std::thread moveMotorThread(Task_moveMotor,std::ref(motorcontrol)); 
 
@@ -102,8 +112,46 @@ int main() {
                                      std::ref(detector),std::ref(enhance_to_infer),std::ref(send_queue));
     std::thread inferThread(Task_infer, std::ref(detector), std::ref(enhance_to_infer));
     std::thread sendImgThread(Task_sendImageMeta, std::ref(sender), std::ref(send_queue));
-#elif IMG_VERSION == 4
+#elif IMG_VERSION == 4 
 #include "running_control_csc/ImgTaskv4.hpp"
+    std::thread image_processThread(Task_img_process, std::ref(logger) ,std::ref(capunit),std::ref(imgprocessor), std::ref(tracker), \
+                                     std::ref(detector),std::ref(enhance_to_infer),std::ref(send_queue));
+    std::thread inferThread(Task_infer,std::ref(imgprocessor), std::ref(detector), std::ref(enhance_to_infer));
+    std::thread sendImgThread(Task_sendImageMeta, std::ref(sender), std::ref(send_queue));
+#elif IMG_VERSION == 5
+#include "running_control_csc/ImgTaskv5.hpp"
+    std::thread image_processThread(Task_img_process, std::ref(logger) ,std::ref(capunit),std::ref(imgprocessor), std::ref(tracker), \
+                                     std::ref(detector),std::ref(enhance_to_infer),std::ref(send_queue));
+    std::thread inferThread(Task_infer,std::ref(imgprocessor), std::ref(detector), std::ref(enhance_to_infer));
+    std::thread sendImgThread(Task_sendImageMeta, std::ref(sender), std::ref(send_queue));
+    #elif IMG_VERSION == 6
+#include "running_control_csc/ImgTaskv6.hpp"
+    std::thread image_processThread(Task_img_process, std::ref(logger) ,std::ref(capunit),std::ref(imgprocessor), std::ref(tracker), \
+                                     std::ref(detector),std::ref(enhance_to_infer),std::ref(send_queue));
+    std::thread inferThread(Task_infer,std::ref(imgprocessor), std::ref(detector), std::ref(enhance_to_infer));
+    std::thread sendImgThread(Task_sendImageMeta, std::ref(sender), std::ref(send_queue));
+    #elif IMG_VERSION == 7
+#include "running_control_csc/ImgTaskv7.hpp"
+    std::thread image_processThread(Task_img_process, std::ref(logger) ,std::ref(capunit),std::ref(imgprocessor), std::ref(tracker), \
+                                     std::ref(detector),std::ref(enhance_to_infer),std::ref(send_queue));
+    std::thread inferThread(Task_infer,std::ref(imgprocessor), std::ref(detector), std::ref(enhance_to_infer));
+    std::thread sendImgThread(Task_sendImageMeta, std::ref(sender), std::ref(send_queue));
+    #elif IMG_VERSION == 8
+#include "running_control_csc/ImgTaskv8.hpp"
+    std::thread image_processThread(Task_img_process, std::ref(logger) ,std::ref(capunit),std::ref(imgprocessor), std::ref(tracker), \
+                                     std::ref(detector),std::ref(enhance_to_infer),std::ref(send_queue));
+    std::thread inferThread(Task_infer,std::ref(imgprocessor), std::ref(detector), std::ref(enhance_to_infer));
+    std::thread sendImgThread(Task_sendImageMeta, std::ref(sender), std::ref(send_queue));
+    #elif IMG_VERSION == 9
+    // use sort  , no predict
+#include "running_control_csc/ImgTaskv9.hpp"
+    std::thread image_processThread(Task_img_process, std::ref(logger) ,std::ref(capunit),std::ref(imgprocessor), std::ref(tracker), \
+                                     std::ref(detector),std::ref(enhance_to_infer),std::ref(send_queue));
+    std::thread inferThread(Task_infer,std::ref(imgprocessor), std::ref(detector), std::ref(enhance_to_infer));
+    std::thread sendImgThread(Task_sendImageMeta, std::ref(sender), std::ref(send_queue));
+        #elif IMG_VERSION == 10
+#include "running_control_csc/ImgTaskv10.hpp"
+    // use type , no predict
     std::thread image_processThread(Task_img_process, std::ref(logger) ,std::ref(capunit),std::ref(imgprocessor), std::ref(tracker), \
                                      std::ref(detector),std::ref(enhance_to_infer),std::ref(send_queue));
     std::thread inferThread(Task_infer,std::ref(imgprocessor), std::ref(detector), std::ref(enhance_to_infer));

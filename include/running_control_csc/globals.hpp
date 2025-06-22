@@ -10,7 +10,7 @@
 #include <unordered_set>
 #define TCP_MAGIC_WORD 0xA5A5
 #define MISSTARGET 9999
-#define INFER_PER_FRAME 5
+#define INFER_PER_FRAME 3
 /**
     State enum class
 */
@@ -121,6 +121,7 @@ struct  __attribute__((packed)) TcpState {
     uint8_t tpu;
     uint8_t cam;
     uint8_t sdcard;
+    float cpu_temp;
     bool operator==(const TcpState& other) const {
         return magic_word == other.magic_word &&
                state_num   == other.state_num &&
@@ -174,7 +175,7 @@ struct SystemInfo {
     bool TPU_state=false; 
     bool CAM_state=false; 
     bool logging_enabled=false; 
-    double cpu_temp;
+    float cpu_temp;
 };
 
 struct StateSync {
@@ -182,7 +183,10 @@ struct StateSync {
     std::condition_variable cv;
 };
 
-
+struct StableLabel {
+  std::string  cls   = "";
+  int          votes = 0;   // +1 같은 클래스, -1 다른 클래스
+};
 
 
 
@@ -253,7 +257,7 @@ public:
 };
 
 extern const std::unordered_set<std::string> allowed_labels ;
-
+extern std::unordered_map<int, StableLabel> m_label_state;
 using FramePtr = std::shared_ptr<FrameData>;
 extern ThreadSafeQueue<FramePtr> enhance_to_infer;
 extern std::vector<InferenceResult> InferResult;

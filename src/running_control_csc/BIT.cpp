@@ -26,7 +26,7 @@ void BIT::cbit() {
    // std::cout << "start continous BIT" << std::endl;
     
     sysInfo.CAM_state=isCamConnected();
-    sysInfo.TPU_state=isTpuConnected();
+   // sysInfo.TPU_state=isTpuConnected();
     sysInfo.cpu_temp=getTemp();
 
 }
@@ -37,30 +37,36 @@ bool BIT::isCamConnected() {
 } 
 
 bool BIT::isTpuConnected() {
-    // FILE* pipe = popen("lsusb | grep -c 1a6e:089a", "r");
-    // if (!pipe) return false;
+    FILE* pipe = popen("lsusb", "r");
+    if (!pipe) return false;
 
-    // char buffer[16];
-    // if (fgets(buffer, sizeof(buffer), pipe)) {
-    //     int count = std::atoi(buffer);
-    //     pclose(pipe);
-    //     return count > 0;
-    // }
-
-    // pclose(pipe);
-    return true;
+    char buffer[128];
+    bool found = false;
+    while (fgets(buffer, sizeof(buffer), pipe)) {
+        if (strstr(buffer, "1a6e:089a") || strstr(buffer, "18d1:9302")) {
+            found = true;
+            break;
+        }
+    }
+    pclose(pipe);
+    return found;
 }
 
 
 
-double BIT::getTemp() {
+float BIT::getTemp() {
+                   // degree Celsius
     const std::string dev = "/sys/bus/iio/devices/iio:device0";
 
     int raw = parseInt(readFile(dev + "/in_temp0_raw"));
     int offset = parseInt(readFile(dev + "/in_temp0_offset"));
-    double scale = parseDouble(readFile(dev + "/in_temp0_scale"));
+    float scale = static_cast<float>(parseDouble(readFile(dev + "/in_temp0_scale")));  // float로 캐스팅
 
-    double mdeg = (raw + offset) * scale;   // milli-degree Celsius
-    return mdeg / 1000.0;                   // degree Celsius
+    float mdeg = (raw + offset) * scale;   // milli-degree Celsius
+    float temp = mdeg / 1000.0f;           // degree Celsius
+
+  //  std::cout << "[Debug] CPU Temp: " << temp << " °C" << std::endl;
+
+    return temp;
 
 }

@@ -25,7 +25,7 @@ class BIT {
         /*  TPU 확인*/
         bool isTpuConnected();
         /*  온도 체크*/
-        double getTemp();
+        float getTemp();
 
     private:
     std::string readFile(const std::string& path) {
