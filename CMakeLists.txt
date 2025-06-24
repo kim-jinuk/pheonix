@@ -87,7 +87,7 @@ file(GLOB SRC
 #    ${CMAKE_CURRENT_SOURCE_DIR}/test.cpp
    ${CMAKE_CURRENT_SOURCE_DIR}/src/running_control_csc/BIT.cpp
    ${CMAKE_CURRENT_SOURCE_DIR}/src/running_control_csc/receiver.cpp
-   ${CMAKE_CURRENT_SOURCE_DIR}/src/running_control_csc/sender.cpp
+   ${CMAKE_CURRENT_SOURCE_DIR}/src/running_control_csc/sender2.cpp
    ${CMAKE_CURRENT_SOURCE_DIR}/src/running_control_csc/CfgLoader.cpp
    ${CMAKE_CURRENT_SOURCE_DIR}/src/running_control_csc/globals.cpp
    ${CMAKE_CURRENT_SOURCE_DIR}/src/running_control_csc/Task.cpp

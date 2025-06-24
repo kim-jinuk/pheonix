@@ -57,10 +57,10 @@ RM = /usr/bin/cmake -E rm -f
 EQUALS = =
 
 # The top-level source directory on which CMake was run.
-CMAKE_SOURCE_DIR = /workspace/DAN/pheonix
+CMAKE_SOURCE_DIR = /workspace/DAN2/pheonix
 
 # The top-level build directory on which CMake was run.
-CMAKE_BINARY_DIR = /workspace/DAN/pheonix/out/build
+CMAKE_BINARY_DIR = /workspace/DAN2/pheonix/out/build
 
 #=============================================================================
 # Targets provided globally by CMake.
@@ -87,9 +87,9 @@ rebuild_cache/fast: rebuild_cache
 
 # The main all target
 all: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start /workspace/DAN/pheonix/out/build/CMakeFiles /workspace/DAN/pheonix/out/build//CMakeFiles/progress.marks
+	$(CMAKE_COMMAND) -E cmake_progress_start /workspace/DAN2/pheonix/out/build/CMakeFiles /workspace/DAN2/pheonix/out/build//CMakeFiles/progress.marks
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 all
-	$(CMAKE_COMMAND) -E cmake_progress_start /workspace/DAN/pheonix/out/build/CMakeFiles 0
+	$(CMAKE_COMMAND) -E cmake_progress_start /workspace/DAN2/pheonix/out/build/CMakeFiles 0
 .PHONY : all
 
 # The main clean target
@@ -417,29 +417,29 @@ src/running_control_csc/receiver.cpp.s:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/EOIR_system.dir/build.make CMakeFiles/EOIR_system.dir/src/running_control_csc/receiver.cpp.s
 .PHONY : src/running_control_csc/receiver.cpp.s
 
-src/running_control_csc/sender.o: src/running_control_csc/sender.cpp.o
-.PHONY : src/running_control_csc/sender.o
+src/running_control_csc/sender2.o: src/running_control_csc/sender2.cpp.o
+.PHONY : src/running_control_csc/sender2.o
 
 # target to build an object file
-src/running_control_csc/sender.cpp.o:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/EOIR_system.dir/build.make CMakeFiles/EOIR_system.dir/src/running_control_csc/sender.cpp.o
-.PHONY : src/running_control_csc/sender.cpp.o
+src/running_control_csc/sender2.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/EOIR_system.dir/build.make CMakeFiles/EOIR_system.dir/src/running_control_csc/sender2.cpp.o
+.PHONY : src/running_control_csc/sender2.cpp.o
 
-src/running_control_csc/sender.i: src/running_control_csc/sender.cpp.i
-.PHONY : src/running_control_csc/sender.i
+src/running_control_csc/sender2.i: src/running_control_csc/sender2.cpp.i
+.PHONY : src/running_control_csc/sender2.i
 
 # target to preprocess a source file
-src/running_control_csc/sender.cpp.i:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/EOIR_system.dir/build.make CMakeFiles/EOIR_system.dir/src/running_control_csc/sender.cpp.i
-.PHONY : src/running_control_csc/sender.cpp.i
+src/running_control_csc/sender2.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/EOIR_system.dir/build.make CMakeFiles/EOIR_system.dir/src/running_control_csc/sender2.cpp.i
+.PHONY : src/running_control_csc/sender2.cpp.i
 
-src/running_control_csc/sender.s: src/running_control_csc/sender.cpp.s
-.PHONY : src/running_control_csc/sender.s
+src/running_control_csc/sender2.s: src/running_control_csc/sender2.cpp.s
+.PHONY : src/running_control_csc/sender2.s
 
 # target to generate assembly for a file
-src/running_control_csc/sender.cpp.s:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/EOIR_system.dir/build.make CMakeFiles/EOIR_system.dir/src/running_control_csc/sender.cpp.s
-.PHONY : src/running_control_csc/sender.cpp.s
+src/running_control_csc/sender2.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/EOIR_system.dir/build.make CMakeFiles/EOIR_system.dir/src/running_control_csc/sender2.cpp.s
+.PHONY : src/running_control_csc/sender2.cpp.s
 
 src/tracking_csc/sort_tracker.o: src/tracking_csc/sort_tracker.cpp.o
 .PHONY : src/tracking_csc/sort_tracker.o
@@ -510,9 +510,9 @@ help:
 	@echo "... src/running_control_csc/receiver.o"
 	@echo "... src/running_control_csc/receiver.i"
 	@echo "... src/running_control_csc/receiver.s"
-	@echo "... src/running_control_csc/sender.o"
-	@echo "... src/running_control_csc/sender.i"
-	@echo "... src/running_control_csc/sender.s"
+	@echo "... src/running_control_csc/sender2.o"
+	@echo "... src/running_control_csc/sender2.i"
+	@echo "... src/running_control_csc/sender2.s"
 	@echo "... src/tracking_csc/sort_tracker.o"
 	@echo "... src/tracking_csc/sort_tracker.i"
 	@echo "... src/tracking_csc/sort_tracker.s"

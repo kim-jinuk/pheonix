@@ -75,7 +75,7 @@ void TfLiteWrapper::InitTfLiteWrapperEdgetpu(
     std::shared_ptr<edgetpu::EdgeTpuContext> edgetpu_context) {
   tflite::ops::builtin::BuiltinOpResolver resolver;
   resolver.AddCustom(edgetpu::kCustomOp, edgetpu::RegisterCustomOp());
-  std::cout << "edgetpu::RegisterCustomOp()\n";
+ // std::cout << "edgetpu::RegisterCustomOp()\n";
   if (tflite::InterpreterBuilder(*m_model, resolver)(&m_interpreter) != kTfLiteOk) {
     std::cout << "Failed to build Interpreter\n";
     std::abort();

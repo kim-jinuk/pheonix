@@ -33,7 +33,7 @@ TcpBase::TcpBase(int port) : server_sock(-1), client_sock(-1), client_len(sizeof
         exit(1);
     }
 
-    cout << "[TCP] Server listening on port " << port << "\n";
+  //  cout << "[TCP] Server listening on port " << port << "\n";
 }
 
 TcpBase::~TcpBase() {
@@ -48,7 +48,7 @@ bool TcpBase::AcceptConnection() {
         perror("[ERR] accept");
         return false;
     }
-    cout << "[TCP] Client connected\n";
+//    cout << "[TCP] Client connected\n";
     return true;
 }
 
@@ -60,7 +60,7 @@ bool TcpCmdChannel::TcpParsing(TcpCommand& cmd) {
     std::cout << std::hex << tmp.magic_word << std::endl;
     
     if (n != sizeof(tmp)) {
-        cout << "[TCP] Client disconnected or invalid packet\n";
+  //      cout << "[TCP] Client disconnected or invalid packet\n";
         close(client_sock);
         client_sock=-1;
         return false;
@@ -92,7 +92,7 @@ void TcpCmdChannel::disconnect_sock() {
     if (client_sock >= 0) {  
         close(client_sock);  
         client_sock = -1;    
-        std::cout << "[TCP] CMD Socket disconnected.\n";
+    //    std::cout << "[TCP] CMD Socket disconnected.\n";
     }
 }
 
@@ -116,7 +116,7 @@ using boost::asio::ip::tcp;
 
 TcpBase::TcpBase(int port)
     : acceptor_(io_context_, tcp::endpoint(tcp::v4(), port)) {
-    std::cout << "[BOOST TCP] Server listening on port " << port << "\n";
+  //  std::cout << "[BOOST TCP] Server listening on port " << port << "\n";
 }
 
 TcpBase::~TcpBase() {
@@ -129,10 +129,10 @@ bool TcpBase::AcceptConnection() {
     try {
         socket_ = std::make_unique<tcp::socket>(io_context_);
         acceptor_.accept(*socket_);
-        std::cout << "[BOOST TCP] Client connected\n";
+      //  std::cout << "[BOOST TCP] Client connected\n";
         return true;
     } catch (std::exception& e) {
-        std::cerr << "[ERR] Accept failed: " << e.what() << "\n";
+     //   std::cerr << "[ERR] Accept failed: " << e.what() << "\n";
         return false;
     }
 }
@@ -147,13 +147,13 @@ bool TcpCmdChannel::TcpParsing(TcpCommand& cmd) {
         std::cout << std::hex << cmd.magic_word << std::endl;
 
         if (cmd.magic_word != TCP_MAGIC_WORD) {
-            std::cerr << "[BOOST TCP] Invalid magic word\n";
+        //    std::cerr << "[BOOST TCP] Invalid magic word\n";
             return true;  // 연결 유지, 패킷만 skip
         }
 
         return true;
     } catch (...) {
-        std::cerr << "[BOOST TCP] Client disconnected or error\n";
+     //   std::cerr << "[BOOST TCP] Client disconnected or error\n";
         socket_.reset();
         return false;
     }
@@ -174,7 +174,7 @@ bool TcpCmdChannel::sendAck(const TcpCommand& cmd) {
 void TcpCmdChannel::disconnect_sock() {
     if (socket_ && socket_->is_open()) {
         socket_->close();
-        std::cout << "[BOOST TCP] CMD socket disconnected\n";
+   //     std::cout << "[BOOST TCP] CMD socket disconnected\n";
     }
 }
 

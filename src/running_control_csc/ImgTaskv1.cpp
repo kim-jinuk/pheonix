@@ -18,7 +18,7 @@
 */
 void Task_ImageProcessing(CaptureUnit& capunit ,ImageProcessor& imgprocessor,edge::TfLiteWrapper& detector, tracking::SortTracker& tracker , UdpSender& sender) {
     
-    std::cout << "ImageProcessing thread is created" <<std::endl;
+  //  std::cout << "ImageProcessing thread is created" <<std::endl;
     while (true) {
         {
             std::unique_lock<std::mutex> lock(statesync.mtx);

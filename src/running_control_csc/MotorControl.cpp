@@ -26,10 +26,10 @@ SCANMotor::SCANMotor() {
         sweep_high=_yaw+30;
         sweep_low=_yaw-30;
     }
-    std::cout <<"sweep_high : " <<sweep_high <<" sweep_low :" << sweep_low <<std::endl;
+  //  std::cout <<"sweep_high : " <<sweep_high <<" sweep_low :" << sweep_low <<std::endl;
 }
 SCANMotor::~SCANMotor() {
-    std::cout <<"SCANMotor destroyed " << std::endl;
+ //   std::cout <<"SCANMotor destroyed " << std::endl;
 }
 
 void SCANMotor::updateAngle() {
@@ -47,11 +47,11 @@ void SCANMotor::updateAngle() {
     MANUAL
  */
 ManualMotor::ManualMotor() {
-    std::cout <<"ManualMotor created " << std::endl;
+ //   std::cout <<"ManualMotor created " << std::endl;
 }
 
 ManualMotor::~ManualMotor() {
-    std::cout <<"ManualMotor destroyed " << std::endl;
+  //  std::cout <<"ManualMotor destroyed " << std::endl;
 }
 void ManualMotor::enqueueDelta(uint8_t delta) {
         std::lock_guard<std::mutex> lock(queue_mtx);
@@ -133,10 +133,10 @@ void TrackingMotor::updateAngle() {
 
     // pitch 방향 제어
     if (std::abs(dy) <= DEADZONE) {
-        std::cout << "Pitch: Deadzone, no move" << std::endl;
+    //    std::cout << "Pitch: Deadzone, no move" << std::endl;
     } 
     else {
-        std::cout << "Pitch: small adjust" << std::endl;
+   //     std::cout << "Pitch: small adjust" << std::endl;
         pitch+=dy/std::abs(dy);
     }
 
@@ -159,7 +159,7 @@ void TrackingMotor::updateAngle() {
     MotorControl
 */
 void MotorControl::init_pos() {
-    std::cout << "init motor"<<std::endl;
+ //   std::cout << "init motor"<<std::endl;
     pwm_init();
 }
 

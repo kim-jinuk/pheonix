@@ -166,8 +166,8 @@
 	"kind" : "cmakeFiles",
 	"paths" : 
 	{
-		"build" : "/workspace/DAN/pheonix/out/build",
-		"source" : "/workspace/DAN/pheonix"
+		"build" : "/workspace/DAN2/pheonix/out/build",
+		"source" : "/workspace/DAN2/pheonix"
 	},
 	"version" : 
 	{

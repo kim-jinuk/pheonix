@@ -8,20 +8,20 @@ set(CMAKE_DEPENDS_LANGUAGES
 
 # The set of dependency files which are needed:
 set(CMAKE_DEPENDS_DEPENDENCY_FILES
-  "/workspace/DAN/pheonix/main.cpp" "CMakeFiles/EOIR_system.dir/main.cpp.o" "gcc" "CMakeFiles/EOIR_system.dir/main.cpp.o.d"
-  "/workspace/DAN/pheonix/src/detecting_csc/edgetpu_detector.cpp" "CMakeFiles/EOIR_system.dir/src/detecting_csc/edgetpu_detector.cpp.o" "gcc" "CMakeFiles/EOIR_system.dir/src/detecting_csc/edgetpu_detector.cpp.o.d"
-  "/workspace/DAN/pheonix/src/image_processing_csc/ImageProcessor.cpp" "CMakeFiles/EOIR_system.dir/src/image_processing_csc/ImageProcessor.cpp.o" "gcc" "CMakeFiles/EOIR_system.dir/src/image_processing_csc/ImageProcessor.cpp.o.d"
-  "/workspace/DAN/pheonix/src/running_control_csc/BIT.cpp" "CMakeFiles/EOIR_system.dir/src/running_control_csc/BIT.cpp.o" "gcc" "CMakeFiles/EOIR_system.dir/src/running_control_csc/BIT.cpp.o.d"
-  "/workspace/DAN/pheonix/src/running_control_csc/CfgLoader.cpp" "CMakeFiles/EOIR_system.dir/src/running_control_csc/CfgLoader.cpp.o" "gcc" "CMakeFiles/EOIR_system.dir/src/running_control_csc/CfgLoader.cpp.o.d"
-  "/workspace/DAN/pheonix/src/running_control_csc/ImgTaskv10.cpp" "CMakeFiles/EOIR_system.dir/src/running_control_csc/ImgTaskv10.cpp.o" "gcc" "CMakeFiles/EOIR_system.dir/src/running_control_csc/ImgTaskv10.cpp.o.d"
-  "/workspace/DAN/pheonix/src/running_control_csc/Logger.cpp" "CMakeFiles/EOIR_system.dir/src/running_control_csc/Logger.cpp.o" "gcc" "CMakeFiles/EOIR_system.dir/src/running_control_csc/Logger.cpp.o.d"
-  "/workspace/DAN/pheonix/src/running_control_csc/MotorControl.cpp" "CMakeFiles/EOIR_system.dir/src/running_control_csc/MotorControl.cpp.o" "gcc" "CMakeFiles/EOIR_system.dir/src/running_control_csc/MotorControl.cpp.o.d"
-  "/workspace/DAN/pheonix/src/running_control_csc/Task.cpp" "CMakeFiles/EOIR_system.dir/src/running_control_csc/Task.cpp.o" "gcc" "CMakeFiles/EOIR_system.dir/src/running_control_csc/Task.cpp.o.d"
-  "/workspace/DAN/pheonix/src/running_control_csc/globals.cpp" "CMakeFiles/EOIR_system.dir/src/running_control_csc/globals.cpp.o" "gcc" "CMakeFiles/EOIR_system.dir/src/running_control_csc/globals.cpp.o.d"
-  "/workspace/DAN/pheonix/src/running_control_csc/pwm.cpp" "CMakeFiles/EOIR_system.dir/src/running_control_csc/pwm.cpp.o" "gcc" "CMakeFiles/EOIR_system.dir/src/running_control_csc/pwm.cpp.o.d"
-  "/workspace/DAN/pheonix/src/running_control_csc/receiver.cpp" "CMakeFiles/EOIR_system.dir/src/running_control_csc/receiver.cpp.o" "gcc" "CMakeFiles/EOIR_system.dir/src/running_control_csc/receiver.cpp.o.d"
-  "/workspace/DAN/pheonix/src/running_control_csc/sender.cpp" "CMakeFiles/EOIR_system.dir/src/running_control_csc/sender.cpp.o" "gcc" "CMakeFiles/EOIR_system.dir/src/running_control_csc/sender.cpp.o.d"
-  "/workspace/DAN/pheonix/src/tracking_csc/sort_tracker.cpp" "CMakeFiles/EOIR_system.dir/src/tracking_csc/sort_tracker.cpp.o" "gcc" "CMakeFiles/EOIR_system.dir/src/tracking_csc/sort_tracker.cpp.o.d"
+  "/workspace/DAN2/pheonix/main.cpp" "CMakeFiles/EOIR_system.dir/main.cpp.o" "gcc" "CMakeFiles/EOIR_system.dir/main.cpp.o.d"
+  "/workspace/DAN2/pheonix/src/detecting_csc/edgetpu_detector.cpp" "CMakeFiles/EOIR_system.dir/src/detecting_csc/edgetpu_detector.cpp.o" "gcc" "CMakeFiles/EOIR_system.dir/src/detecting_csc/edgetpu_detector.cpp.o.d"
+  "/workspace/DAN2/pheonix/src/image_processing_csc/ImageProcessor.cpp" "CMakeFiles/EOIR_system.dir/src/image_processing_csc/ImageProcessor.cpp.o" "gcc" "CMakeFiles/EOIR_system.dir/src/image_processing_csc/ImageProcessor.cpp.o.d"
+  "/workspace/DAN2/pheonix/src/running_control_csc/BIT.cpp" "CMakeFiles/EOIR_system.dir/src/running_control_csc/BIT.cpp.o" "gcc" "CMakeFiles/EOIR_system.dir/src/running_control_csc/BIT.cpp.o.d"
+  "/workspace/DAN2/pheonix/src/running_control_csc/CfgLoader.cpp" "CMakeFiles/EOIR_system.dir/src/running_control_csc/CfgLoader.cpp.o" "gcc" "CMakeFiles/EOIR_system.dir/src/running_control_csc/CfgLoader.cpp.o.d"
+  "/workspace/DAN2/pheonix/src/running_control_csc/ImgTaskv10.cpp" "CMakeFiles/EOIR_system.dir/src/running_control_csc/ImgTaskv10.cpp.o" "gcc" "CMakeFiles/EOIR_system.dir/src/running_control_csc/ImgTaskv10.cpp.o.d"
+  "/workspace/DAN2/pheonix/src/running_control_csc/Logger.cpp" "CMakeFiles/EOIR_system.dir/src/running_control_csc/Logger.cpp.o" "gcc" "CMakeFiles/EOIR_system.dir/src/running_control_csc/Logger.cpp.o.d"
+  "/workspace/DAN2/pheonix/src/running_control_csc/MotorControl.cpp" "CMakeFiles/EOIR_system.dir/src/running_control_csc/MotorControl.cpp.o" "gcc" "CMakeFiles/EOIR_system.dir/src/running_control_csc/MotorControl.cpp.o.d"
+  "/workspace/DAN2/pheonix/src/running_control_csc/Task.cpp" "CMakeFiles/EOIR_system.dir/src/running_control_csc/Task.cpp.o" "gcc" "CMakeFiles/EOIR_system.dir/src/running_control_csc/Task.cpp.o.d"
+  "/workspace/DAN2/pheonix/src/running_control_csc/globals.cpp" "CMakeFiles/EOIR_system.dir/src/running_control_csc/globals.cpp.o" "gcc" "CMakeFiles/EOIR_system.dir/src/running_control_csc/globals.cpp.o.d"
+  "/workspace/DAN2/pheonix/src/running_control_csc/pwm.cpp" "CMakeFiles/EOIR_system.dir/src/running_control_csc/pwm.cpp.o" "gcc" "CMakeFiles/EOIR_system.dir/src/running_control_csc/pwm.cpp.o.d"
+  "/workspace/DAN2/pheonix/src/running_control_csc/receiver.cpp" "CMakeFiles/EOIR_system.dir/src/running_control_csc/receiver.cpp.o" "gcc" "CMakeFiles/EOIR_system.dir/src/running_control_csc/receiver.cpp.o.d"
+  "/workspace/DAN2/pheonix/src/running_control_csc/sender2.cpp" "CMakeFiles/EOIR_system.dir/src/running_control_csc/sender2.cpp.o" "gcc" "CMakeFiles/EOIR_system.dir/src/running_control_csc/sender2.cpp.o.d"
+  "/workspace/DAN2/pheonix/src/tracking_csc/sort_tracker.cpp" "CMakeFiles/EOIR_system.dir/src/tracking_csc/sort_tracker.cpp.o" "gcc" "CMakeFiles/EOIR_system.dir/src/tracking_csc/sort_tracker.cpp.o.d"
   )
 
 # Targets to which this target links.

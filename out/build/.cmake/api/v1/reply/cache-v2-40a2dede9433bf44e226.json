@@ -55,7 +55,7 @@
 				}
 			],
 			"type" : "INTERNAL",
-			"value" : "/workspace/DAN/pheonix/out/build"
+			"value" : "/workspace/DAN2/pheonix/out/build"
 		},
 		{
 			"name" : "CMAKE_CACHE_MAJOR_VERSION",
@@ -631,7 +631,7 @@
 				}
 			],
 			"type" : "INTERNAL",
-			"value" : "/workspace/DAN/pheonix"
+			"value" : "/workspace/DAN2/pheonix"
 		},
 		{
 			"name" : "CMAKE_INSTALL_PREFIX",
@@ -1943,7 +1943,7 @@
 				}
 			],
 			"type" : "STATIC",
-			"value" : "/workspace/DAN/pheonix/out/build"
+			"value" : "/workspace/DAN2/pheonix/out/build"
 		},
 		{
 			"name" : "mendelcam_IS_TOP_LEVEL",
@@ -1967,7 +1967,7 @@
 				}
 			],
 			"type" : "STATIC",
-			"value" : "/workspace/DAN/pheonix"
+			"value" : "/workspace/DAN2/pheonix"
 		},
 		{
 			"name" : "pkgcfg_lib_GST_glib-2.0",

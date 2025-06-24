@@ -29,7 +29,7 @@ bool CaptureUnit::openCamera() {
     double fps = cap.get(cv::CAP_PROP_FPS);
     double fourcc = cap.get(cv::CAP_PROP_FOURCC);
 
-    std::cout << "=== 카메라 설정 확인 ===\n";
+ /*   std::cout << "=== 카메라 설정 확인 ===\n";
     std::cout << "해상도 : " << width << " x " << height << "\n";
     std::cout << "FPS    : " << fps << "\n";
     std::cout << "FOURCC : "
@@ -37,14 +37,14 @@ bool CaptureUnit::openCamera() {
               << static_cast<char>((static_cast<int>(fourcc) >> 8) & 0xFF)
               << static_cast<char>((static_cast<int>(fourcc) >> 16) & 0xFF)
               << static_cast<char>((static_cast<int>(fourcc) >> 24) & 0xFF)
-              << "\n\n";
+              << "\n\n";*/
     return true;
 }
 
 void CaptureUnit::closeCamera() {
     if (cap.isOpened()) {
         cap.release();
-        std::cout << "[CaptureUnit] Camera released." << std::endl;
+  //      std::cout << "[CaptureUnit] Camera released." << std::endl;
     }
 }
 

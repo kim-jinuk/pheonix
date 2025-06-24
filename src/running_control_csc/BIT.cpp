@@ -9,16 +9,16 @@
 #include <atomic>
 
 void BIT::pbit() {
-    std::cout << "start power BIT" << std::endl;
+  //  std::cout << "start power BIT" << std::endl;
 
     while (!(isCamConnected() && isTpuConnected())) {
-        std::cout << "running pbit ..." << std::endl;
+       // std::cout << "running pbit ..." << std::endl;
         
         std::this_thread::sleep_for(std::chrono::seconds(1));
     }
     sysInfo.CAM_state=true;
     sysInfo.TPU_state=true;
-    std::cout << "complete power BIT" <<std::endl;
+  //  std::cout << "complete power BIT" <<std::endl;
 }
 
 void BIT::cbit() {

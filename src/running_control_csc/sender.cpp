@@ -6,21 +6,31 @@
 #include <opencv2/opencv.hpp>
 #include <vector>
 #include <thread>
-#include <boost/asio.hpp>
-#include <boost/bind.hpp>
+
 #include <chrono>
 
-#define MAX_PACKET_SIZE 1400
+
+#if USEBOOST == 1
+#include <boost/asio.hpp>
+#include <boost/bind.hpp>
 using boost::asio::ip::udp;
+#endif
+#define MAX_PACKET_SIZE 1400
+
 using namespace std::chrono;
+
 constexpr uint32_t MAGIC = 0xDEADBEEF;
 constexpr int HEADER_SIZE = 12; // Magic(4) + FrameID(4) + PacketID(2) + TotalPackets(2)
 constexpr int OBJECTINFO_SIZE = 14;
 constexpr int OBJECT_COUNT = 5;
+constexpr int TIMESTAMP_SIZE = 23;
 constexpr int META_SIZE = OBJECTINFO_SIZE * OBJECT_COUNT; // 14 * 5 = 70
-constexpr int PAYLOAD_OFFSET = HEADER_SIZE + META_SIZE;
+//constexpr int PAYLOAD_OFFSET = HEADER_SIZE + META_SIZE;
 
-/*
+constexpr int PAYLOAD_OFFSET = HEADER_SIZE + META_SIZE + TIMESTAMP_SIZE;
+
+
+#if USEBOOST != 1
 UdpSender::UdpSender(const std::string& ip, int port) {
     sock_ = socket(AF_INET, SOCK_DGRAM, 0);
     if (sock_ < 0) {
@@ -44,28 +54,48 @@ std::vector<std::vector<uint8_t>> UdpSender::BuildUdpPackets(
 {
     std::vector<std::vector<uint8_t>> packets;
 
-    // 1. 이미지가 비어있다면 반환
     if (frame.img_bgr.empty()) return packets;
 
-    // 2. JPEG 압축
     std::vector<uchar> jpeg_buf;
-    std::vector<int> params = {cv::IMWRITE_JPEG_QUALITY, 80};  // 압축률 조정 가능
+    std::vector<int> params = {cv::IMWRITE_JPEG_QUALITY, 60};
+
     bool success = cv::imencode(".jpg", frame.img_bgr, jpeg_buf, params);
     if (!success || jpeg_buf.empty()) return packets;
 
-    // 3. 패킷 수 계산
+    //  JPEG 버퍼 크기 출력
     size_t total_size = jpeg_buf.size();
-    int payload_per_packet = MAX_PACKET_SIZE - PAYLOAD_OFFSET;
+   // std::cout << "[DBG] jpeg_buf size: " << total_size << std::endl;
+
+    const int ts_len = TIMESTAMP_SIZE;
+    const int payload_per_packet = MAX_PACKET_SIZE - PAYLOAD_OFFSET;
     int total_packets = (total_size + payload_per_packet - 1) / payload_per_packet;
 
-    // 4. 패킷 생성
+    //  패킷 개수 출력
+  //  std::cout << "[DBG] total_packets: " << total_packets << std::endl;
+
+    const std::string& ts = frame.timestamp;
+
     for (int i = 0; i < total_packets; ++i) {
         int offset = i * payload_per_packet;
         int chunk_size = std::min((int)(total_size - offset), payload_per_packet);
 
-        std::vector<uint8_t> packet(PAYLOAD_OFFSET + chunk_size);
+        //  루프당 현재 패킷 번호 및 기본 정보 출력
+     //   std::cout << "[DBG] packet num: " << i 
+     //             << ", offset: " << offset 
+     //             << ", chunk_size: " << chunk_size << std::endl;
 
-        // Header (0 ~ 11)
+        int packet_size = PAYLOAD_OFFSET + chunk_size;
+
+        //  패킷 메모리 크기와 쓰기 위치 비교
+    //    std::cout << "[DBG] packet_size: " << packet_size 
+    //              << ", payload_end: " << PAYLOAD_OFFSET + chunk_size << std::endl;
+
+        if (packet_size < PAYLOAD_OFFSET + chunk_size) {
+            std::cerr << "[ERR] packet buffer too small!" << std::endl;
+        }
+
+        std::vector<uint8_t> packet(packet_size);
+
         uint32_t magic_net = htonl(MAGIC);
         uint32_t fid_net = htonl(frame.frame_id); 
         uint16_t pid_net = htons(i);
@@ -76,13 +106,13 @@ std::vector<std::vector<uint8_t>> UdpSender::BuildUdpPackets(
         memcpy(&packet[8],  &pid_net,    2);
         memcpy(&packet[10], &tpkts_net,  2);
 
-        // ObjectInfo (offset 12)
         for (int j = 0; j < OBJECT_COUNT; ++j) {
             ObjectInfo obj = (j < objs.size()) ? objs[j] : ObjectInfo{};
             memcpy(&packet[HEADER_SIZE + j * OBJECTINFO_SIZE], &obj, OBJECTINFO_SIZE);
         }
 
-        // Payload (offset 12 + 70 = 82)
+        memcpy(&packet[HEADER_SIZE + OBJECT_COUNT * OBJECTINFO_SIZE], ts.data(), ts_len);
+
         memcpy(&packet[PAYLOAD_OFFSET], jpeg_buf.data() + offset, chunk_size);
 
         packets.push_back(std::move(packet));
@@ -93,12 +123,18 @@ std::vector<std::vector<uint8_t>> UdpSender::BuildUdpPackets(
 
 
 void UdpSender::UdpSend(const std::vector<std::vector<uint8_t>>& packets) {
+    auto t_start = std::chrono::high_resolution_clock::now();  // 시작 시간
     for (const auto& pkt : packets) {
         sendto(sock_, pkt.data(), pkt.size(), 0, (sockaddr*)&addr_, sizeof(addr_));
         usleep(1000);  // Optional pacing
     }
+    auto t_end = std::chrono::high_resolution_clock::now();
+    auto duration_ms = std::chrono::duration_cast<std::chrono::milliseconds>(t_end - t_start).count();
+    std::cout << "Frame sent completely. Time: " << duration_ms << " ms\n";
 }
-    */
+
+
+#elif USEBOOST == 1
 // boos library
 UdpSender::UdpSender(const std::string& ip, int port)
     : io_context_(), socket_(io_context_), endpoint_(boost::asio::ip::make_address(ip), port) {
@@ -172,10 +208,14 @@ void UdpSender::HandleSend(const boost::system::error_code& ec, std::size_t byte
         std::cerr << "[ERR] Packet " << packet_id << " failed: " << ec.message() << "\n";
     } else {
         // std::cout << "[ASIO] Packet " << packet_id << " sent (" << bytes_transferred << " bytes)\n";
+        
     }
+/
 }
 
 void UdpSender::UdpSend(const std::vector<std::vector<uint8_t>>& packets) {
+    
+
     for (size_t i = 0; i < packets.size(); ++i) {
         socket_.async_send_to(
             boost::asio::buffer(packets[i]),
@@ -193,3 +233,4 @@ void UdpSender::UdpSend(const std::vector<std::vector<uint8_t>>& packets) {
 
    
 }
+#endif

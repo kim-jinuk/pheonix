@@ -1,7 +1,7 @@
 CMakeFiles/EOIR_system.dir/src/detecting_csc/edgetpu_detector.cpp.o: \
- /workspace/DAN/pheonix/src/detecting_csc/edgetpu_detector.cpp \
+ /workspace/DAN2/pheonix/src/detecting_csc/edgetpu_detector.cpp \
  /workspace/peta_prj/Clocked_pwm_peta_v2/zynq_sdk/sysroots/cortexa9t2hf-neon-xilinx-linux-gnueabi/usr/include/stdc-predef.h \
- /workspace/DAN/pheonix/include/detecting_csc/edgetpu_detector.hpp \
+ /workspace/DAN2/pheonix/include/detecting_csc/edgetpu_detector.hpp \
  /opt/gcc-linaro-12.2.1-2022.11-x86_64_arm-linux-gnueabihf/arm-linux-gnueabihf/include/c++/12.2.1/array \
  /opt/gcc-linaro-12.2.1-2022.11-x86_64_arm-linux-gnueabihf/arm-linux-gnueabihf/include/c++/12.2.1/compare \
  /opt/gcc-linaro-12.2.1-2022.11-x86_64_arm-linux-gnueabihf/arm-linux-gnueabihf/include/c++/12.2.1/initializer_list \
@@ -531,7 +531,7 @@ CMakeFiles/EOIR_system.dir/src/detecting_csc/edgetpu_detector.cpp.o: \
  /workspace/TPU/tensorflow_src/tensorflow/lite/profiling/telemetry/c/telemetry_setting.h \
  /workspace/TPU/tensorflow_src/tensorflow/lite/profiling/telemetry/telemetry_status.h \
  /workspace/TPU/tensorflow_src/tensorflow/lite/model_builder.h \
- /workspace/DAN/pheonix/include/running_control_csc/globals.hpp \
+ /workspace/DAN2/pheonix/include/running_control_csc/globals.hpp \
  /opt/gcc-linaro-12.2.1-2022.11-x86_64_arm-linux-gnueabihf/arm-linux-gnueabihf/include/c++/12.2.1/condition_variable \
  /opt/gcc-linaro-12.2.1-2022.11-x86_64_arm-linux-gnueabihf/arm-linux-gnueabihf/include/c++/12.2.1/regex \
  /opt/gcc-linaro-12.2.1-2022.11-x86_64_arm-linux-gnueabihf/arm-linux-gnueabihf/include/c++/12.2.1/bitset \

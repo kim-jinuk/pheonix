@@ -31,9 +31,9 @@ void Task_img_process(Logger& logger, CaptureUnit& capunit ,ImageProcessor& imgp
         while (sysInfo.current_state.load() == State::RUNNING) {
             
             auto frame = std::make_shared<FrameData>();
-
+            
             if (!capunit.capture(frame)) {
-                std::cout << "cap failed" << std::endl;
+      //          std::cout << "cap failed" << std::endl;
                 continue;
             }
 
@@ -173,13 +173,13 @@ void Task_img_process(Logger& logger, CaptureUnit& capunit ,ImageProcessor& imgp
                 uint8_t id = targetInfo.id.load();
                 int i = 0;
                 int ii=id;
-                std::cout << "tracking id : " << ii <<std::endl;
+           //     std::cout << "tracking id : " << ii <<std::endl;
                 for (i = 0; i < MAX_OBJECTS; i++) {
                     if (objects[i].tracking_id == id) {
                         int16_t center_x = objects[i].x + objects[i].w / 2;
                         int16_t center_y = objects[i].y + objects[i].h / 2;
                         targetInfo.setXY(center_x, center_y);
-                        std::cout << "success find " << ii <<std::endl;
+               //         std::cout << "success find " << ii <<std::endl;
                         break;
                     }
                 }

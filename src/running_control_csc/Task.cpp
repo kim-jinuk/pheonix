@@ -58,7 +58,7 @@ void Task_sendState(TcpStateChannel& tcpStateChannel , BIT& bit ,Logger& logger 
            // std::cout << "state :"<< tcpstate.state_num<< " mode :" <<tcpstate.mode_num <<std::endl;
             if (!tcpStateChannel.sendState(tcpstate)) {
                 sysInfo.TCP_state_connected.store(false); 
-                std::cout <<"send state failed" <<std::endl;
+             //   std::cout <<"send state failed" <<std::endl;
                 sysInfo.current_state.store(State::CHECKING);
                 break;
             }
@@ -86,7 +86,7 @@ void Task_receiveCmd(TcpCmdChannel& tcpCmdChannel , MotorControl& motorcontrol,L
             { return sysInfo.current_state.load() \
                 ==State::IDLE; }); 
         }
-        std::cout <<" wake up CMD thread" << std::endl;
+    //    std::cout <<" wake up CMD thread" << std::endl;
         if (!tcpCmdChannel.AcceptConnection()) {
             std::this_thread::sleep_for(std::chrono::seconds(1));
             continue;
@@ -108,10 +108,10 @@ void Task_receiveCmd(TcpCmdChannel& tcpCmdChannel , MotorControl& motorcontrol,L
             pos.yaw=90;
             pos.pitch=90;
         }
-        std::cout << "set MANUAL motor" << std::endl;
+     //   std::cout << "set MANUAL motor" << std::endl;
         while (sysInfo.current_state.load()==State::RUNNING) {
             TcpCommand cmd;
-            std::cout << "CMD thread Wait CMD... " << std::endl;
+      //      std::cout << "CMD thread Wait CMD... " << std::endl;
             
             if (!tcpCmdChannel.TcpParsing(cmd)) {
                 sysInfo.TCP_cmd_connected.store(false); 
@@ -122,21 +122,21 @@ void Task_receiveCmd(TcpCmdChannel& tcpCmdChannel , MotorControl& motorcontrol,L
             // << " cmd : " << static_cast<int>(cmd.cmd) << std::endl;
             switch(cmd.cmd_flag) {
                 case Mode_num :
-                    std::cout<< "change mode"<<std::endl;
+         //           std::cout<< "change mode"<<std::endl;
                     sysInfo.current_mode.store(static_cast<Mode>(cmd.cmd));
                     motorcontrol.setStrategy(cmd.cmd);
                     break;
                 case Cam_num :
-                    std::cout<< "change EO/IR"<<std::endl;
+         //           std::cout<< "change EO/IR"<<std::endl;
                     cam_opt.eo_ir.store(cmd.cmd);
 
                     break;
                 case Prep_opt : {
-                    std::cout<< "set Prep_opt"<<std::endl;
+           //         std::cout<< "set Prep_opt"<<std::endl;
                     cam_opt.fromCmd(cmd.cmd);
                     int a=cam_opt.enhance_edges.load();
                     int b=cam_opt.enhance_contrast.load();
-                    std::cout<< "edges : "<< a << " contrast : "<< b << std::endl;
+             //       std::cout<< "edges : "<< a << " contrast : "<< b << std::endl;
                     break;
                 }
                 case move_motor :
@@ -148,7 +148,7 @@ void Task_receiveCmd(TcpCmdChannel& tcpCmdChannel , MotorControl& motorcontrol,L
                     int aaa;
                     targetInfo.id.store(cmd.cmd);
                     aaa=cmd.cmd;
-                    std::cout<< "do tracking id :"<< aaa <<std::endl;
+            //        std::cout<< "do tracking id :"<< aaa <<std::endl;
                     sysInfo.current_mode.store(Mode::TRACKING);
                     motorcontrol.setStrategy(static_cast<uint8_t>(Mode::TRACKING));
                     break;
@@ -173,7 +173,7 @@ void Task_receiveCmd(TcpCmdChannel& tcpCmdChannel , MotorControl& motorcontrol,L
         // 장치 이상으로 (다른 스레드가 RUNNING에서 다른 상태로 보내면) 기존 소켓 닫기
         tcpCmdChannel.disconnect_sock();
         motorcontrol.setStrategy(static_cast<uint8_t>(Mode::DEFAULT));
-        std::cout << "set DEFAULt motor" << std::endl;
+  //      std::cout << "set DEFAULt motor" << std::endl;
        // std::cout << "TCP cmd channel disconnected, thread sleep 0.3s..." << std::endl;
         
         std::this_thread::sleep_for(std::chrono::milliseconds(300));
@@ -192,7 +192,7 @@ void Task_moveMotor(MotorControl& motorcontrol) {
             { return sysInfo.current_state.load() \
                 ==State::RUNNING; }); 
         }
-        std::cout << "motor thread wake up" <<std::endl;
+     //   std::cout << "motor thread wake up" <<std::endl;
         motorcontrol.init_pos();
         while (sysInfo.current_state.load() == State::RUNNING) {
             
