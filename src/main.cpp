@@ -18,7 +18,7 @@
 
 #include "preprocessing/contrast.hpp"
 #include "preprocessing/edge_enhance.hpp"
-#include "tracking/sort_tracker.hpp"
+#include "tracking/byte_tracker.hpp"
 
 cxxopts::ParseResult parse_args(int argc, char** argv) {
   cxxopts::Options options(

@@ -1,144 +1,146 @@
-#include "detection_camera.h"                  // 클래스 선언부 헤더
-#include "edgetpu.h"                           // Coral Edge TPU C++ API
-#include "opencv2/opencv.hpp"                  // OpenCV 전부
-#include "tensorflow/lite/interpreter.h"       // TFLite 인터프리터
-#include "tensorflow/lite/model.h"             // TFLite 모델 로더
-#include "preprocessing/edge_enhance.hpp"      // ★ 사용자 정의 전처리 (샤프닝)
-#include "preprocessing/contrast.hpp"          // ★ 사용자 정의 전처리 (대비)
-#include "tracking/sort_tracker.hpp"           // SORT 트래커
+#include "detection_camera.h"
 
-#include <chrono>                              // FPS 계산용 시간
-#include <algorithm>                           // std::clamp 등
+#include "edgetpu.h"
+#include "opencv2/opencv.hpp"
+#include "tensorflow/lite/interpreter.h"
+#include "tensorflow/lite/model.h"
+#include "tracking/byte_tracker.hpp"
+
+#include <chrono>
 
 namespace edge {
 
-// ────────────────────────────────────────────────────────────────
-// IR 변환 (BGR → **Gray‑IR** 3‑채널)
-//   • 히스토그램 평활화 + GRAY2BGR → 사각형 등 컬러 오버레이 가능
-// ────────────────────────────────────────────────────────────────
-static cv::Mat ToGrayIR(const cv::Mat &bgr) {
-  cv::Mat gray, hist, out;
-  cv::cvtColor(bgr, gray, cv::COLOR_BGR2GRAY);
-  cv::equalizeHist(gray, hist);                    // 밝기 대비 향상
-  cv::cvtColor(hist, out, cv::COLOR_GRAY2BGR);     // 3‑채널 복원
-  return out;
-}
-
-// ────── ctor ──────
 DetectionCamera::DetectionCamera(
-    const std::string& model_path,
-    const std::string& label_path,
-    const float threshold,
-    std::shared_ptr<edgetpu::EdgeTpuContext> edgetpu_context,
-    const bool edgetpu,
-    const int source,
-    const int height, const int width,
-    const bool verbose,
-    const std::vector<std::string>& preprocess)
+    const std::string& model_path, const std::string& label_path, const float threshold,
+    std::shared_ptr<edgetpu::EdgeTpuContext> edgetpu_context, const bool edgetpu, const int source,
+    const int height, const int width, const bool verbose, const std::vector<std::string>& preprocess)
     : m_interpreter(model_path, label_path, threshold, edgetpu_context, edgetpu),
       m_camera(source),
-      m_height(height), m_width(width),
-      m_verbose(verbose), m_preprocess(preprocess) {}
+      m_height(height),
+      m_width(width),
+      m_verbose(verbose),
+      m_preprocess(preprocess) {}
 
-// ────── 메인 루프 ──────
 void DetectionCamera::Run() {
-  const auto &in_shape = m_interpreter.GetInputShape();
-  const int mdl_w = in_shape[1];
-  const int mdl_h = in_shape[2];
+  // ───────── ByteTracker 초기화 ─────────────────────────────────────
+  tracking::ByteTracker tracker;
 
+  const auto& input_tensor_shape = m_interpreter.GetInputShape();
+  const auto width = input_tensor_shape[1];
+  const auto height = input_tensor_shape[2];
+
+  // Initializing cameras.
   if (!m_camera.isOpened()) {
     std::cerr << "Unable to open camera!\n";
-    return;
+    exit(0);
+  } else {
+    m_camera.set(cv::CAP_PROP_FPS, 30.0f);
+    m_camera.set(cv::CAP_PROP_FRAME_HEIGHT, m_height);
+    m_camera.set(cv::CAP_PROP_FRAME_WIDTH, m_width);
+    // In case user gives incorrect parameters, cv will re-adjust, we reset our
+    // values to fit cv.
+    m_height = m_camera.get(cv::CAP_PROP_FRAME_HEIGHT);
+    m_width = m_camera.get(cv::CAP_PROP_FRAME_WIDTH);
   }
-  m_camera.set(cv::CAP_PROP_FPS, 30.0);
-  m_camera.set(cv::CAP_PROP_FRAME_HEIGHT, m_height);
-  m_camera.set(cv::CAP_PROP_FRAME_WIDTH,  m_width);
-  m_height = static_cast<int>(m_camera.get(cv::CAP_PROP_FRAME_HEIGHT));
-  m_width  = static_cast<int>(m_camera.get(cv::CAP_PROP_FRAME_WIDTH));
 
-  const cv::Scalar RED (0,0,255), BLUE(255,0,0);
-  cv::namedWindow("Live Inference", cv::WINDOW_AUTOSIZE);
-
+  const auto& cvred = cv::Scalar(0, 0, 255);
+  const auto& cvblue = cv::Scalar(255, 0, 0);
   cv::Mat frame;
-  std::vector<cv::Rect> roi_list;   // 향후 최적화에 대비해 유지
-
-  using Det = typename decltype(m_interpreter.RunInference(std::vector<uint8_t>{}))::value_type;
-
-  bool show_ir = false;   // 'p' 키로 토글 (RGB ↔ Gray‑IR)
-
-  while (m_camera.read(frame)) {
+  for (;;) {
+    m_camera.read(frame);
+    if (!m_camera.read(frame)) break;  // Blank frame!
     ++m_frame_counter;
+    cv::Mat resized_frame;
+    // Converts image colors.
+    cvtColor(frame, resized_frame, cv::COLOR_BGR2RGB);
+    // Resize image to fit input tensors shape.
+    cv::resize(resized_frame, resized_frame, cv::Size(width, height));
+    std::vector<uint8_t> input(
+        resized_frame.data,
+        resized_frame.data + (resized_frame.cols * resized_frame.rows * resized_frame.elemSize()));
 
-    // ── 항상 전체 프레임 추론 ──
-    std::vector<Det> dets;
+    const auto& candidates = m_interpreter.RunInference(input);
+    
+    // ───────────── 후보를 ByteTrack 형식으로 변환 ──────────────
+    std::vector<tracking::Detection> dets;
+    dets.reserve(candidates.size());
+    for (const auto& c : candidates) {
+      tracking::Detection d;
+      d.bbox  = {
+          c.x1 * m_width,
+          c.y1 * m_height,
+          (c.x2 - c.x1) * m_width,
+          (c.y2 - c.y1) * m_height};
+      d.score = c.score;
+      dets.push_back(std::move(d));
+    }
 
-    // 입력 전처리
-    auto preprocess_rgb = [&](const cv::Mat &src, cv::Mat &dst){
-      cv::Mat tmp = src.clone();
-      for(const auto &s: m_preprocess){
-        if(s=="contrast") preprocessing::contrast::apply(tmp);
-        else if(s=="edge") preprocessing::edge::apply(tmp);
-      }
-      cv::cvtColor(tmp, dst, cv::COLOR_BGR2RGB);
-      cv::resize(dst, dst, {mdl_w, mdl_h});
+    // ① 트래커 업데이트 (예측 + 보정) → (예측박스, id) 목록
+    const auto tracks = tracker.update(dets);
+    // ② detection ↔ track 매칭 (IoU 기반, 단순 greedy)
+    const float IOU_THR = 0.3f;
+    auto IoU = [](const cv::Rect2f& a, const cv::Rect2f& b){
+        float inter = (a & b).area();
+        float uni   = a.area() + b.area() - inter;
+        return uni > 0.f ? inter / uni : 0.f;
     };
 
-    cv::Mat rgb; preprocess_rgb(frame, rgb);
-    std::vector<uint8_t> input(rgb.data, rgb.data + rgb.total()*rgb.elemSize());
-    dets = m_interpreter.RunInference(input);
-    const float sx = float(m_width)/mdl_w;
-    const float sy = float(m_height)/mdl_h;
-    for(auto &d: dets){ d.x1*=sx; d.x2*=sx; d.y1*=sy; d.y2*=sy; }
+    std::vector<int> det_ids(dets.size(), -1);          // detection ↔ id 매핑
+    std::vector<bool> track_used(tracks.size(), false);
 
-    // 사람 클래스 상위 5개만 유지
-    std::vector<Det> persons; persons.reserve(5);
-    for(const auto &d: dets){
-      if(d.candidate=="person"){ persons.push_back(d); if(persons.size()==5) break; }
-    }
-    dets.swap(persons);
-
-    // SORT 추적
-    std::vector<cv::Rect2f> boxes; boxes.reserve(dets.size());
-    for(const auto &d: dets) boxes.emplace_back(d.x1,d.y1,d.x2-d.x1,d.y2-d.y1);
-    auto tracked = m_tracker.update(boxes);
-
-    // detection ↔ track 라벨 매칭
-    auto iou = [&](const cv::Rect2f&a,const cv::Rect2f&b){
-      float inter=(a&b).area(); float uni=a.area()+b.area()-inter; return uni>0?inter/uni:0.f; };
-    for(const auto &[box,id]:tracked){
-      float best=0; std::string lbl;
-      for(const auto &d: dets){
-        cv::Rect2f r(d.x1,d.y1,d.x2-d.x1,d.y2-d.y1);
-        float v=iou(r,box);
-        if(v>best){ best=v; lbl=d.candidate; }
+    for (size_t di = 0; di < dets.size(); ++di) {
+      float best = IOU_THR; int best_ti = -1;
+      for (size_t ti = 0; ti < tracks.size(); ++ti) {
+        if (track_used[ti]) continue;
+        float iou = IoU(dets[di].bbox, tracks[ti].first);
+        if (iou > best) { best = iou; best_ti = static_cast<int>(ti); }
       }
-      if(best>0.3) m_track_label[id]=lbl;
+      if (best_ti >= 0) {
+        det_ids[di]        = tracks[best_ti].second;  // ID 할당
+        track_used[best_ti] = true;
+      }
     }
+    
+    std::cout << "Inference Time: " << m_interpreter.get_prev_duration().count()
+              << " microseconds\n";
 
-    // ROI 재계산(보류)
-    roi_list.clear();
+    const auto& f = "Inference Rate: "
+                    + std::to_string(1000000 / m_interpreter.get_prev_duration().count()) + " fps";
+    cv::putText(frame, f, cv::Point(0, 20), cv::FONT_HERSHEY_COMPLEX, .8, cvred, 1.5, 8, 0);
 
-    // 시각화 (BGR 기준)
-    for(const auto &[box,id]:tracked){
-      cv::rectangle(frame,{int(box.x),int(box.y)}, {int(box.x+box.width),int(box.y+box.height)}, BLUE,2);
-      std::string txt=(m_track_label.count(id)?m_track_label[id]:"id")+"#"+std::to_string(id);
-      cv::putText(frame, txt, {int(box.x),int(box.y)-6}, cv::FONT_HERSHEY_COMPLEX,0.8,RED,1.5);
+    // ───────────── ID + class + score 오버레이 ───────────────
+    for (size_t i = 0; i < dets.size(); ++i) {
+      int id = det_ids[i];
+      if (id < 0) continue;                  // 매칭 실패한 박스는 건너뜀
+
+      const auto& bb = dets[i].bbox;         // detection 박스 그대로
+      const auto& c  = candidates[i];        // class / score
+      int lft = static_cast<int>(bb.x + 0.5f);
+      int top = static_cast<int>(bb.y + 0.5f);
+      int rgt = static_cast<int>(bb.x + bb.width  + 0.5f);
+      int btm = static_cast<int>(bb.y + bb.height + 0.5f);
+
+      cv::rectangle(frame, {lft, top}, {rgt, btm}, cvblue, 2, 1, 0);
+      std::string tag = "ID:" + std::to_string(id) +
+                        "  "   + c.candidate +
+                        "  "   + std::to_string(c.score).substr(0,4);
+      cv::putText(frame, tag, {lft, top - 5},
+                  cv::FONT_HERSHEY_COMPLEX, .8, cvred, 1.5, 8, 0);
+
+      if (m_verbose) {
+        std::cout << "\n-----\nFrame " << m_frame_counter
+                  << "  " << tag
+                  << "  top:" << top << " lft:" << lft
+                  << "  btm:" << btm << " rgt:" << rgt;
+      }
     }
+ 
+     cv::imshow("Live Inference", frame);
+     cv::waitKey(1);
+   }
+ }
 
-    // FPS
-    std::string fps="Inf:"+std::to_string(int(1e6/m_interpreter.get_prev_duration().count()))+" fps";
-    cv::putText(frame,fps,{0,20},cv::FONT_HERSHEY_COMPLEX,0.8,RED,1.5);
 
-    // 표시 모드 전환
-    cv::Mat vis = show_ir ? ToGrayIR(frame) : frame;
-    cv::imshow("Live Inference", vis);
+DetectionCamera::~DetectionCamera() {}
 
-    int key=cv::waitKey(1);
-    if(key==27) break;           // ESC
-    if(key=='p'||key=='P') show_ir = !show_ir;
-  }
-}
-
-DetectionCamera::~DetectionCamera(){}
-
-} // namespace edge
+}  // namespace edge

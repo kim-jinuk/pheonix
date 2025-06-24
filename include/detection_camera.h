@@ -6,7 +6,7 @@
 #include "tensorflow/lite/interpreter.h"
 #include "tensorflow/lite/model.h"
 #include "tflite_wrapper.h"
-#include "tracking/sort_tracker.hpp"
+#include "tracking/byte_tracker.hpp"
 #include <unordered_map>
 
 namespace edge {
@@ -28,12 +28,12 @@ public:
 private:
   TfLiteWrapper m_interpreter;
   cv::VideoCapture m_camera;
-  tracking::SortTracker    m_tracker{0.3f};
+  tracking::ByteTracker    m_tracker;
   std::unordered_map<int,std::string> m_track_label;
-  std::vector<std::string> m_preprocess;
+  const bool m_verbose;
   int m_height;
   int m_width;
-  const bool m_verbose;
+  std::vector<std::string> m_preprocess;
   size_t m_frame_counter{0};
 };
 
