@@ -5,8 +5,11 @@
 #include "tensorflow/lite/interpreter.h"
 #include "tensorflow/lite/model.h"
 #include "tracking/byte_tracker.hpp"
+#include "tflite_wrapper.h"
+#include <vector>
 
 #include <chrono>
+#include <thread>
 
 namespace edge {
 
@@ -59,20 +62,35 @@ void DetectionCamera::Run() {
         resized_frame.data,
         resized_frame.data + (resized_frame.cols * resized_frame.rows * resized_frame.elemSize()));
 
-    const auto& candidates = m_interpreter.RunInference(input);
+    const auto all_cands = m_interpreter.RunInference(input);
+    /* ───────── person TOP-5 필터 ───────── */
+    std::vector<InferenceResult> candidates;   // edge::InferenceResult
+    candidates.reserve(5);
+    for (const auto& cand : all_cands) {
+      if (cand.candidate != "person") continue;
+      candidates.push_back(cand);
+      if (candidates.size() == 5) break;
+    }
+    /* ───────────────────────────────────── */
+
+    /* ───────── 100 ms 지연 ───────── */
+    //std::this_thread::sleep_for(std::chrono::milliseconds(100));
+    /* ────────────────────────────── */
     
     // ───────────── 후보를 ByteTrack 형식으로 변환 ──────────────
     std::vector<tracking::Detection> dets;
+    
+
     dets.reserve(candidates.size());
     for (const auto& c : candidates) {
       tracking::Detection d;
-      d.bbox  = {
+      d.bbox = cv::Rect2f(
           c.x1 * m_width,
           c.y1 * m_height,
           (c.x2 - c.x1) * m_width,
-          (c.y2 - c.y1) * m_height};
+          (c.y2 - c.y1) * m_height);
       d.score = c.score;
-      dets.push_back(std::move(d));
+      dets.push_back(d);
     }
 
     // ① 트래커 업데이트 (예측 + 보정) → (예측박스, id) 목록

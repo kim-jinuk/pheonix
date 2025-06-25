@@ -21,7 +21,7 @@ TfLiteWrapper::TfLiteWrapper(
   } else {
     InitTfLiteWrapper();
   }
-  m_interpreter->SetNumThreads(1);
+  m_interpreter->SetNumThreads(2);
   m_interpreter->AllocateTensors();
   // Set input tensor shape.
   const auto* dims = m_interpreter->tensor(m_interpreter->inputs()[0])->dims;
