@@ -47,6 +47,7 @@ TfLiteWrapper::TfLiteWrapper(
   // Initialzes interpreter.
   if (edgetpu && edgetpu_context) {
     InitTfLiteWrapperEdgetpu(edgetpu_context);
+    std::cout <<"will use tpu" <<std::endl;
   } else {
     InitTfLiteWrapper();
   }
@@ -81,6 +82,14 @@ void TfLiteWrapper::InitTfLiteWrapperEdgetpu(
     std::abort();
   }
   m_interpreter->SetExternalContext(kTfLiteEdgeTpuContext, edgetpu_context.get());
+  //std::cout << m_interpreter->execution_plan().size() << std::endl;
+    std::cout << "[OK] Edge TPU context set. Verifying ops:\n";
+  for (int i = 0; i < m_interpreter->nodes_size(); ++i) {
+  const auto* node_and_reg = m_interpreter->node_and_registration(i);
+  const TfLiteRegistration& reg = node_and_reg->second;  
+  std::string op_name = (reg.custom_name) ? reg.custom_name : "builtin";
+  std::cout << "  └─ Op[" << i << "] : " << op_name << "\n";
+}
 }
 
 void TfLiteWrapper::InitTfLiteWrapper() {
@@ -99,7 +108,7 @@ const std::vector<InferenceResult> TfLiteWrapper::GetResults(
     const std::vector<std::vector<float>>& output) {
   std::vector<InferenceResult> results;
   int n = lround(output[3][0]);
-//  n = std::min(n, 5); // 객체 수 제한... DAN 추가
+//  n = std::min(n, 5); // 객체 수 제한
   for (int i = 0; i < n; i++) {
     int id = lround(output[1][i]);
     float score = output[2][i];
@@ -125,10 +134,15 @@ const std::vector<InferenceResult> TfLiteWrapper::RunInference(
 
   uint8_t* input = m_interpreter->typed_input_tensor<uint8_t>(0);
   std::memcpy(input, input_data.data(), input_data.size());
+  auto t0 = std::chrono::steady_clock::now();
   m_interpreter->Invoke();
-
+  auto t1 = std::chrono::steady_clock::now();   
+ /* std::cout << "[PERF] TPU Invoke() duration: "
+          << std::chrono::duration_cast<std::chrono::milliseconds>(t1 - t0).count()
+          << " ms" << std::endl; */
   const auto& output_indices = m_interpreter->outputs();
   const size_t num_outputs = output_indices.size();
+  
   output_data.resize(num_outputs);
   for (size_t i = 0; i < num_outputs; ++i) {
     const auto* out_tensor = m_interpreter->tensor(output_indices[i]);

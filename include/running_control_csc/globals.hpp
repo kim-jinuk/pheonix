@@ -10,7 +10,7 @@
 #include <unordered_set>
 #define TCP_MAGIC_WORD 0xA5A5
 #define MISSTARGET 9999
-#define INFER_PER_FRAME 3
+#define INFER_PER_FRAME 5
 /**
     State enum class
 */
@@ -219,8 +219,10 @@ public:
     void push(const T& item) {
         {
             std::lock_guard<std::mutex> lock(mutex_);
-            if (queue_.size()>max_size_)
+            if (queue_.size()>max_size_) {
+            //    std::cout << queue_.size() << '\n';
                 queue_.pop();
+            }
             queue_.push(item);
         }
         cv_.notify_one();
@@ -269,3 +271,5 @@ struct SendPacket {
 };
 
 extern ThreadSafeQueue<SendPacket> send_queue;
+
+

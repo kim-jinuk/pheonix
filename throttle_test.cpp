@@ -16,6 +16,7 @@
 
 using namespace std::chrono;
 std::vector<InferenceResult> candidates;
+
 int main() {
     CaptureUnit cap;
     ImageProcessor imgproc;
@@ -24,8 +25,8 @@ int main() {
     context = edgetpu::EdgeTpuManager::GetSingleton()->OpenDevice();
     
     edge::TfLiteWrapper detector("mobilenet_ssd_v2_coco_quant_postprocess_edgetpu.tflite", "coco_labels.txt", 0.75f, context, true);
-    tracking::SortTracker tracker(0.3f); // IoU 임계값
-    UdpSender sender("192.168.1.100", 5000); // 적절한 IP/포트로 설정
+  //  tracking::SortTracker tracker(0.3f); // IoU 임계값
+  //  UdpSender sender("192.168.1.100", 5000); // 적절한 IP/포트로 설정
 
     std::unordered_map<int, std::string> m_track_label;
 
@@ -42,10 +43,10 @@ int main() {
         if (!cap.capture(frame)) continue;
         auto t1 = steady_clock::now();
 
-        imgproc.enhance_edges(frame->img_bgr);
+    //    imgproc.enhance_edges(frame->img_bgr);
         auto t2 = steady_clock::now();
 
-        imgproc.enhance_contrast(frame->img_bgr);
+    //    imgproc.enhance_contrast(frame->img_bgr);
         auto t3 = steady_clock::now();
 
         
@@ -70,8 +71,8 @@ int main() {
             det_boxes.emplace_back(c.x1, c.y1, c.x2 - c.x1, c.y2 - c.y1);
 
         auto track_start = steady_clock::now();
-        const auto tracked = tracker.update(det_boxes);
-        
+     //   const auto tracked = tracker.update(det_boxes);
+       /*
 
         // 추적 ID와 추론 결과 매칭
         auto iou = [](const cv::Rect2f& a, const cv::Rect2f& b) {
@@ -115,24 +116,24 @@ int main() {
         }
         auto end_overlay = steady_clock::now();
         // UDP 전송
-        std::vector<ObjectInfo> objs(5); // 더미
+     //   std::vector<ObjectInfo> objs(5); // 더미
         auto send_start = steady_clock::now();
-        auto packets = sender.BuildUdpPackets(*frame, objs);
-        sender.UdpSend(packets);
+     //   auto packets = sender.BuildUdpPackets(*frame, objs);
+       // sender.UdpSend(packets);
         auto send_end = steady_clock::now();
-
+*/
         // 시간 출력
         std::cout << "Frame #" << frame->frame_id << " timings (ms):\n";
-        std::cout << "  Capture         : " << duration_cast<milliseconds>(t1 - t0).count() << " ms\n";
-        std::cout << "  Enhance edges   : " << duration_cast<milliseconds>(t2 - t1).count() << " ms\n";
-        std::cout << "  Enhance contrast: " << duration_cast<milliseconds>(t3 - t2).count() << " ms\n";
+   //     std::cout << "  Capture         : " << duration_cast<milliseconds>(t1 - t0).count() << " ms\n";
+   //     std::cout << "  Enhance edges   : " << duration_cast<milliseconds>(t2 - t1).count() << " ms\n";
+   //     std::cout << "  Enhance contrast: " << duration_cast<milliseconds>(t3 - t2).count() << " ms\n";
         if (frame_num % 3 == 1) {
             std::cout << "  Inference       : " << duration_cast<milliseconds>(infer_end - infer_start).count() << " ms\n";
         }
-        std::cout << "  Tracking        : " << duration_cast<milliseconds>(track_end - track_start).count() << " ms\n";
-        std::cout << "  Overaly        : " << duration_cast<milliseconds>(end_overlay - track_end).count() << " ms\n";
-        std::cout << "  UDP Send        : " << duration_cast<milliseconds>(send_end - send_start).count() << " ms\n";
-        std::cout << "  Total loop      : " << duration_cast<milliseconds>(steady_clock::now() - loop_start).count() << " ms\n\n";
+      //  std::cout << "  Tracking        : " << duration_cast<milliseconds>(track_end - track_start).count() << " ms\n";
+     //   std::cout << "  Overaly        : " << duration_cast<milliseconds>(end_overlay - track_end).count() << " ms\n";
+    //    std::cout << "  UDP Send        : " << duration_cast<milliseconds>(send_end - send_start).count() << " ms\n";
+     //   std::cout << "  Total loop      : " << duration_cast<milliseconds>(steady_clock::now() - loop_start).count() << " ms\n\n";
     }   
 
     cap.closeCamera();

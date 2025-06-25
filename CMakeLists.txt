@@ -59,6 +59,10 @@ set(FLAT_LIB  "${WORK_ROOT}/tensorflow_src/bazel-out/armhf-opt/bin/external/flat
 set(OPCV_INC  "/workspace/peta_prj/Clocked_pwm_peta_v2/zynq_sdk/sysroots/cortexa9t2hf-neon-xilinx-linux-gnueabi/usr/include/opencv4")
 find_package(OpenCV REQUIRED)
 
+# turbo
+set(TURBOJPEG_INC "/workspace/peta_prj/Clocked_pwm_peta_v2/zynq_sdk/sysroots/cortexa9t2hf-neon-xilinx-linux-gnueabi/usr/include")
+set(TURBOJPEG_LIB "/workspace/peta_prj/Clocked_pwm_peta_v2/zynq_sdk/sysroots/cortexa9t2hf-neon-xilinx-linux-gnueabi//usr/lib/libturbojpeg.so")
+
 # Extract the folder part so we don’t rely on $(dirname …) (Bash) inside CMake
 get_filename_component(TFLITE_LIB_DIR  ${TFLITE_LIB}  DIRECTORY)
 get_filename_component(EDGETPU_LIB_DIR ${EDGETPU_LIB} DIRECTORY)
@@ -83,19 +87,19 @@ file(GLOB SRC
     # ${CMAKE_CURRENT_SOURCE_DIR}/tflite_wrapper.cc
     # ${CMAKE_CURRENT_SOURCE_DIR}/detection_camera.cc
     # ${CMAKE_CURRENT_SOURCE_DIR}/label_utils.cc
-   ${CMAKE_CURRENT_SOURCE_DIR}/main.cpp
-#    ${CMAKE_CURRENT_SOURCE_DIR}/test.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/main.cpp
+    #${CMAKE_CURRENT_SOURCE_DIR}/img.cpp
    ${CMAKE_CURRENT_SOURCE_DIR}/src/running_control_csc/BIT.cpp
    ${CMAKE_CURRENT_SOURCE_DIR}/src/running_control_csc/receiver.cpp
    ${CMAKE_CURRENT_SOURCE_DIR}/src/running_control_csc/sender2.cpp
    ${CMAKE_CURRENT_SOURCE_DIR}/src/running_control_csc/CfgLoader.cpp
    ${CMAKE_CURRENT_SOURCE_DIR}/src/running_control_csc/globals.cpp
    ${CMAKE_CURRENT_SOURCE_DIR}/src/running_control_csc/Task.cpp
+#    ${CMAKE_CURRENT_SOURCE_DIR}/src/running_control_csc/Task2.cpp
    ${CMAKE_CURRENT_SOURCE_DIR}/src/running_control_csc/MotorControl.cpp 
    ${CMAKE_CURRENT_SOURCE_DIR}/src/running_control_csc/pwm.cpp
    ${CMAKE_CURRENT_SOURCE_DIR}/src/running_control_csc/Logger.cpp 
-   ${CMAKE_CURRENT_SOURCE_DIR}/src/running_control_csc/Task.cpp
-   ${CMAKE_CURRENT_SOURCE_DIR}/src/running_control_csc/ImgTaskv10.cpp
+   ${CMAKE_CURRENT_SOURCE_DIR}/src/running_control_csc/ImgTaskv11.cpp
    ${CMAKE_CURRENT_SOURCE_DIR}/src/image_processing_csc/ImageProcessor.cpp
    ${CMAKE_CURRENT_SOURCE_DIR}/src/tracking_csc/sort_tracker.cpp
    ${CMAKE_CURRENT_SOURCE_DIR}/src/detecting_csc/edgetpu_detector.cpp
@@ -113,6 +117,7 @@ target_include_directories(EOIR_system PRIVATE
     ${ABSL_INC}
     ${FLAT_INC}
     ${GST_INCLUDE_DIRS}
+    ${TURBOJPEG_INC}
     ${OPCV_INC})
 target_include_directories(EOIR_system
     PRIVATE
@@ -131,7 +136,7 @@ set(EXTRA_LIBS
     pthread)
 
 # target_link_libraries(thread_structure ${OpenCV_LIBS} )
-target_link_libraries(EOIR_system PRIVATE ${EXTRA_LIBS} ${OpenCV_LIBS})
+target_link_libraries(EOIR_system PRIVATE ${EXTRA_LIBS} ${OpenCV_LIBS} ${TURBOJPEG_LIB})
 
 # ───────────────────────────────
 # 6.  Install rules (optional)

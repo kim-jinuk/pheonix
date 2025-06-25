@@ -54,7 +54,8 @@ public:
     explicit ByteTracker(const Params& prm = Params{});
 
     std::vector<std::pair<cv::Rect2f,int>> update(const std::vector<Detection>& dets);
-
+    std::vector<int> assign_ids(const std::vector<Detection>& dets);
+    void init_id();
 private:
     static float IoU(const cv::Rect2f&a,const cv::Rect2f&b);
     static cv::KalmanFilter create_kf(const cv::Rect2f &bb);
@@ -63,7 +64,7 @@ private:
     void greedy_match(const std::vector<Detection>& dets, float thr, std::vector<int>& det_match);
     void correct(Track &t,const cv::Rect2f &bb);
     void spawn(const Detection& d);
-
+    
     int next_id_ = 0;
     std::vector<Track> tracks_;
     std::vector<bool>  detected_;

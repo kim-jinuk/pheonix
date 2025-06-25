@@ -42,7 +42,7 @@ std::vector<std::vector<uint8_t>> UdpSender::BuildUdpPackets(
     if (frame.img_bgr.empty()) return packets;
 
     std::vector<uchar> jpeg_buf;
-    std::vector<int> params = {cv::IMWRITE_JPEG_QUALITY, 60};
+    std::vector<int> params = {cv::IMWRITE_JPEG_QUALITY, 30};
 
     bool success = cv::imencode(".jpg", frame.img_bgr, jpeg_buf, params);
     if (!success || jpeg_buf.empty()) return packets;

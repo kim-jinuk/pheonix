@@ -16,7 +16,7 @@
 #include <iostream>
 #include <atomic>
 #include <unistd.h>
-#define IMG_VERSION 10
+#define IMG_VERSION 11
 
 using namespace std;
 std::ostream& operator<<(std::ostream& os, State s) {
@@ -30,7 +30,6 @@ std::ostream& operator<<(std::ostream& os, State s) {
 int main() {
     // 소켓 닫혔는데 send할 경우 방지용
     signal(SIGPIPE, SIG_IGN);
-
     // IP 할당용
     CfgLoader cfg;
     if (!cfg.load("config.cfg")) {
@@ -81,6 +80,11 @@ int main() {
     std::shared_ptr<edgetpu::EdgeTpuContext> context;
     if (use_edgetpu) {
         context = edgetpu::EdgeTpuManager::GetSingleton()->OpenDevice();
+        if (context == nullptr) {
+        std::cerr << "[ERR] TPU context is null! Fallback to CPU!\n";
+     } else {
+        std::cout << "[OK] Edge TPU context acquired.\n";
+    }
     }
 
     /* detector*/
@@ -92,6 +96,7 @@ int main() {
         use_edgetpu
     );
 
+    
     
     std::thread receiveCmdThread(Task_receiveCmd, std::ref(tcpCmdChannel),std::ref(motorcontrol),std::ref(logger)); 
     std::thread moveMotorThread(Task_moveMotor,std::ref(motorcontrol)); 
@@ -149,12 +154,18 @@ int main() {
                                      std::ref(detector),std::ref(enhance_to_infer),std::ref(send_queue));
     std::thread inferThread(Task_infer,std::ref(imgprocessor), std::ref(detector), std::ref(enhance_to_infer));
     std::thread sendImgThread(Task_sendImageMeta, std::ref(sender), std::ref(send_queue));
-        #elif IMG_VERSION == 10
+    #elif IMG_VERSION == 10
 #include "running_control_csc/ImgTaskv10.hpp"
     // use type , no predict
     std::thread image_processThread(Task_img_process, std::ref(logger) ,std::ref(capunit),std::ref(imgprocessor), std::ref(tracker), \
                                      std::ref(detector),std::ref(enhance_to_infer),std::ref(send_queue));
     std::thread inferThread(Task_infer,std::ref(imgprocessor), std::ref(detector), std::ref(enhance_to_infer));
+    std::thread sendImgThread(Task_sendImageMeta, std::ref(sender), std::ref(send_queue));
+    #elif IMG_VERSION == 11 // 이미지 처리,추론,추적 하나의 스레드에서 
+#include "running_control_csc/ImgTaskv11.hpp"
+    // use type , no predict
+    std::thread image_processThread(Task_img_process, std::ref(logger) ,std::ref(capunit),std::ref(imgprocessor), std::ref(tracker), \
+                                     std::ref(detector),std::ref(send_queue));
     std::thread sendImgThread(Task_sendImageMeta, std::ref(sender), std::ref(send_queue));
 #endif
 

@@ -172,6 +172,41 @@ std::vector<std::pair<cv::Rect2f,int>> ByteTracker::update(const std::vector<Det
     for(auto& t : tracks_) out.emplace_back(t.bbox, t.id);
     return out;
 }
+std::vector<int> ByteTracker::assign_ids(const std::vector<Detection>& dets) {
+    std::vector<int> id_out(dets.size(), -1);
+
+    for (auto& t : tracks_) predict(t);
+    detected_.assign(tracks_.size(), false);
+
+    for (size_t di = 0; di < dets.size(); ++di) {
+        float best_iou = p.iou_thr_high;
+        int best_ti = -1;
+        for (size_t ti = 0; ti < tracks_.size(); ++ti) {
+            if (detected_[ti]) continue;
+            float iou = IoU(tracks_[ti].bbox, dets[di].bbox);
+            if (iou > best_iou) { best_iou = iou; best_ti = static_cast<int>(ti); }
+        }
+        if (best_ti >= 0) {
+            correct(tracks_[best_ti], dets[di].bbox);
+            detected_[best_ti] = true;
+            id_out[di] = tracks_[best_ti].id;
+        }
+    }
+
+    for (size_t di = 0; di < dets.size(); ++di) {
+        if (id_out[di] != -1) continue;
+        if (dets[di].score < p.high_thr) continue;
+        spawn(dets[di]);
+        id_out[di] = tracks_.back().id;
+    }
+
+    for (auto& t : tracks_) t.time_since_update++;
+    tracks_.erase(std::remove_if(tracks_.begin(), tracks_.end(),
+        [&](const Track& t) { return t.time_since_update > p.max_age; }),
+        tracks_.end());
+
+    return id_out;
+}
 
 float ByteTracker::IoU(const cv::Rect2f& a, const cv::Rect2f& b){
     float inter = (a & b).area();
@@ -243,12 +278,17 @@ void ByteTracker::correct(Track &t, const cv::Rect2f &bb){
 
 void ByteTracker::spawn(const Detection& d){
     Track t;
-    t.id = next_id_++;
+    next_id_++;
+    t.id = next_id_%255;
     t.kf = create_kf(d.bbox);
     t.bbox = d.bbox;
     t.time_since_update = 0;
     tracks_.push_back(std::move(t));
     detected_.push_back(false);
+}
+
+void ByteTracker::init_id(){
+    next_id_=0;
 }
 
 } // namespace tracking
