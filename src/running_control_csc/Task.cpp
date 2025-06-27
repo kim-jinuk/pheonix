@@ -145,10 +145,7 @@ void Task_receiveCmd(TcpCmdChannel& tcpCmdChannel , MotorControl& motorcontrol,L
                     }
                     break;
                 case track :
-                    int aaa;
                     targetInfo.id.store(cmd.cmd);
-                    aaa=cmd.cmd;
-            //        std::cout<< "do tracking id :"<< aaa <<std::endl;
                     sysInfo.current_mode.store(Mode::TRACKING);
                     motorcontrol.setStrategy(static_cast<uint8_t>(Mode::TRACKING));
                     break;

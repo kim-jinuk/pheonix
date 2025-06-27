@@ -6,5 +6,5 @@ CXX_DEFINES =
 
 CXX_INCLUDES = -I/workspace/TPU/tensorflow_src -I/workspace/TPU/libedgetpu/tflite/public -I/workspace/TPU/glog -I/workspace/TPU/abseil-cpp -I/workspace/TPU/flatbuffers/include -I/workspace/peta_prj/Clocked_pwm_peta_v2/zynq_sdk/sysroots/cortexa9t2hf-neon-xilinx-linux-gnueabi/usr/include/gstreamer-1.0 -I/workspace/peta_prj/Clocked_pwm_peta_v2/zynq_sdk/sysroots/cortexa9t2hf-neon-xilinx-linux-gnueabi/usr/include/orc-0.4 -I/workspace/peta_prj/Clocked_pwm_peta_v2/zynq_sdk/sysroots/cortexa9t2hf-neon-xilinx-linux-gnueabi/usr/include/glib-2.0 -I/workspace/peta_prj/Clocked_pwm_peta_v2/zynq_sdk/sysroots/cortexa9t2hf-neon-xilinx-linux-gnueabi/usr/lib/glib-2.0/include -I/workspace/DAN2/pheonix/include -isystem /workspace/peta_prj/Clocked_pwm_peta_v2/zynq_sdk/sysroots/cortexa9t2hf-neon-xilinx-linux-gnueabi/usr/include/opencv4
 
-CXX_FLAGS = -O3 -DNDEBUG -mcpu=cortex-a9 -mfpu=neon -mfloat-abi=hard -O2 -fstack-protector-strong -D_FORTIFY_SOURCE=2 -Wformat -Wformat-security -Werror=format-security
+CXX_FLAGS = -O3 -DNDEBUG -mcpu=cortex-a9 -mfpu=neon -mfloat-abi=hard -O2 -fstack-protector-strong -D_FORTIFY_SOURCE=2 -Wformat -Wformat-security -Werror=format-security -g
 

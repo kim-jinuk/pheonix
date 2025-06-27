@@ -30,7 +30,8 @@ add_compile_options(
     -D_FORTIFY_SOURCE=2
     -Wformat
     -Wformat-security
-    -Werror=format-security)
+    -Werror=format-security
+    -g)
 
 set(CMAKE_C_STANDARD   11)
 set(CMAKE_CXX_STANDARD 17)

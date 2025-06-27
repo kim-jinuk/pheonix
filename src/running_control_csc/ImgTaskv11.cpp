@@ -206,6 +206,7 @@ void Task_sendImageMeta( UdpSender& sender,ThreadSafeQueue<SendPacket>& in_queue
 
         while (sysInfo.current_state.load() == State::RUNNING) {
             SendPacket pkt = in_queue.wait_and_pop();
+            if (pkt.frame == nullptr) break;
             auto packets = sender.BuildUdpPackets(*pkt.frame, pkt.objects);
             sender.UdpSend(packets);
         }

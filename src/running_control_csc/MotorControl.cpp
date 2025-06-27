@@ -41,6 +41,7 @@ void SCANMotor::updateAngle() {
         direction *= -1;  // 반대로 스캔
     }
     pos.yaw+= STEP*direction;
+    
 }
 
 /*
@@ -112,16 +113,16 @@ void TrackingMotor::updateAngle() {
 
     constexpr int CENTER_X = 320;  
     constexpr int CENTER_Y = 240;
-    constexpr int DEADZONE = 100;  
-    constexpr int ZONE1 = 50;     
-    constexpr int ZONE2 = 100;    
+    constexpr int DEADZONE_YAW = 80; 
+    constexpr int DEADZONE_PITCH = 50; 
+    constexpr int ZONE1 = 200;     
     int yaw=pos.yaw;
     int pitch=pos.pitch;
     int dx =static_cast<int>(targetPos.first) - CENTER_X;
     int dy =static_cast<int>(targetPos.second) - CENTER_Y;
    // std::cout << "dx: " <<dx << " dy :"<< dy<<std::endl; 
 
-    if (std::abs(dx) <= DEADZONE) {
+    if (std::abs(dx) <= DEADZONE_YAW) {
     //    std::cout << "Yaw: Deadzone, no move" << std::endl;
     } else if (std::abs(dx) <= ZONE1) {
      //   std::cout << "Yaw: small adjust" << std::endl;
@@ -132,7 +133,7 @@ void TrackingMotor::updateAngle() {
     }
 
     // pitch 방향 제어
-    if (std::abs(dy) <= DEADZONE) {
+    if (std::abs(dy) <= DEADZONE_PITCH) {
     //    std::cout << "Pitch: Deadzone, no move" << std::endl;
     } 
     else {
@@ -152,7 +153,7 @@ void TrackingMotor::updateAngle() {
         pitch=0;
     pos.yaw=static_cast<uint8_t>(yaw);
     pos.pitch=static_cast<uint8_t>(pitch);
-    usleep(2000);
+
 }
 
 /*
